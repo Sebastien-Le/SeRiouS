@@ -18,3 +18,5 @@ Imports:
 Suggests: 
     EnTraineR,
     NaileR
+URL: https://github.com/Sebastien-Le/SeRiouS
+BugReports: https://github.com/Sebastien-Le/SeRiouS/issues
