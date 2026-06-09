@@ -71,10 +71,8 @@ Le package peut être installé depuis GitHub avec :
 
 ```r
 install.packages("remotes")
-remotes::install_github("VOTRE_COMPTE_GITHUB/SeRiouS")
+remotes::install_github("Sebastien-Le/SeRiouS")
 ```
-
-Remplacer `VOTRE_COMPTE_GITHUB` par le nom du compte ou de l’organisation GitHub où le dépôt est hébergé.
 
 ## Lancer le tutoriel
 
