@@ -4,3 +4,5 @@
 .httr-oauth
 .DS_Store
 .quarto
+.Ruserdata
+inst/app/_plateau_sauvegarde
