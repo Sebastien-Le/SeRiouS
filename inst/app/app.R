@@ -988,7 +988,7 @@ recuperer_sorties = make_case(
   titre = "5. Récupérer une sortie",
   objectif = "Ne plus seulement lire la console : récupérer les sorties dans des objets R.",
   has_plot = FALSE,
-  pdf_on_run = "recuperer_sorties.pdf",
+  pdf_on_run = "prompt_manuel.pdf",
   code = "
 # ============================================================
 # Case 5 : récupérer les sorties
@@ -1137,12 +1137,12 @@ reponse = "res_aovsum"
 
 prompt_manuel = make_case(
   partie = "r_sorties",
-  titre = "6. Faire un prompt (1)",
+  titre = "6a. Faire un prompt (1)",
   objectif = "Construire un premier prompt à la main à partir des sorties statistiques.",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 6 : construire un prompt manuellement
+# Case 6a : construire un prompt manuellement
 # ============================================================
 
 # Objectif de cette case :
@@ -1263,12 +1263,12 @@ reponse = "paste"
 
 prompt_manuel_n2 = make_case(
   partie = "r_sorties",
-  titre = "6'. Faire un prompt (2)",
+  titre = "6b. Faire un prompt (2)",
   objectif = "Construire un prompt générique : récupérer automatiquement le nom de Y et les noms des X à partir des formules.",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 6' : prompt manuel niveau 2, sans codage en dur
+# Case 6b : prompt manuel niveau 2, sans codage en dur
 # ============================================================
 
 # Dans la case précédente, les noms des variables étaient écrits à la main.
@@ -1458,12 +1458,12 @@ reponse = "formule_lm"
 
   entrainer_presentation = make_case(
     partie = "entrainer",
-    titre = "7'. Présentation EnTraineR",
+    titre = "7b. Présentation EnTraineR",
     objectif = "Situer le package EnTraineR avant d'utiliser ses fonctions.",
     has_plot = FALSE,
     code = "
 # ============================================================
-# Case 7' : petite présentation du package EnTraineR
+# Case 7b : petite présentation du package EnTraineR
 # ============================================================
 
 entrainer_disponible <- requireNamespace('EnTraineR', quietly = TRUE)
@@ -1565,12 +1565,12 @@ cat('La logique centrale reste : analyser -> extraire -> structurer -> prompter 
 
   entrainer_intro = make_case(
     partie = "entrainer",
-    titre = "7. EnTraineR",
+    titre = "7a. EnTraineR",
     objectif = "Repérer les fonctions EnTraineR et préparer leur utilisation sur les prompts construits.",
     has_plot = FALSE,
     code = "
 # ============================================================
-# Case 7 : entrer dans EnTraineR
+# Case 7a : entrer dans EnTraineR
 # ============================================================
 
 # On cherche le package sous son nom attendu : EnTraineR.
@@ -1695,108 +1695,108 @@ cat('- prompt_aovsum_utilise\n')
     reponse = "prompt"
   ),
 
-  entrainer_options = make_case(
-    partie = "entrainer",
-    titre = "7''. Options",
-    objectif = "Repérer les options communes des fonctions EnTraineR.",
-    has_plot = FALSE,
-    code = "
-# ============================================================
-# Case 7'' : options communes EnTraineR
-# ============================================================
-
-options_cibles <- c(
-  'generate',
-  'llm_engine',
-  'llm_model',
-  'prompt_style',
-  'audience',
-  'language'
-)
-
-if (exists('entrainer_pkg') && !is.na(entrainer_pkg)) {
-
-  fonctions_existantes <- fonctions_entrainer[
-    vapply(
-      fonctions_entrainer,
-      function(f) exists(f, envir = asNamespace(entrainer_pkg), inherits = FALSE),
-      logical(1)
-    )
-  ]
-
-  options_par_fonction <- lapply(fonctions_existantes, function(f) {
-    fun <- getExportedValue(entrainer_pkg, f)
-    noms_args <- names(formals(fun))
-
-    data.frame(
-      fonction = f,
-      option = options_cibles,
-      presente = options_cibles %in% noms_args,
-      stringsAsFactors = FALSE
-    )
-  })
-
-  options_entrainer <- do.call(rbind, options_par_fonction)
-
-  arguments_entrainer <- data.frame(
-    fonction = fonctions_existantes,
-    arguments = vapply(
-      fonctions_existantes,
-      function(f) {
-        fun <- getExportedValue(entrainer_pkg, f)
-        paste(names(formals(fun)), collapse = ', ')
-      },
-      character(1)
-    ),
-    stringsAsFactors = FALSE
-  )
-
-} else {
-
-  options_entrainer <- data.frame(
-    option = c(
-      'generate',
-      'llm_engine',
-      'llm_model',
-      'prompt_style',
-      'audience',
-      'language'
-    ),
-    role = c(
-      'retourner seulement le prompt ou appeler le modèle',
-      'choisir le moteur LLM : none, ollama, gemini...',
-      'choisir le modèle',
-      'contrôler le niveau de détail du prompt',
-      'adapter le niveau pédagogique',
-      'contrôler la langue de sortie'
-    ),
-    stringsAsFactors = FALSE
-  )
-
-  arguments_entrainer <- data.frame(
-    fonction = fonctions_entrainer,
-    arguments = 'Package EnTraineR non installé : arguments non inspectés',
-    stringsAsFactors = FALSE
-  )
-}
-
-cat('## Options communes EnTraineR\n\n')
-cat('Idée pédagogique : les fonctions EnTraineR partagent une logique commune.\n')
-cat('On veut produire seulement le prompt, ou appeler ensuite un moteur LLM.\n\n')
-
-cat('Options importantes :\n')
-print(options_entrainer)
-
-cat('\nArguments repérés par fonction :\n')
-print(arguments_entrainer, row.names = FALSE)
-
-cat('\nPoint clé : generate = FALSE permet de contrôler le prompt avant tout appel au modèle.\n')
-",
-    sortie_attendue = "Un objet `options_entrainer` qui synthétise les options importantes.",
-    transition = "On revient à R : comment passer d'une analyse ponctuelle à une série d'analyses ?",
-    question = "Quel package vient d\'être introduit comme automatisation de la construction de prompts ?",
-    reponse = "entrainer"
-  ),
+#   entrainer_options = make_case(
+#     partie = "entrainer",
+#     titre = "7''. Options",
+#     objectif = "Repérer les options communes des fonctions EnTraineR.",
+#     has_plot = FALSE,
+#     code = "
+# # ============================================================
+# # Case 7'' : options communes EnTraineR
+# # ============================================================
+#
+# options_cibles <- c(
+#   'generate',
+#   'llm_engine',
+#   'llm_model',
+#   'prompt_style',
+#   'audience',
+#   'language'
+# )
+#
+# if (exists('entrainer_pkg') && !is.na(entrainer_pkg)) {
+#
+#   fonctions_existantes <- fonctions_entrainer[
+#     vapply(
+#       fonctions_entrainer,
+#       function(f) exists(f, envir = asNamespace(entrainer_pkg), inherits = FALSE),
+#       logical(1)
+#     )
+#   ]
+#
+#   options_par_fonction <- lapply(fonctions_existantes, function(f) {
+#     fun <- getExportedValue(entrainer_pkg, f)
+#     noms_args <- names(formals(fun))
+#
+#     data.frame(
+#       fonction = f,
+#       option = options_cibles,
+#       presente = options_cibles %in% noms_args,
+#       stringsAsFactors = FALSE
+#     )
+#   })
+#
+#   options_entrainer <- do.call(rbind, options_par_fonction)
+#
+#   arguments_entrainer <- data.frame(
+#     fonction = fonctions_existantes,
+#     arguments = vapply(
+#       fonctions_existantes,
+#       function(f) {
+#         fun <- getExportedValue(entrainer_pkg, f)
+#         paste(names(formals(fun)), collapse = ', ')
+#       },
+#       character(1)
+#     ),
+#     stringsAsFactors = FALSE
+#   )
+#
+# } else {
+#
+#   options_entrainer <- data.frame(
+#     option = c(
+#       'generate',
+#       'llm_engine',
+#       'llm_model',
+#       'prompt_style',
+#       'audience',
+#       'language'
+#     ),
+#     role = c(
+#       'retourner seulement le prompt ou appeler le modèle',
+#       'choisir le moteur LLM : none, ollama, gemini...',
+#       'choisir le modèle',
+#       'contrôler le niveau de détail du prompt',
+#       'adapter le niveau pédagogique',
+#       'contrôler la langue de sortie'
+#     ),
+#     stringsAsFactors = FALSE
+#   )
+#
+#   arguments_entrainer <- data.frame(
+#     fonction = fonctions_entrainer,
+#     arguments = 'Package EnTraineR non installé : arguments non inspectés',
+#     stringsAsFactors = FALSE
+#   )
+# }
+#
+# cat('## Options communes EnTraineR\n\n')
+# cat('Idée pédagogique : les fonctions EnTraineR partagent une logique commune.\n')
+# cat('On veut produire seulement le prompt, ou appeler ensuite un moteur LLM.\n\n')
+#
+# cat('Options importantes :\n')
+# print(options_entrainer)
+#
+# cat('\nArguments repérés par fonction :\n')
+# print(arguments_entrainer, row.names = FALSE)
+#
+# cat('\nPoint clé : generate = FALSE permet de contrôler le prompt avant tout appel au modèle.\n')
+# ",
+#     sortie_attendue = "Un objet `options_entrainer` qui synthétise les options importantes.",
+#     transition = "On revient à R : comment passer d'une analyse ponctuelle à une série d'analyses ?",
+#     question = "Quel package vient d\'être introduit comme automatisation de la construction de prompts ?",
+#     reponse = "entrainer"
+#   ),
 
 boucle_y_x = make_case(
   partie = "r_sorties",
@@ -2650,12 +2650,12 @@ reponse = "catdes"
 
 nailer_catdes_exemple = make_case(
   partie = "entrainer",
-  titre = "12. Exemple NaileR",
+  titre = "12a. Exemple NaileR",
   objectif = "Utiliser nail_catdes() sur une variable qualitative du jeu de données.",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 12 : premier exemple avec NaileR et nail_catdes()
+# Case 12a : premier exemple avec NaileR et nail_catdes()
 # ============================================================
 
 # Objectif de cette case :
@@ -2894,12 +2894,12 @@ reponse = "nail_catdes"
 
 nailer_presentation = make_case(
   partie = "entrainer",
-  titre = "13. Présenter NaileR",
+  titre = "12b. Présenter NaileR",
   objectif = "Présenter le rôle de NaileR dans le workflow : de FactoMineR aux prompts, puis aux variables latentes et aux textes.",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 13 : présenter le package NaileR
+# Case 12b : présenter le package NaileR
 # ============================================================
 
 # Objectif de cette case :
@@ -4010,16 +4010,16 @@ case_ids <- names(cases)
 edges <- data.frame(
   from = c(
     'donnees', 'exploration', 'linearmodel', 'aovsum', 'recuperer_sorties',
-    'prompt_manuel', 'prompt_manuel',
-    'entrainer_intro', 'entrainer_presentation',
-    'entrainer_intro', 'boucle_y_x', 'condes', 'catdes',
+    'prompt_manuel', 'prompt_manuel_n2',
+    'entrainer_intro',
+    'entrainer_presentation', 'boucle_y_x', 'condes', 'catdes',
     'manip_condes_catdes', 'nailer_catdes_exemple', 'nailer_presentation', 'acp_hcpc_classes',
     'decrire_classes', 'preparer_textes_classes', 'preparer_artefacts_classes'
   ),
   to = c(
     'exploration', 'linearmodel', 'aovsum', 'recuperer_sorties', 'prompt_manuel',
     'prompt_manuel_n2','entrainer_intro',
-    'entrainer_presentation', 'entrainer_options',
+    'entrainer_presentation',
     'boucle_y_x', 'condes', 'catdes', 'manip_condes_catdes',
     'nailer_catdes_exemple', 'nailer_presentation', 'acp_hcpc_classes', 'decrire_classes',
     'preparer_textes_classes', 'preparer_artefacts_classes', 'synthese_contextualisee_classes'
@@ -4032,7 +4032,7 @@ edges <- data.frame(
 plateau_positions <- data.frame(
   id = c(
     'donnees', 'exploration', 'linearmodel', 'aovsum', 'recuperer_sorties', 'prompt_manuel',
-    'prompt_manuel_n2', 'entrainer_presentation', 'entrainer_intro',
+    'prompt_manuel_n2', 'entrainer_intro', 'entrainer_presentation',
     'entrainer_options', 'boucle_y_x', 'condes', 'catdes', 'manip_condes_catdes', 'nailer_catdes_exemple',
     'nailer_presentation', 'acp_hcpc_classes', 'decrire_classes', 'preparer_textes_classes',
     'preparer_artefacts_classes', 'synthese_contextualisee_classes'
@@ -4963,30 +4963,47 @@ server <- function(input, output, session) {
     id <- selected_case()
     req(id)
 
+    # Force le recalcul après validation / exécution si run_id existe chez toi
+    etat$run_id
+
     x <- cases[[id]]
+
+    case_unlocked <- isTRUE(id %in% etat$unlocked)
+
+    has_case_pdf <- !is.null(x$pdf) &&
+      length(x$pdf) == 1 &&
+      nzchar(x$pdf)
+
+    has_current_pdf <- !is.null(etat$current_pdf) &&
+      length(etat$current_pdf) == 1 &&
+      nzchar(etat$current_pdf) &&
+      identical(etat$current_pdf_case, id)
+
     pdf_file <- NULL
 
-    # PDF associé au nœud : visible seulement si la case est déverrouillée
-    if (id %in% etat$unlocked && !is.null(x$pdf)) {
+    # 1. PDF associé à la case : visible seulement si la case est déverrouillée
+    if (case_unlocked && has_case_pdf) {
       pdf_file <- x$pdf
     }
 
-    # PDF déclenché après exécution d'une case
-    if (is.null(pdf_file) &&
-        !is.null(etat$current_pdf) &&
-        identical(etat$current_pdf_case, id)) {
+    # 2. PDF déclenché après exécution de cette case
+    if (is.null(pdf_file) && has_current_pdf) {
       pdf_file <- etat$current_pdf
     }
 
+    # 3. Aucun PDF à afficher
     if (is.null(pdf_file)) {
+
+      message_pdf <- if (has_case_pdf && !case_unlocked) {
+        "PDF verrouillé : débloque d'abord cette case."
+      } else {
+        "Aucun PDF associé à cette case pour le moment."
+      }
+
       return(
         div(
           class = "small-note",
-          if (id %in% etat$unlocked) {
-            "Aucun PDF associé à cette case pour le moment."
-          } else {
-            "PDF verrouillé : débloque d'abord cette case."
-          }
+          message_pdf
         )
       )
     }
@@ -5030,10 +5047,30 @@ server <- function(input, output, session) {
     }
 
     if (check_answer(x, input$reponse, envir = .GlobalEnv)) {
+
+      # 1. Déverrouiller la case
       etat$unlocked <- union(etat$unlocked, id)
+
+      # 2. Effacer la sortie console précédente
+      etat$output_text <- paste0(
+        "Case déverrouillée : ", x$titre, "\n\n",
+        "Le code de cette case est maintenant disponible.\n",
+        "Cliquez sur Exécuter pour produire la sortie console correspondante."
+      )
+
+      # 3. Effacer aussi l'ancien graphique éventuel
+      etat$plot_file <- blank_plot
+      etat$last_has_plot <- FALSE
+
+      # 4. Forcer le rafraîchissement des blocs réactifs
+      etat$run_id <- etat$run_id + 1
+
+      # 5. Mettre à jour le plateau et sauvegarder
       update_plateau_nodes()
       save_current_session(silent = TRUE)
+
       showNotification("Bonne réponse : case déverrouillée.", type = "message")
+
     } else {
       showNotification("Réponse incorrecte.", type = "error")
     }
@@ -5124,6 +5161,16 @@ server <- function(input, output, session) {
   # ----------------------------------------------------------
 
   output$sortie <- renderText({
+    if (is.null(etat$output_text) || !nzchar(etat$output_text)) {
+      return(
+        paste(
+          "Aucune sortie console pour cette case pour le moment.",
+          "Cliquez sur Exécuter pour produire la sortie correspondante.",
+          sep = "\n"
+        )
+      )
+    }
+
     etat$output_text
   })
 
