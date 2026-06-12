@@ -14,16 +14,14 @@ if (!exists("questionnaire")) {
 # ============================================================
 
 parties <- data.frame(
-  id = c("stat", "r_sorties", "entrainer", "latent", "texte"),
+  id = c("stat", "r_sorties", "entrainer"),
   label = c(
-    "Statistique de base",
-    "Le langage R",
-    "EnTraineR/NaileR",
-    "Explicite → latent",
-    "Texte & synthèse"
+    "Statistique",
+    "Langage R",
+    "LLM"
   ),
-  color = c("#BBDEFB", "#C8E6C9", "#FFE0B2", "#FFCDD2", "#CFD8DC"),
-  border = c("#1976D2", "#2E7D32", "#EF6C00", "#C62828", "#455A64"),
+  color = c("#BBDEFB", "#C8E6C9", "#FFE0B2"),
+  border = c("#1976D2", "#2E7D32", "#EF6C00"),
   stringsAsFactors = FALSE
 )
 
@@ -39,12 +37,24 @@ make_case <- function(partie, titre, objectif, code,
                       reponse = NULL,
                       validator = NULL,
                       pdf = NULL,
-                      pdf_on_run = NULL) {
+                      pdf_on_run = NULL,
+                      code_display = NULL) {
+  # `code` est le code complet exécuté par l'application.
+  # Il peut contenir des cat(), print(), tryCatch() et messages pédagogiques.
+  #
+  # `code_display` est optionnel : il sert uniquement à afficher un code
+  # plus épuré dans le bloc "Code essentiel" et dans le bouton "Ouvrir code".
+  # Si aucun code_display n'est fourni, on affiche le code complet par défaut.
+  if (is.null(code_display)) {
+    code_display <- code
+  }
+
   list(
     partie = partie,
     titre = titre,
     objectif = objectif,
     code = trimws(code),
+    code_display = trimws(code_display),
     sortie_attendue = sortie_attendue,
     transition = transition,
     has_plot = has_plot,
@@ -56,6 +66,76 @@ make_case <- function(partie, titre, objectif, code,
   )
 }
 
+get_case_display_code <- function(case) {
+  # Renvoie le code à afficher à l'étudiant.
+  # L'exécution continue d'utiliser `case$code` dans execute_case().
+  if (!is.null(case$code_display) && nzchar(trimws(case$code_display))) {
+    return(trimws(case$code_display))
+  }
+
+  case$code
+}
+
+load_precomputed_asset <- function(filename) {
+
+  chemins_candidats <- c(
+    # Cas package installé
+    system.file(
+      'app',
+      'precomputed',
+      filename,
+      package = 'SeRiouS'
+    ),
+
+    # Cas développement lancé depuis la racine du package
+    file.path(
+      'inst',
+      'app',
+      'precomputed',
+      filename
+    ),
+
+    # Cas développement lancé depuis inst/app
+    file.path(
+      'precomputed',
+      filename
+    ),
+
+    # Cas où le working directory est dans inst/app mais on veut remonter
+    file.path(
+      '..',
+      '..',
+      'inst',
+      'app',
+      'precomputed',
+      filename
+    )
+  )
+
+  chemins_candidats <- unique(chemins_candidats[nzchar(chemins_candidats)])
+
+  chemins_existants <- chemins_candidats[file.exists(chemins_candidats)]
+
+  if (length(chemins_existants) > 0) {
+    return(readRDS(chemins_existants[1]))
+  }
+
+  stop(
+    paste(
+      c(
+        paste0('Fichier pré-calculé introuvable : ', filename),
+        '',
+        'Répertoire de travail courant :',
+        getwd(),
+        '',
+        'Chemins testés :',
+        paste0('- ', chemins_candidats)
+      ),
+      collapse = '\n'
+    ),
+    call. = FALSE
+  )
+}
 
 # ------------------------------------------------------------
 # Ressources PDF robustes
@@ -569,6 +649,220 @@ cat('- aux sorties FactoMineR ;\\n')
 cat('- aux prompts ;\\n')
 cat('- puis à la compréhension des classes latentes.\\n')
 ",
+code_display = "
+# Récupérer le questionnaire utilisé dans tout le tutoriel
+if (!exists('questionnaire')) {
+
+  if (exists('questionnaire_alimentaire_typologie_textes')) {
+
+    questionnaire <- questionnaire_alimentaire_typologie_textes
+
+  } else if (requireNamespace('SeRiouS', quietly = TRUE)) {
+
+    questionnaire <- SeRiouS::questionnaire_alimentaire_typologie_textes
+
+  } else {
+
+    stop(
+      'Aucun objet questionnaire disponible. ',
+      'Le jeu de données questionnaire_alimentaire_typologie_textes doit être intégré au package SeRiouS.'
+    )
+  }
+}
+
+# Dimensions du questionnaire
+nrow(questionnaire)
+ncol(questionnaire)
+
+# Sécuriser les variables qualitatives
+variables_qualitatives <- c(
+  'type_produit',
+  'budget_contraint',
+  'sexe',
+  'age_classe',
+  'lieu_achat',
+  'profil_alim'
+)
+
+variables_qualitatives <- intersect(
+  variables_qualitatives,
+  names(questionnaire)
+)
+
+questionnaire[variables_qualitatives] <- lapply(
+  questionnaire[variables_qualitatives],
+  factor
+)
+
+# Sécuriser la variable textuelle
+if ('commentaire' %in% names(questionnaire)) {
+  questionnaire$commentaire <- as.character(questionnaire$commentaire)
+}
+
+# Construire un dictionnaire simplifié des variables
+dictionnaire_variables <- data.frame(
+  variable = c(
+    'id',
+    'satisfaction',
+    'intention_achat',
+    'prix_percu',
+    'plaisir',
+    'naturalite',
+    'confiance',
+    'ancrage_local',
+    'usage_numerique',
+    'sensibilite_env',
+    'attention_prix',
+    'contrainte_temps',
+    'cuisine_maison',
+    'lecture_labels',
+    'achat_local',
+    'ouverture_innovation',
+    'usage_appli_alim',
+    'preoccupation_sante',
+    'autonomie_alimentaire',
+    'confiance_labels',
+    'type_produit',
+    'budget_contraint',
+    'sexe',
+    'age_classe',
+    'lieu_achat',
+    'profil_alim',
+    'commentaire'
+  ),
+  famille = c(
+    'Identifiant',
+    'Évaluation du produit',
+    'Évaluation du produit',
+    'Évaluation du produit',
+    'Évaluation du produit',
+    'Évaluation du produit',
+    'Évaluation du produit',
+    'Évaluation du produit',
+    'Rapport à l information',
+    'Rapport à l environnement',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Variables actives de typologie',
+    'Contexte produit',
+    'Contexte répondant',
+    'Contexte répondant',
+    'Contexte répondant',
+    'Contexte d achat',
+    'Profil alimentaire explicite',
+    'Texte libre'
+  ),
+  role_dans_le_tutoriel = c(
+    'repérer les individus',
+    'variable réponse possible',
+    'variable réponse pour la régression',
+    'variable explicative et descriptive',
+    'variable explicative',
+    'variable explicative et descriptive',
+    'variable explicative',
+    'variable explicative et descriptive',
+    'variable descriptive',
+    'variable descriptive',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'variable active pour ACP / typologie',
+    'facteur pour ANOVA',
+    'facteur pour ANOVA',
+    'variable illustrative',
+    'variable illustrative',
+    'variable illustrative',
+    'variable qualitative explicite pour catdes / nail_catdes',
+    'variable textuelle pour le flow NaileR'
+  ),
+  stringsAsFactors = FALSE
+)
+
+dictionnaire_variables <- dictionnaire_variables[
+  dictionnaire_variables$variable %in% names(questionnaire),
+]
+
+# Décrire la structure R du questionnaire
+structure_variables <- data.frame(
+  variable = names(questionnaire),
+  classe_R = vapply(questionnaire, function(x) class(x)[1], character(1)),
+  stringsAsFactors = FALSE
+)
+
+# Identifier les variables clés du tutoriel
+variables_cles <- data.frame(
+  etape_du_tutoriel = c(
+    'Régression linéaire',
+    'ANOVA',
+    'condes()',
+    'catdes() / nail_catdes()',
+    'ACP + HCPC',
+    'Flow textuel NaileR'
+  ),
+  variables_utilisees = c(
+    'intention_achat ~ satisfaction + prix_percu',
+    'satisfaction ~ type_produit * budget_contraint',
+    'intention_achat décrite par les autres variables',
+    'profil_alim décrit par les autres variables',
+    'variables actives de typologie',
+    'classe_hcpc + commentaire'
+  ),
+  objectif = c(
+    'modéliser une intention d achat',
+    'tester des effets de facteurs et une interaction',
+    'décrire une variable quantitative',
+    'décrire une variable qualitative explicite',
+    'construire une classe latente',
+    'interpréter les classes à partir des verbatims'
+  ),
+  stringsAsFactors = FALSE
+)
+
+# Définir les variables actives prévues pour la typologie
+variables_typologie <- c(
+  'attention_prix',
+  'contrainte_temps',
+  'cuisine_maison',
+  'lecture_labels',
+  'achat_local',
+  'ouverture_innovation',
+  'usage_appli_alim',
+  'preoccupation_sante',
+  'autonomie_alimentaire',
+  'confiance_labels'
+)
+
+variables_typologie_presentes <- intersect(
+  variables_typologie,
+  names(questionnaire)
+)
+
+# Vérifier rapidement les objets créés
+dictionnaire_variables
+structure_variables
+variables_cles
+variables_typologie_presentes
+
+# Aperçu du questionnaire et des commentaires libres
+head(questionnaire, 3)
+
+if ('commentaire' %in% names(questionnaire)) {
+  head(unique(questionnaire$commentaire), 6)
+}
+",
 sortie_attendue = "Une présentation structurée du questionnaire et des variables utilisées dans le tutoriel.",
 transition = "On peut maintenant explorer le jeu de données avant de modéliser.",
 question = "Quel objet contient le questionnaire utilisé dans le tutoriel ?",
@@ -753,6 +1047,110 @@ cat('- resume_quanti : résumé numérique\\n')
 cat('- variables_quali_exploration : noms des variables qualitatives\\n')
 cat('- resume_quali : effectifs par modalité\\n')
 ",
+code_display = "
+# Identifier les variables quantitatives
+variables_quanti_exploration <- setdiff(
+  names(questionnaire)[vapply(questionnaire, is.numeric, logical(1))],
+  'id'
+)
+
+variables_quanti_exploration
+
+# Construire un résumé des variables quantitatives
+resume_quanti <- data.frame(
+  variable = variables_quanti_exploration,
+  min = vapply(
+    questionnaire[variables_quanti_exploration],
+    min,
+    numeric(1),
+    na.rm = TRUE
+  ),
+  q1 = vapply(
+    questionnaire[variables_quanti_exploration],
+    function(x) quantile(x, 0.25, na.rm = TRUE),
+    numeric(1)
+  ),
+  mediane = vapply(
+    questionnaire[variables_quanti_exploration],
+    median,
+    numeric(1),
+    na.rm = TRUE
+  ),
+  moyenne = vapply(
+    questionnaire[variables_quanti_exploration],
+    mean,
+    numeric(1),
+    na.rm = TRUE
+  ),
+  q3 = vapply(
+    questionnaire[variables_quanti_exploration],
+    function(x) quantile(x, 0.75, na.rm = TRUE),
+    numeric(1)
+  ),
+  max = vapply(
+    questionnaire[variables_quanti_exploration],
+    max,
+    numeric(1),
+    na.rm = TRUE
+  ),
+  row.names = NULL
+)
+
+resume_quanti[, -1] <- round(resume_quanti[, -1], 2)
+
+resume_quanti
+
+# Identifier les variables qualitatives
+variables_quali_exploration <- names(questionnaire)[
+  vapply(questionnaire, is.factor, logical(1))
+]
+
+variables_quali_exploration
+
+# Construire un résumé des variables qualitatives
+resume_quali <- do.call(
+  rbind,
+  lapply(variables_quali_exploration, function(v) {
+    tab <- table(questionnaire[[v]], useNA = 'ifany')
+
+    data.frame(
+      variable = v,
+      modalite = names(tab),
+      effectif = as.integer(tab),
+      row.names = NULL
+    )
+  })
+)
+
+resume_quali
+
+# Explorer la variable textuelle
+length(questionnaire$commentaire)
+length(unique(questionnaire$commentaire))
+head(unique(questionnaire$commentaire), 5)
+
+# Produire deux graphiques exploratoires
+op <- par(mfrow = c(1, 2))
+
+hist(
+  questionnaire$intention_achat,
+  main = 'Intention d achat',
+  xlab = 'Score',
+  col = 'grey80',
+  border = 'white'
+)
+
+boxplot(
+  satisfaction ~ type_produit,
+  data = questionnaire,
+  main = 'Satisfaction selon produit',
+  xlab = 'Groupe produit',
+  ylab = 'Satisfaction',
+  col = 'grey85'
+)
+
+par(op)
+",
 sortie_attendue = "Des résumés lisibles des variables et deux graphiques descriptifs.",
 transition = "On commence par une régression explicite : une variable Y expliquée par quelques X.",
 question = "Combien de lignes contient le jeu de données `questionnaire` ?",
@@ -869,6 +1267,44 @@ cat('- res_lm_fm : résultat complet de FactoMineR::LinearModel()\\n')
 cat('\\n')
 cat('Ces objets seront utilisés pour récupérer les sorties et construire un prompt.\\n')
 ",
+code_display = "
+# Vérifier que FactoMineR est disponible
+if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+  stop('Installe FactoMineR : install.packages(\"FactoMineR\")')
+}
+
+# Définir la formule du modèle linéaire
+formule_lm <- intention_achat ~ satisfaction + prix_percu
+
+formule_lm
+
+# Ajuster le modèle avec FactoMineR::LinearModel()
+res_lm_fm <- FactoMineR::LinearModel(
+  formule_lm,
+  data = questionnaire,
+  selection = 'none'
+)
+
+# Examiner les résultats principaux
+res_lm_fm$Ftest
+res_lm_fm$Ttest
+
+# Graphique exploratoire de la relation entre satisfaction et intention d achat
+plot(
+  questionnaire$satisfaction,
+  questionnaire$intention_achat,
+  pch = 16,
+  col = 'grey40',
+  xlab = 'Satisfaction',
+  ylab = 'Intention d achat',
+  main = 'Intention d achat ~ Satisfaction'
+)
+
+abline(
+  lm(intention_achat ~ satisfaction, data = questionnaire),
+  lwd = 2
+)
+",
 sortie_attendue = "Un objet `formule_lm` et un objet `res_lm_fm` contenant notamment F-tests, T-tests et résumé du modèle.",
 transition = "On passe ensuite à une ANOVA explicite avec interaction.",
 question = "Quelle fonction de FactoMineR est utilisée pour la régression linéaire ?",
@@ -977,10 +1413,42 @@ cat('- res_aovsum : résultat complet de FactoMineR::AovSum()\\n')
 cat('\\n')
 cat('Ces objets seront utilisés pour récupérer les sorties et construire un prompt.\\n')
 ",
+code_display = "
+# Vérifier que FactoMineR est disponible
+if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+  stop('Installe FactoMineR : install.packages(\"FactoMineR\")')
+}
+
+# Définir la formule de l ANOVA
+formule_aov <- satisfaction ~ type_produit * budget_contraint
+
+formule_aov
+
+# Ajuster l ANOVA avec FactoMineR::AovSum()
+res_aovsum <- FactoMineR::AovSum(
+  formule_aov,
+  data = questionnaire
+)
+
+# Examiner les résultats principaux
+res_aovsum$Ftest
+res_aovsum$Ttest
+
+# Visualiser l interaction entre type de produit et contrainte budgétaire
+interaction.plot(
+  x.factor = questionnaire$budget_contraint,
+  trace.factor = questionnaire$type_produit,
+  response = questionnaire$satisfaction,
+  xlab = 'Budget contraint',
+  ylab = 'Satisfaction moyenne',
+  trace.label = 'Produit',
+  main = 'Interaction produit x budget'
+)
+",
 sortie_attendue = "Un objet `formule_aov` et un objet `res_aovsum` avec les F-tests et T-tests de l'ANOVA.",
 transition = "Les sorties affichées deviennent maintenant des objets à récupérer.",
 question = "Quelle fonction de FactoMineR est utilisée pour l'analyse de la variance ?",
-reponse = "aovsum"
+reponse = "AovSum"
 ),
 
 recuperer_sorties = make_case(
@@ -988,7 +1456,7 @@ recuperer_sorties = make_case(
   titre = "5. Récupérer une sortie",
   objectif = "Ne plus seulement lire la console : récupérer les sorties dans des objets R.",
   has_plot = FALSE,
-  pdf_on_run = "prompt_manuel.pdf",
+  pdf_on_run = "recuperer.pdf",
   code = "
 # ============================================================
 # Case 5 : récupérer les sorties
@@ -1129,6 +1597,46 @@ cat('- aov_ttest : T-test de AovSum\\n')
 cat('- texte_linearmodel : sortie complète LinearModel transformée en texte\\n')
 cat('- texte_aovsum : sortie complète AovSum transformée en texte\\n')
 ",
+code_display = "
+# Inspecter les objets retournés par FactoMineR
+names(res_lm_fm)
+names(res_aovsum)
+
+# Extraire les sorties importantes de LinearModel()
+lm_ftest <- res_lm_fm$Ftest
+lm_ttest <- res_lm_fm$Ttest
+lm_resume <- res_lm_fm$lmResult
+
+# Extraire les sorties importantes de AovSum()
+aov_ftest <- res_aovsum$Ftest
+aov_ttest <- res_aovsum$Ttest
+
+# Examiner les objets extraits
+lm_ftest
+lm_ttest
+lm_resume
+
+aov_ftest
+aov_ttest
+
+# Capturer les sorties complètes sous forme de texte
+texte_linearmodel <- paste(
+  capture.output(print(res_lm_fm)),
+  collapse = '\\n'
+)
+
+texte_aovsum <- paste(
+  capture.output(print(res_aovsum)),
+  collapse = '\\n'
+)
+
+# Vérifier les textes capturés
+substr(texte_linearmodel, 1, 1200)
+substr(texte_aovsum, 1, 1200)
+
+nchar(texte_linearmodel)
+nchar(texte_aovsum)
+",
 sortie_attendue = "Des objets `lm_ftest`, `lm_ttest`, `aov_ftest`, `aov_ttest`, `texte_linearmodel`, `texte_aovsum`, affichés avec des titres explicites.",
 transition = "Ces éléments sont le matériau brut d'un prompt contrôlé : on sait maintenant extraire, nommer et transformer les sorties statistiques.",
 question = "Quel objet contient la sortie ANOVA créée à la case précédente ?",
@@ -1140,6 +1648,7 @@ prompt_manuel = make_case(
   titre = "6a. Faire un prompt (1)",
   objectif = "Construire un premier prompt à la main à partir des sorties statistiques.",
   has_plot = FALSE,
+  pdf_on_run = "prompt_manuel.pdf",
   code = "
 # ============================================================
 # Case 6a : construire un prompt manuellement
@@ -1254,6 +1763,68 @@ cat('- prompt_linearmodel : prompt construit pour la régression linéaire\\n')
 cat('- prompt_aovsum : prompt construit pour l ANOVA avec interaction\\n')
 cat('\\n')
 cat('Ces deux objets pourront être envoyés à un LLM, ou repris par EnTraineR.\\n')
+",
+code_display = "
+
+# Comprendre le principe de paste()
+
+exemple_texte <- paste(
+'Première ligne',
+'Deuxième ligne',
+'Troisième ligne',
+sep = '\n'
+)
+
+exemple_texte
+cat(exemple_texte)
+
+# Construire un prompt pour LinearModel()
+
+prompt_linearmodel <- paste(
+'# Interprétation d une régression linéaire',
+'',
+'Contexte : questionnaire consommateur sur un produit alimentaire.',
+'Variable à expliquer : intention_achat.',
+'Variables explicatives : satisfaction et prix_percu.',
+'',
+'Sortie FactoMineR::LinearModel :',
+texte_linearmodel,
+'',
+'Consignes :',
+'- interpréter uniquement les résultats fournis ;',
+'- distinguer effet global et coefficients ;',
+'- ne pas confondre association et causalité ;',
+'- produire une interprétation pédagogique courte.',
+sep = '\n'
+)
+
+# Examiner le début du prompt construit
+
+substr(prompt_linearmodel, 1, 1500)
+nchar(prompt_linearmodel)
+
+# Construire un prompt pour AovSum()
+
+prompt_aovsum <- paste(
+'# Interprétation d une ANOVA avec interaction',
+'',
+'Variable à expliquer : satisfaction.',
+'Facteurs : type_produit et budget_contraint.',
+'',
+'Sortie FactoMineR::AovSum :',
+texte_aovsum,
+'',
+'Consignes :',
+'- identifier les effets significatifs ;',
+'- commenter prudemment l interaction ;',
+'- ne pas inventer de comparaisons post-hoc.',
+sep = '\n'
+)
+
+# Examiner le début du prompt construit
+
+substr(prompt_aovsum, 1, 1500)
+nchar(prompt_aovsum)
 ",
 sortie_attendue = "Deux prompts : `prompt_linearmodel` et `prompt_aovsum`, construits avec `paste()` puis affichés avec `cat()`.",
 transition = "Deux chemins sont possibles : aller vers EnTraineR, ou approfondir la construction d un prompt générique sans coder en dur les noms de variables.",
@@ -1450,6 +2021,92 @@ cat('\\n')
 cat('Idée clé : le prompt n est plus écrit entièrement à la main.\\n')
 cat('Il est construit à partir des objets R qui décrivent le modèle.\\n')
 ",
+code_display = "
+
+# Observer les formules utilisées dans les analyses
+
+formule_lm
+formule_aov
+
+# Extraire les variables observées dans une formule
+
+all.vars(formule_lm)
+all.vars(formule_aov)
+
+# Extraire les termes explicatifs du modèle
+
+attr(terms(formule_lm), 'term.labels')
+attr(terms(formule_aov), 'term.labels')
+
+# Créer une fonction pour automatiser l extraction
+
+extraire_infos_formule <- function(formule) {
+
+variables <- all.vars(formule)
+termes <- attr(terms(formule), 'term.labels')
+
+list(
+formule = deparse(formule),
+y = variables[1],
+termes = termes,
+variables = variables
+)
+}
+
+# Appliquer la fonction aux deux formules
+
+infos_lm <- extraire_infos_formule(formule_lm)
+infos_aov <- extraire_infos_formule(formule_aov)
+
+infos_lm
+infos_aov
+
+# Construire un prompt générique pour LinearModel()
+
+prompt_linearmodel_n2 <- paste(
+'# Interprétation d une régression linéaire',
+'',
+'Contexte : questionnaire consommateur sur un produit alimentaire.',
+paste0('Variable à expliquer : ', infos_lm$y, '.'),
+paste0('Variables explicatives : ', paste(infos_lm$termes, collapse = ', '), '.'),
+'',
+'Sortie FactoMineR::LinearModel :',
+texte_linearmodel,
+'',
+'Consignes :',
+'- interpréter uniquement les résultats fournis ;',
+'- distinguer effet global et coefficients ;',
+'- ne pas confondre association et causalité ;',
+'- produire une interprétation pédagogique courte.',
+sep = '\n'
+)
+
+# Construire un prompt générique pour AovSum()
+
+prompt_aovsum_n2 <- paste(
+'# Interprétation d une ANOVA',
+'',
+paste0('Variable à expliquer : ', infos_aov$y, '.'),
+paste0('Termes du modèle : ', paste(infos_aov$termes, collapse = ', '), '.'),
+'',
+'Sortie FactoMineR::AovSum :',
+texte_aovsum,
+'',
+'Consignes :',
+'- identifier les effets significatifs ;',
+'- commenter prudemment les interactions éventuelles ;',
+'- ne pas inventer de comparaisons post-hoc.',
+sep = '\n'
+)
+
+# Examiner les prompts créés
+
+substr(prompt_linearmodel_n2, 1, 1200)
+nchar(prompt_linearmodel_n2)
+
+substr(prompt_aovsum_n2, 1, 1200)
+nchar(prompt_aovsum_n2)
+",
 sortie_attendue = "Deux prompts génériques : `prompt_linearmodel_n2` et `prompt_aovsum_n2`, construits sans coder en dur les noms de Y et des termes explicatifs.",
 transition = "Cette étape montre la mécanique R que EnTraineR va ensuite généraliser : récupérer les éléments du modèle et produire un prompt.",
 question = "Quel objet contient la formule utilisée pour LinearModel ?",
@@ -1555,6 +2212,103 @@ cat('\\nMessage pédagogique :\\n')
 cat('EnTraineR ne remplace pas l analyse statistique.\\n')
 cat('Il organise le passage entre une sortie statistique explicite et un prompt contrôlé.\\n')
 cat('La logique centrale reste : analyser -> extraire -> structurer -> prompter -> éventuellement générer.\\n')
+",
+code_display = "
+
+# Vérifier si EnTraineR est disponible
+
+entrainer_disponible <- requireNamespace('EnTraineR', quietly = TRUE)
+
+if (entrainer_disponible) {
+
+version_entrainer <- as.character(
+utils::packageVersion('EnTraineR')
+)
+
+fonctions_entrainer <- grep(
+'^trainer_',
+getNamespaceExports('EnTraineR'),
+value = TRUE
+)
+
+} else {
+
+version_entrainer <- 'non installé'
+
+fonctions_entrainer <- c(
+'trainer_linear_model',
+'trainer_LinearModel',
+'trainer_aovsum',
+'trainer_AovSum',
+'trainer_cor',
+'trainer_chisq_test',
+'trainer_var',
+'trainer_MCA'
+)
+}
+
+# Résumer l état du package
+
+resume_package_entrainer <- data.frame(
+element = c(
+'Package installé',
+'Version détectée',
+'Nombre de fonctions trainer_* repérées ou attendues'
+),
+valeur = c(
+as.character(entrainer_disponible),
+version_entrainer,
+as.character(length(fonctions_entrainer))
+),
+stringsAsFactors = FALSE
+)
+
+# Présenter le rôle de EnTraineR dans le workflow
+
+presentation_entrainer <- data.frame(
+question = c(
+'Quel est le rôle du package ?',
+'Que reçoit-il en entrée ?',
+'Que produit-il en sortie ?',
+'Pourquoi generate = FALSE est important ?',
+'Comment se situe-t-il par rapport à NaileR ?'
+),
+reponse = c(
+'Transformer des résultats statistiques explicites en prompts pédagogiques contrôlés.',
+'Des objets ou sorties issus de fonctions statistiques comme LinearModel() ou AovSum().',
+'Un prompt inspectable, et éventuellement une réponse LLM si la génération est activée.',
+'Cette option permet de vérifier le prompt avant tout appel au modèle.',
+'EnTraineR traite les analyses explicites ; NaileR prolonge la logique vers condes(), catdes(), les axes, les classes et le texte.'
+),
+stringsAsFactors = FALSE
+)
+
+# Schématiser le workflow EnTraineR
+
+schema_entrainer <- data.frame(
+etape = c(
+'1. Analyse statistique',
+'2. Extraction des résultats',
+'3. Construction du prompt',
+'4. Contrôle humain',
+'5. Appel optionnel au LLM'
+),
+exemple = c(
+'LinearModel(), AovSum(), cor(), chisq.test()',
+'F-test, T-test, coefficients, p-values, R2',
+'Contexte + résultats + consignes + format attendu',
+'generate = FALSE',
+'llm_engine + llm_model'
+),
+stringsAsFactors = FALSE
+)
+
+# Examiner les objets créés
+
+resume_package_entrainer
+data.frame(fonction = fonctions_entrainer)
+presentation_entrainer
+schema_entrainer
 ",
     sortie_attendue = "Une présentation courte de EnTraineR, de son rôle et de sa place dans le workflow.",
     transition = "On peut maintenant entrer dans la mécanique pratique de EnTraineR.",
@@ -1803,6 +2557,7 @@ boucle_y_x = make_case(
   titre = "8. Boucler",
   objectif = "Passer de Y~X à Y~tous les X pour comprendre la logique d'automatisation.",
   has_plot = FALSE,
+  pdf_on_run = "boucle_y_x.pdf",
   code = "
 # ============================================================
 # Case 8 : boucler sur plusieurs variables explicatives
@@ -2897,6 +3652,7 @@ nailer_presentation = make_case(
   titre = "12b. Présenter NaileR",
   objectif = "Présenter le rôle de NaileR dans le workflow : de FactoMineR aux prompts, puis aux variables latentes et aux textes.",
   has_plot = FALSE,
+  pdf_on_run = "NaileR.pdf",
   code = "
 # ============================================================
 # Case 12b : présenter le package NaileR
@@ -3094,26 +3850,25 @@ reponse = "nailer"
 ),
 
 acp_hcpc_classes = make_case(
-  partie = "latent",
-  titre = "14. ACP + HCPC",
-  objectif = "Construire une variable de classe latente à partir de variables actives de typologie.",
+  partie = "stat",
+  titre = "13. ACP + HCPC",
+  objectif = "Construire une variable de classe (latente) à partir de variables actives.",
   has_plot = TRUE,
   code = "
 # ============================================================
-# Case 14 : construire une classe latente par ACP + HCPC
+# Case 13 : construire une classe latente par ACP + HCPC
 # ============================================================
 
 # Objectif de cette case :
 # passer d un questionnaire avec des variables explicites
-# à une variable de classe construite par analyse.
+# à une variable de classe, latente (implicite).
 #
-# Ici, on utilise :
+# Ici, on réalise :
 # - une ACP sur des variables quantitatives actives ;
-# - une classification HCPC sur les coordonnées factorielles ;
-# - une nouvelle variable : classe_hcpc.
+# - une classification ascendante hiérarchiques sur les coordonnées factorielles.
 #
-# Cette variable n était pas directement posée dans le questionnaire.
-# Elle est construite par l analyse : c est pourquoi on parlera
+# On obtient une variable de classe. Cette variable n était pas directement posée
+# dans le questionnaire. Elle est construite par l analyse : c est pourquoi on parlera
 # de variable de classe latente ou de classe construite.
 
 # ------------------------------------------------------------
@@ -3135,9 +3890,9 @@ if (!requireNamespace('FactoMineR', quietly = TRUE)) {
 }
 
 
-# ------------------------------------------------------------
-# 2. Définir les variables actives de typologie
-# ------------------------------------------------------------
+# -----------------------------------------------------------------
+# 2. Définir les variables actives qui vont construire la typologie
+# -----------------------------------------------------------------
 
 variables_typologie <- c(
   'attention_prix',
@@ -3178,6 +3933,19 @@ print(variables_typologie)
 
 donnees_typologie <- questionnaire[, variables_typologie]
 
+variables_non_numeriques <- names(donnees_typologie)[
+  !vapply(donnees_typologie, is.numeric, logical(1))
+]
+
+if (length(variables_non_numeriques) > 0) {
+  stop(
+    'Les variables suivantes ne sont pas numériques : ',
+    paste(variables_non_numeriques, collapse = ', '),
+    '. Une ACP nécessite ici des variables quantitatives.',
+    call. = FALSE
+  )
+}
+
 cat('\\n============================================================\\n')
 cat('2. Tableau actif pour ACP et HCPC\\n')
 cat('============================================================\\n')
@@ -3192,7 +3960,7 @@ print(head(donnees_typologie, 3))
 cat('\\n============================================================\\n')
 cat('Transition : de NaileR aux classes latentes\\n')
 cat('============================================================\\n')
-cat('Nous avons vu que NaileR peut prolonger des sorties FactoMineR comme catdes().\\n')
+cat('Nous avons vu que NaileR peut prolonger des fonctions de FactoMineR comme catdes().\\n')
 cat('Jusqu ici, nous avons surtout travaillé avec des variables explicites.\\n')
 cat('Pour appliquer cette logique à une variable latente, il faut d abord la construire.\\n')
 cat('C est le rôle de cette case : créer classe_hcpc par ACP + HCPC.\\n')
@@ -3201,7 +3969,7 @@ cat('C est le rôle de cette case : créer classe_hcpc par ACP + HCPC.\\n')
 # 4. Réaliser l ACP
 # ------------------------------------------------------------
 
-res_pca_typologie <- FactoMineR::PCA(
+res_pca <- FactoMineR::PCA(
   donnees_typologie,
   scale.unit = TRUE,
   graph = FALSE
@@ -3210,42 +3978,37 @@ res_pca_typologie <- FactoMineR::PCA(
 cat('\\n============================================================\\n')
 cat('3. ACP sur les variables de typologie\\n')
 cat('============================================================\\n')
-cat('Objet créé : res_pca_typologie\\n')
+cat('Objet créé : res_pca\\n')
 
 cat('\\nValeurs propres et pourcentages d inertie :\\n')
-print(res_pca_typologie$eig)
+print(res_pca$eig)
 
 
 # ------------------------------------------------------------
 # 5. Réaliser la classification HCPC
 # ------------------------------------------------------------
 
-res_hcpc_typologie <- FactoMineR::HCPC(
-  res_pca_typologie,
+set.seed(123)
+
+res_hcpc <- FactoMineR::HCPC(
+  res_pca,
   nb.clust = 3,
   graph = FALSE
-)
-
-questionnaire$classe_hcpc <- factor(
-  res_hcpc_typologie$data.clust$clust
 )
 
 cat('\\n============================================================\\n')
 cat('4. Classification HCPC\\n')
 cat('============================================================\\n')
-cat('Objet créé : res_hcpc_typologie\\n')
-cat('Variable créée : questionnaire$classe_hcpc\\n')
+cat('Objet créé : res_hcpc\\n')
+cat('Variable créée : res_hcpc$data.clust$clust\\n')
 
 cat('\\nRépartition des classes :\\n')
-print(table(questionnaire$classe_hcpc))
+print(table(res_hcpc$data.clust$clust))
 
 
 # ------------------------------------------------------------
 # 6. Visualiser les classes sur le premier plan factoriel
 # ------------------------------------------------------------
-
-coord_ind <- as.data.frame(res_pca_typologie$ind$coord)
-coord_ind$classe_hcpc <- questionnaire$classe_hcpc
 
 cat('\\n============================================================\\n')
 cat('5. Graphique ACP coloré par classe HCPC\\n')
@@ -3253,24 +4016,7 @@ cat('============================================================\\n')
 cat('Le graphique représente les individus sur le plan Dim.1 x Dim.2.\\n')
 cat('La couleur correspond à la classe construite par HCPC.\\n')
 
-plot(
-  coord_ind$Dim.1,
-  coord_ind$Dim.2,
-  pch = 16,
-  col = as.integer(coord_ind$classe_hcpc),
-  xlab = paste0('Dim.1 (', round(res_pca_typologie$eig[1, 2], 1), ' %)'),
-  ylab = paste0('Dim.2 (', round(res_pca_typologie$eig[2, 2], 1), ' %)'),
-  main = 'ACP des variables de typologie'
-)
-
-legend(
-  'topright',
-  legend = levels(coord_ind$classe_hcpc),
-  col = seq_along(levels(coord_ind$classe_hcpc)),
-  pch = 16,
-  title = 'Classe HCPC'
-)
-
+FactoMineR::plot.HCPC(res_hcpc, choice = 'map', draw.tree = FALSE)
 
 # ------------------------------------------------------------
 # 7. Résumé pédagogique
@@ -3279,26 +4025,26 @@ legend(
 cat('\\n============================================================\\n')
 cat('Résumé pédagogique\\n')
 cat('============================================================\\n')
-cat('Nous avons créé une nouvelle variable : classe_hcpc.\\n')
+cat('Nous avons créé une nouvelle variable : res_hcpc$data.clust$clust.\\n')
 cat('Cette variable n est pas une réponse directe du questionnaire.\\n')
 cat('Elle résulte d une ACP puis d une classification.\\n')
 cat('\\n')
 cat('La prochaine étape consiste à décrire statistiquement ces classes.\\n')
 ",
-sortie_attendue = "Une ACP `res_pca_typologie`, une classification `res_hcpc_typologie` et une variable `questionnaire$classe_hcpc`.",
+sortie_attendue = "Une ACP `res_pca`, une classification `res_hcpc` et une variable `res_hcpc$data.clust$clust`.",
 transition = "On décrit maintenant les classes construites avec catdes(), puis avec nail_catdes().",
-question = "Quel objet du questionnaire contient la classe construite par HCPC ?",
-reponse = "classe_hcpc"
+question = "Quelle fonction de FactoMineR permet de construire une classification à partir d'une ACP ?",
+reponse = "HCPC"
 ),
 
 decrire_classes = make_case(
-  partie = "latent",
-  titre = "15. Décrire les classes",
+  partie = "stat",
+  titre = "14. Décrire les classes",
   objectif = "Décrire la variable de classe construite avec catdes() et nail_catdes().",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 15 : décrire les classes HCPC
+# Case 14 : décrire les classes HCPC
 # ============================================================
 
 # Objectif de cette case :
@@ -3321,9 +4067,18 @@ if (!exists('questionnaire')) {
   )
 }
 
+if (!exists('res_hcpc')) {
+  stop(
+    'L objet res_hcpc est absent. Exécute d abord la case 13.',
+    call. = FALSE
+  )
+}
+
+questionnaire$classe_hcpc <- res_hcpc$data.clust$clust
+
 if (!'classe_hcpc' %in% names(questionnaire)) {
   stop(
-    'La variable classe_hcpc est absente. Exécute d abord la case 14.',
+    'La variable classe_hcpc est absente. Exécute d abord la case 13.',
     call. = FALSE
   )
 }
@@ -3410,7 +4165,8 @@ if (!requireNamespace('NaileR', quietly = TRUE)) {
     NaileR::nail_catdes(
       questionnaire_desc_classes,
       num.var = num_var_classe,
-      generate = FALSE
+      generate = FALSE,
+      interpretation_mode = 'latent'
     ),
     error = function(e) {
       paste('nail_catdes() non exécuté :', conditionMessage(e))
@@ -3425,18 +4181,80 @@ if (!requireNamespace('NaileR', quietly = TRUE)) {
     print(names(res_nail_catdes_classes))
   }
 
-  texte_nail_catdes_classes <- paste(
-    capture.output(print(res_nail_catdes_classes)),
-    collapse = '\\n'
+# ------------------------------------------------------------
+# Affichage lisible de la sortie nail_catdes()
+# ------------------------------------------------------------
+
+extraire_texte_lisible <- function(objet) {
+
+  if (is.list(objet)) {
+
+    champs_possibles <- c(
+      'prompt',
+      'request',
+      'response',
+      'interpretation',
+      'text',
+      'result'
+    )
+
+    champ_trouve <- intersect(champs_possibles, names(objet))
+
+    if (length(champ_trouve) > 0) {
+      texte <- objet[[champ_trouve[1]]]
+    } else {
+      texte <- capture.output(str(objet, max.level = 2))
+    }
+
+  } else {
+    texte <- capture.output(print(objet))
+  }
+
+  texte <- paste(texte, collapse = '\n')
+
+  # Transforme les retours à la ligne échappés en vrais retours à la ligne
+  texte <- gsub('\\\\n', '\n', texte)
+
+  # Transforme les tabulations échappées si besoin
+  texte <- gsub('\\\\t', '\t', texte)
+
+  texte
+}
+
+afficher_apercu_lisible <- function(texte, n_lignes = 60, largeur = 100) {
+
+  lignes <- unlist(strsplit(texte, '\n', fixed = TRUE))
+
+  lignes_wrappees <- unlist(
+    lapply(lignes, function(ligne) {
+      if (!nzchar(trimws(ligne))) {
+        return('')
+      }
+      strwrap(ligne, width = largeur)
+    })
   )
 
-  cat('\\nAperçu :\\n')
-  cat(substr(texte_nail_catdes_classes, 1, 2000))
+  lignes_affichees <- head(lignes_wrappees, n_lignes)
 
-  if (nchar(texte_nail_catdes_classes) > 2000) {
-    cat('\\n\\n[... sortie nail_catdes tronquée dans l affichage ...]\\n')
-    cat('Longueur totale : ', nchar(texte_nail_catdes_classes), ' caractères\\n', sep = '')
+  cat(paste(lignes_affichees, collapse = '\n'))
+
+  if (length(lignes_wrappees) > n_lignes) {
+    cat('\n\n[... aperçu tronqué ...]\n')
+    cat('Nombre total de lignes : ', length(lignes_wrappees), '\n', sep = '')
   }
+}
+
+texte_nail_catdes_classes <- extraire_texte_lisible(
+  res_nail_catdes_classes
+)
+
+cat('\nAperçu lisible :\n\n')
+
+afficher_apercu_lisible(
+  texte = texte_nail_catdes_classes,
+  n_lignes = 60,
+  largeur = 100
+)
 }
 
 
@@ -3455,18 +4273,18 @@ cat('La prochaine étape ajoute les verbatims associés à ces classes.\\n')
 ",
 sortie_attendue = "Une description statistique `res_catdes_classes` et, si NaileR est disponible, un objet `res_nail_catdes_classes`.",
 transition = "On prépare maintenant les verbatims associés aux classes construites.",
-question = "Quelle fonction FactoMineR permet de décrire une variable qualitative de classe ?",
+question = "Quelle fonction FactoMineR permet de décrire des classes ou une variable qualitative ?",
 reponse = "catdes"
 ),
 
 preparer_textes_classes = make_case(
-  partie = "texte",
-  titre = "16. Verbatims par classe",
-  objectif = "Préparer un tableau associant les classes HCPC et les commentaires libres.",
+  partie = "r_sorties",
+  titre = "15. Relier classes et verbatims",
+  objectif = "Préparer le tableau qui permettra à NaileR de croiser classes, commentaires libres et variables du questionnaire.",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 16 : préparer les verbatims par classe HCPC
+# Case 15 : préparer les verbatims par classe
 # ============================================================
 
 # Objectif de cette case :
@@ -3619,25 +4437,24 @@ for (cl in levels(dataset_textuel_classes$classe_hcpc)) {
 cat('\\n============================================================\\n')
 cat('Résumé pédagogique\\n')
 cat('============================================================\\n')
-cat('Nous disposons maintenant d un tableau qui relie classes construites et verbatims.\\n')
-cat('Cette étape est essentielle : les textes vont aider à nommer et stabiliser les classes.\\n')
-cat('\\n')
-cat('La prochaine case prépare les artefacts textuels et structurés avec NaileR.\\n')
+cat('Cette case ne produit pas une nouvelle analyse statistique.\n')
+cat('Elle prépare le format de données nécessaire pour passer de catdes() aux fonctions textuelles de NaileR.\n')
+cat('On conserve une ligne par répondant afin de garder le lien entre classe, commentaire et variables structurées.\n')
 ",
 sortie_attendue = "Un tableau `dataset_textuel_classes` associant `classe_hcpc`, `commentaire` et les variables structurées.",
 transition = "On prépare maintenant deux artefacts : un profil textuel et un profil structuré des classes.",
-question = "Quelle variable de classe organise les verbatims dans cette case ?",
+question = "Quelle variable construite sert à regrouper les commentaires libres ?",
 reponse = "classe_hcpc"
 ),
 
 preparer_artefacts_classes = make_case(
-  partie = "texte",
-  titre = "17. Artefacts NaileR",
+  partie = "entrainer",
+  titre = "16. Artefacts NaileR",
   objectif = "Préparer les artefacts textuels et structurés des classes avec NaileR.",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 17 : préparer les artefacts textuels et structurés
+# Case 16 : préparer les artefacts textuels et structurés
 # ============================================================
 
 # Objectif de cette case :
@@ -3655,7 +4472,7 @@ preparer_artefacts_classes = make_case(
 
 if (!exists('dataset_textuel_classes')) {
   stop(
-    'L objet dataset_textuel_classes est absent. Exécute d abord la case 16.',
+    'L objet dataset_textuel_classes est absent. Exécute d abord la case 15.',
     call. = FALSE
   )
 }
@@ -3670,6 +4487,71 @@ if (!requireNamespace('NaileR', quietly = TRUE)) {
   cat('Les artefacts NaileR ne peuvent pas être produits sur cette machine.\\n')
 
 } else {
+
+# ----------------------------------------------------------
+# Fonction utilitaire : afficher proprement un objet NaileR
+# ----------------------------------------------------------
+
+extraire_texte_lisible <- function(objet) {
+
+  if (is.list(objet)) {
+
+    champs_possibles <- c(
+      'prompt',
+      'prompts',
+      'request',
+      'response',
+      'text',
+      'texts',
+      'interpretation',
+      'summary',
+      'profile'
+    )
+
+    champs_trouves <- intersect(champs_possibles, names(objet))
+
+    if (length(champs_trouves) > 0) {
+      texte <- objet[[champs_trouves[1]]]
+    } else {
+      texte <- capture.output(str(objet, max.level = 2))
+    }
+
+  } else {
+    texte <- objet
+  }
+
+  texte <- paste(as.character(texte), collapse = '\n')
+
+  # Convertir les retours à la ligne échappés en vrais retours à la ligne
+  texte <- gsub('\\\\n', '\n', texte)
+  texte <- gsub('\\\\t', '\t', texte)
+
+  texte
+}
+
+afficher_apercu_lisible <- function(texte, n_lignes = 70, largeur = 100) {
+
+  lignes <- unlist(strsplit(texte, '\n', fixed = TRUE))
+
+  lignes_wrappees <- unlist(
+    lapply(lignes, function(ligne) {
+      if (!nzchar(trimws(ligne))) {
+        return('')
+      }
+      strwrap(ligne, width = largeur)
+    })
+  )
+
+  lignes_affichees <- head(lignes_wrappees, n_lignes)
+
+  cat(paste(lignes_affichees, collapse = '\n'))
+
+  if (length(lignes_wrappees) > n_lignes) {
+    cat('\n\n[... aperçu tronqué ...]\n')
+    cat('Nombre total de lignes : ', length(lignes_wrappees), '\n', sep = '')
+  }
+}
+
 
   # ----------------------------------------------------------
   # 2. Identifier les colonnes pour le profil textuel
@@ -3715,17 +4597,17 @@ if (!requireNamespace('NaileR', quietly = TRUE)) {
     cat('\\nNoms disponibles :\\n')
     print(names(res_textual_prep_classes))
 
-    texte_premier_artefact <- paste(
-      capture.output(print(res_textual_prep_classes[[1]])),
-      collapse = '\\n'
-    )
+   texte_premier_artefact <- extraire_texte_lisible(
+  res_textual_prep_classes[[1]]
+)
 
-    cat('\\nAperçu du premier artefact textuel :\\n')
-    cat(substr(texte_premier_artefact, 1, 1800))
+cat('\nAperçu lisible du premier artefact textuel :\n\n')
 
-    if (nchar(texte_premier_artefact) > 1800) {
-      cat('\\n\\n[... artefact textuel tronqué ...]\\n')
-    }
+afficher_apercu_lisible(
+  texte = texte_premier_artefact,
+  n_lignes = 70,
+  largeur = 100
+)
   } else {
     cat('\\nMessage ou sortie :\\n')
     cat(as.character(res_textual_prep_classes), '\\n')
@@ -3771,17 +4653,17 @@ if (!requireNamespace('NaileR', quietly = TRUE)) {
     cat('\\nNoms disponibles :\\n')
     print(names(res_group_profile_classes))
 
-    texte_premier_profil <- paste(
-      capture.output(print(res_group_profile_classes[[1]])),
-      collapse = '\\n'
-    )
+    texte_premier_profil <- extraire_texte_lisible(
+  res_group_profile_classes[[1]]
+)
 
-    cat('\\nAperçu du premier artefact structuré :\\n')
-    cat(substr(texte_premier_profil, 1, 1800))
+cat('\nAperçu lisible du premier artefact structuré :\n\n')
 
-    if (nchar(texte_premier_profil) > 1800) {
-      cat('\\n\\n[... artefact structuré tronqué ...]\\n')
-    }
+afficher_apercu_lisible(
+  texte = texte_premier_profil,
+  n_lignes = 70,
+  largeur = 100
+)
   } else {
     cat('\\nMessage ou sortie :\\n')
     cat(as.character(res_group_profile_classes), '\\n')
@@ -3833,20 +4715,52 @@ cat('- res_group_profile_classes : ce que disent les variables structurées.\\n'
 cat('\\n')
 cat('La dernière case combine ces deux sources.\\n')
 ",
+code_display = "
+# Identifier la variable de classe et la variable textuelle
+num_var_classes <- which(names(dataset_textuel_classes) == 'classe_hcpc')
+num_text_classes <- which(names(dataset_textuel_classes) == 'commentaire')
+
+# Préparer l artefact textuel à partir des verbatims
+res_textual_prep_classes <- NaileR::nail_textual_prep(
+  dataset = dataset_textuel_classes,
+  num.var = num_var_classes,
+  num.text = num_text_classes,
+  model = 'llama3',
+  generate = FALSE
+)
+
+# Retirer la colonne textuelle pour préparer le profil structuré
+dataset_profil_classes <- dataset_textuel_classes[
+  ,
+  setdiff(names(dataset_textuel_classes), 'commentaire')
+]
+
+num_var_profil_classes <- which(
+  names(dataset_profil_classes) == 'classe_hcpc'
+)
+
+# Préparer l artefact structuré à partir des variables du questionnaire
+res_group_profile_classes <- NaileR::nail_group_profile_prep(
+  dataset = dataset_profil_classes,
+  num.var = num_var_profil_classes,
+  model = 'llama3',
+  generate = FALSE
+)
+",
 sortie_attendue = "Deux artefacts : `res_textual_prep_classes` et `res_group_profile_classes`.",
 transition = "On combine maintenant les artefacts textuels et structurés dans une synthèse contextualisée.",
-question = "Quelle fonction prépare les artefacts textuels par classe ?",
+question = "Quelle fonction de NaileR prépare les commentaires libres par classe ?",
 reponse = "nail_textual_prep"
 ),
 
 synthese_contextualisee_classes = make_case(
-  partie = "texte",
-  titre = "18. Synthèse contextualisée",
+  partie = "entrainer",
+  titre = "17. Synthèse contextualisée",
   objectif = "Combiner artefact textuel et artefact structuré pour interpréter les classes.",
   has_plot = FALSE,
   code = "
 # ============================================================
-# Case 18 : synthèse contextualisée des classes
+# Case 17 : synthèse contextualisée des classes
 # ============================================================
 
 # Objectif de cette case :
@@ -3857,50 +4771,250 @@ synthese_contextualisee_classes = make_case(
 # L idée centrale est un workflow centré sur les artefacts :
 # on ne demande pas au LLM d interpréter directement des textes bruts.
 # On lui donne des objets intermédiaires préparés et inspectables.
+#
+# Dans cette version du tutoriel, la génération LLM n est pas faite
+# en direct. Si un résultat pré-calculé est disponible dans le package,
+# il est chargé pour illustrer le résultat final.
+
 
 # ------------------------------------------------------------
-# 1. Vérifier les prérequis
+# 2. Fonctions utilitaires d affichage lisible
 # ------------------------------------------------------------
 
-if (!exists('res_textual_prep_classes')) {
-  stop(
-    'L objet res_textual_prep_classes est absent. Exécute d abord la case 17.',
-    call. = FALSE
+trouver_champ_texte <- function(objet, champs, profondeur = 0) {
+
+  if (profondeur > 3) {
+    return(NULL)
+  }
+
+  if (is.list(objet)) {
+
+    noms <- names(objet)
+
+    if (!is.null(noms)) {
+      champ_direct <- intersect(champs, noms)
+
+      if (length(champ_direct) > 0) {
+        return(objet[[champ_direct[1]]])
+      }
+    }
+
+    for (element in objet) {
+      resultat <- trouver_champ_texte(
+        element,
+        champs = champs,
+        profondeur = profondeur + 1
+      )
+
+      if (!is.null(resultat)) {
+        return(resultat)
+      }
+    }
+  }
+
+  NULL
+}
+
+extraire_champ_texte <- function(objet, champs) {
+
+  champ <- trouver_champ_texte(
+    objet = objet,
+    champs = champs
+  )
+
+  if (is.null(champ)) {
+    texte <- paste(
+      capture.output(str(objet, max.level = 2)),
+      collapse = '\\n'
+    )
+  } else {
+    texte <- paste(
+      as.character(champ),
+      collapse = '\\n'
+    )
+  }
+
+  # Conversion des retours à la ligne échappés en vrais retours à la ligne
+  texte <- gsub(
+    paste0(intToUtf8(92), 'n'),
+    '\\n',
+    texte,
+    fixed = TRUE
+  )
+
+  texte <- gsub(
+    paste0(intToUtf8(92), 't'),
+    '\\t',
+    texte,
+    fixed = TRUE
+  )
+
+  texte
+}
+
+afficher_texte_lisible <- function(texte, n_lignes = 90, largeur = 100) {
+
+  lignes <- unlist(
+    strsplit(
+      texte,
+      '\\n',
+      fixed = TRUE
+    )
+  )
+
+  lignes_wrappees <- unlist(
+    lapply(
+      lignes,
+      function(ligne) {
+        if (!nzchar(trimws(ligne))) {
+          return('')
+        }
+
+        strwrap(
+          ligne,
+          width = largeur
+        )
+      }
+    )
+  )
+
+  lignes_affichees <- head(
+    lignes_wrappees,
+    n_lignes
+  )
+
+  cat(
+    paste(
+      lignes_affichees,
+      collapse = '\\n'
+    )
+  )
+
+  if (length(lignes_wrappees) > n_lignes) {
+    cat('\\n\\n[... sortie tronquée ...]\\n')
+    cat(
+      'Nombre total de lignes : ',
+      length(lignes_wrappees),
+      '\\n',
+      sep = ''
+    )
+  }
+}
+
+
+# ------------------------------------------------------------
+# 3. Chercher une génération pré-calculée
+# ------------------------------------------------------------
+
+precomputed_error <- NULL
+
+precomputed_case17 <- tryCatch(
+  load_precomputed_asset('case17_nailer_contextualized.rds'),
+  error = function(e) {
+    precomputed_error <<- conditionMessage(e)
+    NULL
+  }
+)
+
+generation_precalculee <- !is.null(precomputed_case17)
+
+if (generation_precalculee) {
+
+  res_textual_prep_classes <- precomputed_case17$res_textual_prep_classes
+  res_group_profile_classes <- precomputed_case17$res_group_profile_classes
+  res_contextualized_classes <- precomputed_case17$res_contextualized_classes
+
+  cat('\\n============================================================\\n')
+  cat('1. Génération pré-calculée chargée\\n')
+  cat('============================================================\\n')
+  cat('La génération LLM n est pas réalisée en direct.\\n')
+  cat('Un résultat pré-calculé est chargé depuis le package.\\n\\n')
+
+  if (!is.null(precomputed_case17$metadata)) {
+    cat('Métadonnées :\\n')
+    print(precomputed_case17$metadata)
+  }
+
+} else {
+
+  cat('\\n============================================================\\n')
+  cat('1. Aucun résultat pré-calculé trouvé\\n')
+  cat('============================================================\\n')
+  cat('On prépare uniquement la structure avec generate = FALSE.\\n')
+
+  if (!is.null(precomputed_error)) {
+  cat('\nDiagnostic de recherche du fichier pré-calculé :\n')
+  cat(precomputed_error)
+  cat('\n')
+}
+
+  # ----------------------------------------------------------
+  # Vérifier les prérequis seulement si aucun pré-calcul
+  # n est disponible.
+  # ----------------------------------------------------------
+
+  if (!exists('res_textual_prep_classes')) {
+    stop(
+      'L objet res_textual_prep_classes est absent. Exécute d abord la case 16.',
+      call. = FALSE
+    )
+  }
+
+  if (!exists('res_group_profile_classes')) {
+    stop(
+      'L objet res_group_profile_classes est absent. Exécute d abord la case 16.',
+      call. = FALSE
+    )
+  }
+
+  if (!requireNamespace('NaileR', quietly = TRUE)) {
+    stop(
+      'NaileR est nécessaire si aucun résultat pré-calculé n est disponible.',
+      call. = FALSE
+    )
+  }
+
+  if (!is.list(res_textual_prep_classes) ||
+      !is.list(res_group_profile_classes)) {
+    stop(
+      'Les artefacts attendus ne sont pas disponibles sous forme de listes. ',
+      'Vérifie que la case 16 a bien été exécutée avec NaileR installé.',
+      call. = FALSE
+    )
+  }
+
+  res_contextualized_classes <- tryCatch(
+    NaileR::nail_textual_contextualized(
+      group_profile_prep = res_group_profile_classes,
+      textual_prep = res_textual_prep_classes,
+      interpretation_mode = 'comparative',
+      model = 'llama3',
+      generate = FALSE
+    ),
+    error = function(e) {
+      paste(
+        'nail_textual_contextualized() non exécuté :',
+        conditionMessage(e)
+      )
+    }
   )
 }
 
-if (!exists('res_group_profile_classes')) {
-  stop(
-    'L objet res_group_profile_classes est absent. Exécute d abord la case 17.',
-    call. = FALSE
-  )
-}
 
-if (!requireNamespace('NaileR', quietly = TRUE)) {
-  stop(
-    'NaileR est nécessaire pour exécuter cette case.',
-    call. = FALSE
-  )
-}
-
-if (!is.list(res_textual_prep_classes) ||
-    !is.list(res_group_profile_classes)) {
-  stop(
-    'Les artefacts attendus ne sont pas disponibles sous forme de listes. ',
-    'Vérifie que la case 17 a bien été exécutée avec NaileR installé.',
-    call. = FALSE
-  )
-}
+# ------------------------------------------------------------
+# 4. Artefacts disponibles
+# ------------------------------------------------------------
 
 cat('\\n============================================================\\n')
-cat('1. Artefacts disponibles\\n')
+cat('2. Artefacts disponibles\\n')
 cat('============================================================\\n')
 cat('Artefact textuel : res_textual_prep_classes\\n')
 cat('Artefact structuré : res_group_profile_classes\\n')
+cat('Synthèse contextualisée : res_contextualized_classes\\n')
 
 
 # ------------------------------------------------------------
-# 2. Présenter le principe de contextualisation
+# 5. Présenter le principe de contextualisation
 # ------------------------------------------------------------
 
 flow_contextualisation_classes <- data.frame(
@@ -3923,65 +5037,93 @@ flow_contextualisation_classes <- data.frame(
 )
 
 cat('\\n============================================================\\n')
-cat('2. Principe de contextualisation\\n')
+cat('3. Principe de contextualisation\\n')
 cat('============================================================\\n')
 cat('Objet créé : flow_contextualisation_classes\\n')
 print(flow_contextualisation_classes, row.names = FALSE)
 
 
 # ------------------------------------------------------------
-# 3. Appeler nail_textual_contextualized()
-# ------------------------------------------------------------
-
-cat('\\n============================================================\\n')
-cat('3. Appel de NaileR::nail_textual_contextualized()\\n')
-cat('============================================================\\n')
-cat('Mode : comparative\\n')
-cat('generate = FALSE : on inspecte le prompt ou la sortie préparée.\\n')
-
-res_contextualized_classes <- tryCatch(
-  NaileR::nail_textual_contextualized(
-    group_profile_prep = res_group_profile_classes,
-    textual_prep = res_textual_prep_classes,
-    interpretation_mode = 'comparative',
-    model = 'llama3',
-    generate = FALSE
-  ),
-  error = function(e) {
-    paste('nail_textual_contextualized() non exécuté :', conditionMessage(e))
-  }
-)
-
-
-# ------------------------------------------------------------
-# 4. Inspecter la sortie
+# 6. Inspecter la sortie contextualisée
 # ------------------------------------------------------------
 
 cat('\\n============================================================\\n')
 cat('4. Sortie contextualisée\\n')
 cat('============================================================\\n')
 cat('Objet créé : res_contextualized_classes\\n')
-cat('Classe : ', paste(class(res_contextualized_classes), collapse = ', '), '\\n', sep = '')
-
-texte_contextualized_classes <- paste(
-  capture.output(print(res_contextualized_classes)),
-  collapse = '\\n'
+cat(
+  'Classe : ',
+  paste(class(res_contextualized_classes), collapse = ', '),
+  '\\n',
+  sep = ''
 )
 
-cat('\\nAperçu :\\n\\n')
-cat(substr(texte_contextualized_classes, 1, 2800))
-
-if (nchar(texte_contextualized_classes) > 2800) {
-  cat('\\n\\n[... sortie contextualisée tronquée dans l affichage ...]\\n')
-  cat('Longueur totale : ', nchar(texte_contextualized_classes), ' caractères\\n', sep = '')
+cat('\\nMode de production : ')
+if (generation_precalculee) {
+  cat('résultat pré-calculé chargé depuis le package\\n')
+} else {
+  cat('préparation locale avec generate = FALSE\\n')
 }
 
 
 # ------------------------------------------------------------
-# 5. Résumé pédagogique final
+# 7. Afficher le prompt ou l objet préparé
 # ------------------------------------------------------------
 
 cat('\\n============================================================\\n')
+cat('5. Prompt ou objet préparé\\n')
+cat('============================================================\\n')
+
+texte_prompt_contextualized <- extraire_champ_texte(
+  res_contextualized_classes,
+  champs = c(
+    'prompt',
+    'prompts',
+    'request',
+    'instruction',
+    'instructions'
+  )
+)
+
+afficher_texte_lisible(
+  texte = texte_prompt_contextualized,
+  n_lignes = 90,
+  largeur = 100
+)
+
+
+# ------------------------------------------------------------
+# 8. Afficher la réponse pré-calculée si elle existe
+# ------------------------------------------------------------
+
+cat('\\n\\n============================================================\\n')
+cat('6. Réponse ou interprétation générée\\n')
+cat('============================================================\\n')
+
+texte_reponse_contextualized <- extraire_champ_texte(
+  res_contextualized_classes,
+  champs = c(
+    'response',
+    'answer',
+    'result',
+    'interpretation',
+    'summary',
+    'text'
+  )
+)
+
+afficher_texte_lisible(
+  texte = texte_reponse_contextualized,
+  n_lignes = 120,
+  largeur = 100
+)
+
+
+# ------------------------------------------------------------
+# 9. Résumé pédagogique final
+# ------------------------------------------------------------
+
+cat('\\n\\n============================================================\\n')
 cat('Résumé pédagogique\\n')
 cat('============================================================\\n')
 cat('Nous avons construit une variable de classe latente : classe_hcpc.\\n')
@@ -3991,13 +5133,16 @@ cat('- un artefact textuel issu des commentaires ;\\n')
 cat('- un artefact structuré issu des variables du questionnaire.\\n')
 cat('\\n')
 cat('La synthèse contextualisée combine ces deux sources.\\n')
+cat('Dans le tutoriel, la génération peut être pré-calculée afin d éviter\\n')
+cat('un appel LLM en direct pendant la séance.\\n')
+cat('\\n')
 cat('C est le principe central du workflow : stabiliser l interprétation\\n')
 cat('par des objets intermédiaires visibles et inspectables.\\n')
 ",
 sortie_attendue = "Un objet `res_contextualized_classes` combinant profils textuels et profils structurés des classes.",
 transition = "Le tutoriel se termine sur l'idée d'un workflow artefact-centré : les interprétations reposent sur des objets intermédiaires inspectables.",
-question = "Quel objet combine les artefacts textuels et structurés des classes ?",
-reponse = "res_contextualized_classes"
+question = "Quelle fonction de NaileR combine les artefacts textuels et structurés ?",
+reponse = "nail_textual_contextualized"
 )
 )
 
@@ -4033,20 +5178,20 @@ plateau_positions <- data.frame(
   id = c(
     'donnees', 'exploration', 'linearmodel', 'aovsum', 'recuperer_sorties', 'prompt_manuel',
     'prompt_manuel_n2', 'entrainer_intro', 'entrainer_presentation',
-    'entrainer_options', 'boucle_y_x', 'condes', 'catdes', 'manip_condes_catdes', 'nailer_catdes_exemple',
+    'boucle_y_x', 'condes', 'catdes', 'manip_condes_catdes', 'nailer_catdes_exemple',
     'nailer_presentation', 'acp_hcpc_classes', 'decrire_classes', 'preparer_textes_classes',
     'preparer_artefacts_classes', 'synthese_contextualisee_classes'
   ),
   x = c(
     0, 260, 520, 780, 1040, 1300, 1560,
     1560, 1300,
-    1560, 1040, 780, 520, 260, 0,
+    1040, 780, 520, 260, 0,
     0, 260, 520, 780, 1040, 1300
   ),
   y = c(
     0, 0, 0, 0, 0, 0, 0,
     210, 210,
-    420, 210, 210, 210, 210, 210,
+    210, 210, 210, 210, 210,
     420, 420, 420, 420, 420, 420
   ),
   stringsAsFactors = FALSE
@@ -4275,7 +5420,7 @@ plateau_object_names <- function() {
     "options_entrainer", "arguments_entrainer",
 
     # Boucles
-    "variables_x", "modeles_univariés", "textes_modeles_univariés",
+    "variables_x", "modeles_univaries", "textes_modeles_univaries",
 
     # condes / catdes / NaileR
     "res_condes", "res_catdes", "texte_condes", "texte_catdes",
@@ -4287,7 +5432,22 @@ plateau_object_names <- function() {
     "res_hcpc", "res_catdes_classes",
 
     # Texte
-    "verbatims_par_classe", "texte_verbatims", "texte_catdes_classes", "prompt_final"
+    "verbatims_par_classe", "texte_verbatims", "texte_catdes_classes", "prompt_final",
+    "variables_typologie",
+    "donnees_typologie",
+    "questionnaire_desc_classes",
+    "num_var_classe",
+    "res_nail_catdes_classes",
+    "dataset_textuel_classes",
+    "dataset_profil_classes",
+    "num_var_classes",
+    "num_text_classes",
+    "num_var_profil_classes",
+    "res_textual_prep_classes",
+    "res_group_profile_classes",
+    "res_contextualized_classes",
+    "comparaison_artefacts_classes",
+    "flow_contextualisation_classes"
   )
 }
 
@@ -4407,7 +5567,11 @@ ui <- fluidPage(
   fluidRow(
     column(width = 6,
       div(class = "serious-card case-card",
-        h3("Code débloqué"),
+        h3("Code essentiel"),
+        div(
+          class = "small-note",
+          "Ce bloc affiche le code à comprendre. La sortie console peut être produite par une version enrichie avec des messages pédagogiques."
+        ),
         verbatimTextOutput("code_affiche")
       )
     ),
@@ -4487,7 +5651,9 @@ server <- function(input, output, session) {
       visited = etat$visited,
       output_text = etat$output_text,
       last_has_plot = etat$last_has_plot,
-      run_id = etat$run_id
+      run_id = etat$run_id,
+      current_pdf = etat$current_pdf,
+      current_pdf_case = etat$current_pdf_case
     )
   }
 
@@ -4554,6 +5720,8 @@ server <- function(input, output, session) {
     etat$output_text <- state$output_text %||% ""
     etat$last_has_plot <- isTRUE(state$last_has_plot)
     etat$run_id <- state$run_id %||% 0
+    etat$current_pdf <- state$current_pdf %||% NULL
+    etat$current_pdf_case <- state$current_pdf_case %||% NULL
 
     if (isTRUE(etat$last_has_plot) && file.exists(plateau_plot_file())) {
       etat$plot_file <- plateau_plot_file()
@@ -4615,13 +5783,13 @@ server <- function(input, output, session) {
     paste0(node_icon(id), cases[[id]]$titre)
   }
 
-  node_title <- function(id) {
-    paste0(
-      cases[[id]]$objectif,
-      "<br><br><b>Partie :</b> ", partie_label[[cases[[id]]$partie]],
-      "<br><b>Statut :</b> ", node_status(id)
-    )
-  }
+  # node_title <- function(id) {
+  #   paste0(
+  #     cases[[id]]$objectif,
+  #     "<br><br><b>Partie :</b> ", partie_label[[cases[[id]]$partie]],
+  #     "<br><b>Statut :</b> ", node_status(id)
+  #   )
+  # }
 
   # Le groupe visNetwork porte la couleur.
   # Il doit donc toujours correspondre à la partie pédagogique.
@@ -4635,7 +5803,6 @@ server <- function(input, output, session) {
     nodes <- data.frame(
       id = ids,
       label = vapply(ids, node_label, character(1)),
-      title = vapply(ids, node_title, character(1)),
       partie = vapply(cases, function(x) x$partie, character(1)),
       group = vapply(ids, node_group, character(1)),
       shape = "box",
@@ -4665,28 +5832,10 @@ server <- function(input, output, session) {
       character(1)
     )
 
-    initial_title <- vapply(
-      ids,
-      function(id) {
-        initial_status <- if (identical(id, "donnees")) {
-          "déverrouillée"
-        } else {
-          "verrouillée"
-        }
-
-        paste0(
-          cases[[id]]$objectif,
-          "<br><br><b>Partie :</b> ", partie_label[[cases[[id]]$partie]],
-          "<br><b>Statut :</b> ", initial_status
-        )
-      },
-      character(1)
-    )
 
     nodes <- data.frame(
       id = ids,
       label = initial_label,
-      title = initial_title,
       partie = vapply(cases, function(x) x$partie, character(1)),
       group = vapply(ids, function(id) cases[[id]]$partie, character(1)),
       shape = "box",
@@ -4797,7 +5946,7 @@ server <- function(input, output, session) {
         zoomView = FALSE,
         navigationButtons = FALSE,
         keyboard = FALSE,
-        hover = TRUE
+        hover = FALSE
       ) |>
       visOptions(highlightNearest = FALSE) |>
       visEvents(
@@ -5088,7 +6237,7 @@ server <- function(input, output, session) {
       return("Code verrouillé.")
     }
 
-    cases[[id]]$code
+    get_case_display_code(cases[[id]])
   })
 
   observeEvent(input$ouvrir_code, {
@@ -5100,7 +6249,7 @@ server <- function(input, output, session) {
       return()
     }
 
-    code <- cases[[id]]$code
+    code <- get_case_display_code(cases[[id]])
 
     if (requireNamespace("rstudioapi", quietly = TRUE) &&
         rstudioapi::isAvailable()) {

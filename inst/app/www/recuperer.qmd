@@ -1,32 +1,25 @@
 ---
-title: "Récupérer et réutiliser les sorties d’analyse statistique en R"
+title: "Récupérer et réutiliser les sorties d’analyse statistique en R" 
 subtitle: "De la console aux objets exploitables"
-author: "SeRiouS"
-lang: fr
 format:
-  beamer:
-    aspectratio: 169
-    theme: Madrid
-    colortheme: seahorse
-    fontsize: 10pt
-execute:
-  echo: true
-  eval: false
+  pdf:
+    toc: false
+    number-sections: false
+    geometry:
+      - margin=2.2cm
+fontsize: 11pt
+editor: visual
 ---
 
 ## Enjeu
 
-Dans un workflow statistique classique, les résultats sont souvent lus directement dans la console.
-
-Cette lecture est utile, mais elle reste fragile : la sortie affichée n’est pas encore un matériau facilement réutilisable.
-
-L’objectif de cette fiche est de montrer comment transformer une sortie d’analyse en objets R nommés, inspectables et réutilisables.
+Dans un workflow statistique classique, les résultats sont généralement lus directement dans la console. Cette lecture est essentielle, mais elle reste limitée : la sortie affichée n’est pas encore un matériau facilement réutilisable. L’objectif de cette fiche est de montrer comment transformer une sortie d’analyse en objets R nommés, inspectables et réutilisables.
 
 $$
 \text{sortie console} \longrightarrow \text{objet R} \longrightarrow \text{texte contrôlé} \longrightarrow \text{prompt ou interprétation}
 $$
 
-## Le changement de posture
+## Un changement de posture
 
 Lire une sortie statistique dans la console répond à une première question :
 
@@ -42,14 +35,14 @@ Ce changement est central pour construire des analyses reproductibles et des pro
 
 Le workflow illustré ici part de deux objets déjà produits par des fonctions de **FactoMineR** :
 
-```r
-res_lm_fm
+``` r
+res_lm
 res_aovsum
 ```
 
 Ces objets contiennent les résultats de deux analyses :
 
-```r
+``` r
 FactoMineR::LinearModel()
 FactoMineR::AovSum()
 ```
@@ -62,8 +55,8 @@ Avant d’extraire une information, il faut savoir ce que contient l’objet.
 
 On utilise pour cela :
 
-```r
-names(res_lm_fm)
+``` r
+names(res_lm)
 names(res_aovsum)
 ```
 
@@ -81,32 +74,32 @@ On peut récupérer une composante avec l’opérateur `$`.
 
 Exemple :
 
-```r
-lm_ftest <- res_lm_fm$Ftest
+``` r
+lm_ftest <- res_lm$Ftest
 ```
 
 Cette instruction signifie :
 
-> Je prends la composante `Ftest` de `res_lm_fm` et je la stocke dans un nouvel objet appelé `lm_ftest`.
+> Je prends la composante `Ftest` de `res_lm` et je la stocke dans un nouvel objet appelé `lm_ftest`.
 
 ## Sorties extraites de `LinearModel()`
 
-À partir de l’objet `res_lm_fm`, on extrait trois éléments :
+À partir de l’objet `res_lm`, on extrait trois éléments :
 
-```r
-lm_ftest <- res_lm_fm$Ftest
-lm_ttest <- res_lm_fm$Ttest
-lm_resume <- res_lm_fm$lmResult
+``` r
+lm_ftest <- res_lm$Ftest
+lm_ttest <- res_lm$Ttest
+lm_resume <- res_lm$lmResult
 ```
 
 Ces objets correspondent à différents niveaux de lecture du modèle linéaire.
 
 ## Rôle des objets extraits
 
-| Objet | Rôle |
-|---|---|
-| `lm_ftest` | Tester les effets globaux du modèle |
-| `lm_ttest` | Examiner les coefficients du modèle |
+| Objet       | Rôle                                   |
+|-------------|----------------------------------------|
+| `lm_ftest`  | Tester les effets globaux du modèle    |
+| `lm_ttest`  | Examiner les coefficients du modèle    |
 | `lm_resume` | Conserver le résumé du modèle linéaire |
 
 L’intérêt est de ne plus dépendre uniquement de l’affichage console.
@@ -117,7 +110,7 @@ Chaque résultat devient un objet nommé.
 
 À partir de l’objet `res_aovsum`, on extrait :
 
-```r
+``` r
 aov_ftest <- res_aovsum$Ftest
 aov_ttest <- res_aovsum$Ttest
 ```
@@ -126,23 +119,23 @@ Ces deux sorties permettent de distinguer deux niveaux d’interprétation.
 
 ## Deux niveaux d’interprétation en ANOVA
 
-| Objet | Question statistique |
-|---|---|
-| `aov_ftest` | Quels effets globaux sont significatifs ? |
+| Objet       | Question statistique                                        |
+|------------------------------------|------------------------------------|
+| `aov_ftest` | Quels effets globaux sont significatifs ?                   |
 | `aov_ttest` | Quels coefficients ou contrastes contribuent à ces effets ? |
 
 Cette distinction évite de confondre :
 
-- un effet global ;
-- un coefficient particulier ;
-- une interaction ;
-- une modalité ou un contraste.
+-   un effet global ;
+-   un coefficient particulier ;
+-   une interaction ;
+-   une modalité ou un contraste.
 
 ## Rendre l’affichage plus lisible
 
 Une fois les objets extraits, on peut créer une petite fonction d’affichage.
 
-```r
+``` r
 afficher_sortie <- function(titre, commande, objet) {
   cat("\n============================================================\n")
   cat(titre, "\n")
@@ -160,9 +153,9 @@ Elle rend simplement la sortie plus explicite.
 
 La fonction `afficher_sortie()` ajoute trois informations autour de chaque objet :
 
-1. un titre explicite ;
-2. la commande qui a créé l’objet ;
-3. l’objet imprimé.
+1.  un titre explicite ;
+2.  la commande qui a créé l’objet ;
+3.  l’objet imprimé.
 
 Elle permet de relier clairement :
 
@@ -172,7 +165,7 @@ $$
 
 ## Exemple d’utilisation
 
-```r
+``` r
 afficher_sortie(
   titre = "AovSum : effets principaux et interaction — Ftest",
   commande = "aov_ftest <- res_aovsum$Ftest",
@@ -188,9 +181,9 @@ Elle rend la console plus pédagogique et plus facile à relire.
 
 Pour alimenter un prompt ou conserver une trace textuelle complète, on peut capturer l’affichage d’un objet.
 
-```r
+``` r
 texte_linearmodel <- paste(
-  capture.output(print(res_lm_fm)),
+  capture.output(print(res_lm)),
   collapse = "\n"
 )
 
@@ -210,7 +203,7 @@ Autrement dit, elle transforme une sortie affichée en texte.
 
 Exemple :
 
-```r
+``` r
 capture.output(print(res_aovsum))
 ```
 
@@ -222,7 +215,7 @@ Cette instruction capture la sortie complète de `res_aovsum` sans se contenter 
 
 La fonction :
 
-```r
+``` r
 paste(..., collapse = "\n")
 ```
 
@@ -233,7 +226,7 @@ Le résultat devient un texte structuré, prêt à être réutilisé.
 ## Les objets textuels produits
 
 | Objet | Contenu |
-|---|---|
+|------------------------------------|------------------------------------|
 | `texte_linearmodel` | Sortie complète de `LinearModel()` transformée en texte |
 | `texte_aovsum` | Sortie complète de `AovSum()` transformée en texte |
 
@@ -247,7 +240,7 @@ Après extraction et capture, on dispose de deux types d’objets.
 
 Des objets structurés :
 
-```r
+``` r
 lm_ftest
 lm_ttest
 lm_resume
@@ -257,7 +250,7 @@ aov_ttest
 
 Des objets textuels :
 
-```r
+``` r
 texte_linearmodel
 texte_aovsum
 ```
@@ -270,23 +263,23 @@ Cette organisation rend le workflow plus contrôlable.
 
 On peut :
 
-- choisir précisément les résultats transmis ;
-- vérifier les objets avant de les utiliser ;
-- éviter de copier-coller manuellement la console ;
-- construire des prompts reproductibles ;
-- garder une trace inspectable des étapes intermédiaires.
+-   choisir précisément les résultats transmis ;
+-   vérifier les objets avant de les utiliser ;
+-   éviter de copier-coller manuellement la console ;
+-   construire des prompts reproductibles ;
+-   garder une trace inspectable des étapes intermédiaires.
 
 ## Objets disponibles à la fin du workflow
 
-| Objet | Usage possible |
-|---|---|
-| `lm_ftest` | Interpréter les effets globaux du modèle linéaire |
-| `lm_ttest` | Interpréter les coefficients du modèle linéaire |
-| `lm_resume` | Conserver le résumé du modèle |
-| `aov_ftest` | Interpréter les effets principaux et interactions |
-| `aov_ttest` | Interpréter les coefficients et contrastes |
-| `texte_linearmodel` | Alimenter un prompt ou un rapport |
-| `texte_aovsum` | Alimenter un prompt ou un rapport |
+| Objet               | Usage possible                                    |
+|---------------------|---------------------------------------------------|
+| `lm_ftest`          | Interpréter les effets globaux du modèle linéaire |
+| `lm_ttest`          | Interpréter les coefficients du modèle linéaire   |
+| `lm_resume`         | Conserver le résumé du modèle                     |
+| `aov_ftest`         | Interpréter les effets principaux et interactions |
+| `aov_ttest`         | Interpréter les coefficients et contrastes        |
+| `texte_linearmodel` | Alimenter un prompt ou un rapport                 |
+| `texte_aovsum`      | Alimenter un prompt ou un rapport                 |
 
 ## Point clé
 
@@ -294,7 +287,7 @@ Une interprétation assistée par un modèle de langage ne devrait pas commencer
 
 Elle devrait commencer par des objets R bien construits.
 
-```text
+``` text
 objet statistique
 → sortie récupérée
 → texte capturé

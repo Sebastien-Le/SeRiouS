@@ -3,3 +3,5 @@
 ^LICENSE\.md$
 ^data-raw$
 ^inst/app/_plateau_sauvegarde$
+^^inst/app/www/\.*_files$
+^^inst/app/www/\.*\\.qmd$$

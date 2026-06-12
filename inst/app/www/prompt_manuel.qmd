@@ -1,63 +1,59 @@
 ---
-title: "prompt_manuel"
-format: pdf
+title: "Construire un prompt statistique contrôlé en R"
+subtitle: "De la sortie capturée au texte interprétable"
+lang: fr
+format:
+  pdf:
+    toc: false
+    number-sections: false
+    colorlinks: true
+    geometry:
+      - margin=2.2cm
+fontsize: 11pt
+execute:
+  echo: false
+  eval: false
 editor: visual
 ---
 
----
+## Enjeu
 
-title: "Case 6a — Faire un prompt (1)"
-subtitle: "Construire un prompt à partir de sorties statistiques"
-author: "SeRiouS"
-format:
-beamer:
-aspectratio: 169
-theme: Madrid
-colortheme: seahorse
-fontsize: 10pt
-execute:
-echo: true
-eval: false
------------
+Un modèle de langage peut aider à formuler une interprétation statistique, mais il ne doit pas recevoir une demande vague du type :
 
-## Objectif de la case
+``` text
+Interprète mon analyse.
+```
 
-Dans la case précédente, nous avons transformé des sorties statistiques en objets R :
+Pour obtenir une interprétation contrôlable, il faut d'abord préparer le matériau transmis au modèle. L'objectif de cette fiche est de montrer comment construire, dans R, un prompt structuré à partir de sorties statistiques déjà capturées.
 
-```r
+Le principe général est le suivant :
+
+$$
+\text{sortie statistique capturée} \longrightarrow \text{prompt structuré} \longrightarrow \text{interprétation contrôlée}
+$$
+
+## Pré-requis du workflow
+
+On suppose que deux analyses statistiques ont déjà été réalisées et que leurs sorties ont été transformées en texte.
+
+Deux objets sont disponibles dans l'environnement R :
+
+``` r
 texte_linearmodel
 texte_aovsum
 ```
 
-Dans cette case, nous allons utiliser ces objets pour construire un premier prompt manuellement.
+Ces objets contiennent respectivement la sortie complète d'une régression linéaire et celle d'une analyse de variance. Ils constituent le matériau statistique qui sera inséré dans le prompt.
 
-L’objectif est de passer de :
+## Pourquoi construire le prompt dans R ?
 
-[
-\text{sortie statistique capturée}
-\quad \longrightarrow \quad
-\text{prompt organisé}
-]
+Construire le prompt dans R permet de rendre la démarche reproductible.
 
-## Idée centrale
+Le prompt n'est plus seulement une phrase écrite manuellement : il devient un objet R que l'on peut inspecter, modifier, sauvegarder ou transmettre à une autre fonction.
 
-Un prompt utile pour l’interprétation statistique ne doit pas être une question vague.
+Cette logique permet de conserver une chaîne explicite :
 
-Il doit contenir :
-
-* un contexte ;
-* les variables analysées ;
-* la sortie statistique à interpréter ;
-* des consignes explicites ;
-* des limites d’interprétation.
-
-Le modèle de langage reçoit ainsi un matériau contrôlé.
-
-## Pourquoi construire un prompt dans R ?
-
-Construire le prompt dans R permet de conserver une chaîne reproductible :
-
-```text
+``` text
 analyse statistique
 → sortie capturée
 → texte organisé
@@ -65,31 +61,26 @@ analyse statistique
 → interprétation
 ```
 
-Le prompt devient un objet R comme un autre.
+Le modèle de langage intervient donc après une série d'étapes contrôlées.
 
-Il peut donc être inspecté, modifié, sauvegardé ou transmis à une fonction.
+## Deux fonctions utiles : `paste()` et `cat()`
 
-## Deux fonctions importantes : `paste()` et `cat()`
+Deux fonctions simples jouent un rôle central dans cette étape :
 
-La case introduit deux fonctions très simples mais essentielles :
+| Fonction  | Rôle                                                         |
+|-----------|--------------------------------------------------------------|
+| `paste()` | construire une chaîne de caractères                          |
+| `cat()`   | afficher proprement une chaîne de caractères dans la console |
 
-```r
-paste()
-cat()
-```
-
-Elles n’ont pas le même rôle.
-
-| Fonction  | Rôle                                        |
-| --------- | ------------------------------------------- |
-| `paste()` | construit une chaîne de caractères          |
-| `cat()`   | affiche proprement un texte dans la console |
+La première sert à fabriquer le prompt. La seconde sert à le visualiser.
 
 ## Construire un texte avec `paste()`
 
-Exemple :
+Un prompt est un texte composé de plusieurs morceaux : un titre, un contexte, des résultats, puis des consignes.
 
-```r
+La fonction `paste()` permet d'assembler ces morceaux.
+
+``` r
 exemple_texte <- paste(
   "Première ligne",
   "Deuxième ligne",
@@ -98,33 +89,37 @@ exemple_texte <- paste(
 )
 ```
 
-Ici, `paste()` rassemble plusieurs morceaux de texte dans un seul objet.
+L'argument `sep = "\n"` indique que les éléments doivent être séparés par des retours à la ligne.
 
-L’argument :
+Le résultat est un objet texte structuré.
 
-```r
-sep = "\n"
-```
+## Afficher le texte avec `cat()`
 
-indique que les éléments doivent être séparés par des retours à la ligne.
+Une fois le texte construit, on peut l'afficher avec :
 
-## Afficher un texte avec `cat()`
-
-Une fois le texte construit, on peut l’afficher avec :
-
-```r
+``` r
 cat(exemple_texte)
 ```
 
-Contrairement à `print()`, la fonction `cat()` affiche le texte de manière plus naturelle, en respectant les retours à la ligne.
+La fonction `cat()` affiche le texte en respectant les retours à la ligne. Elle est donc adaptée pour relire un prompt dans la console.
 
-C’est pratique pour visualiser un prompt dans la console.
+Contrairement à `print()`, elle produit un affichage plus proche de ce que l'on enverrait réellement à un modèle de langage.
 
-## Premier prompt : régression linéaire
+## Construire un prompt pour une régression linéaire
 
-La case construit d’abord un prompt pour interpréter une sortie de régression linéaire :
+Le premier exemple construit un prompt destiné à interpréter une sortie de régression linéaire produite avec `FactoMineR::LinearModel()`.
 
-```r
+L'objet créé est :
+
+``` r
+prompt_linearmodel
+```
+
+Il concerne une analyse où la variable à expliquer est `intention_achat`, et où les variables explicatives sont `satisfaction` et `prix_percu`.
+
+## Code de construction du prompt
+
+``` r
 prompt_linearmodel <- paste(
   "# Interprétation d une régression linéaire",
   "",
@@ -144,67 +139,80 @@ prompt_linearmodel <- paste(
 )
 ```
 
-## Structure du prompt `LinearModel`
+Ce code assemble le contexte, les variables, la sortie statistique capturée et les consignes d'interprétation.
 
-Le prompt contient plusieurs blocs :
+## Structure du prompt pour `LinearModel()`
+
+Le prompt contient plusieurs blocs complémentaires.
 
 | Bloc               | Rôle                                            |
-| ------------------ | ----------------------------------------------- |
-| Titre              | annoncer la tâche                               |
-| Contexte           | situer les données                              |
+|--------------------|-------------------------------------------------|
+| Titre              | annoncer la tâche demandée                      |
+| Contexte           | situer les données analysées                    |
 | Variables          | préciser ce qui est expliqué et ce qui explique |
 | Sortie statistique | fournir le matériau à interpréter               |
 | Consignes          | encadrer la réponse attendue                    |
 
-Cette structure réduit le risque d’une interprétation hors-sol.
+Cette structure réduit le risque d'une interprétation hors-sol.
 
 ## Pourquoi préciser les variables ?
 
-Le modèle de langage ne doit pas deviner la situation.
+Le modèle de langage ne doit pas deviner la situation statistique.
 
 On lui indique explicitement :
 
-```r
+``` r
 "Variable à expliquer : intention_achat."
 "Variables explicatives : satisfaction et prix_percu."
 ```
 
-Cela permet de relier correctement les coefficients du modèle à la problématique.
+Cela permet de relier correctement les résultats du modèle à la problématique.
 
-## Pourquoi inclure la sortie capturée ?
+La consigne rappelle également une précaution importante : une régression sur données de questionnaire met souvent en évidence des associations, pas nécessairement des relations causales.
 
-Le prompt contient :
+## Pourquoi insérer `texte_linearmodel` ?
 
-```r
+La ligne suivante est centrale :
+
+``` r
 texte_linearmodel
 ```
 
-Cet objet contient la sortie complète de `FactoMineR::LinearModel()` transformée en texte.
+Elle insère dans le prompt la sortie statistique capturée précédemment.
 
-Le modèle ne reçoit donc pas seulement une consigne générale.
+Le modèle de langage ne reçoit donc pas seulement une demande générale. Il reçoit une sortie statistique produite par R, accompagnée de consignes précises.
 
-Il reçoit la sortie statistique produite dans R.
+Le prompt est ainsi construit à partir d'un matériau vérifiable.
 
-## Les consignes de prudence
+## Afficher un aperçu du prompt
 
-Le prompt demande explicitement :
+Le prompt complet peut être long, car il contient une sortie statistique complète.
 
-```text
-- interpréter uniquement les résultats fournis ;
-- distinguer effet global et coefficients ;
-- ne pas confondre association et causalité ;
-- produire une interprétation pédagogique courte.
+On peut donc afficher seulement son début :
+
+``` r
+cat(substr(prompt_linearmodel, 1, 1500))
 ```
 
-Ces consignes sont importantes.
+Si le prompt dépasse 1500 caractères, on peut indiquer qu'il a été tronqué dans l'affichage.
 
-Elles empêchent le modèle de produire une interprétation trop générale ou causaliste.
+L'objet complet reste disponible dans R.
 
-## Deuxième prompt : ANOVA avec interaction
+## Construire un prompt pour une ANOVA
 
-La case construit ensuite un second prompt :
+Le deuxième exemple construit un prompt destiné à interpréter une sortie d'analyse de variance produite avec `FactoMineR::AovSum()`.
 
-```r
+L'objet créé est :
+
+``` r
+prompt_aovsum
+```
+
+Il concerne une analyse où la variable à expliquer est `satisfaction`, et où les facteurs sont `type_produit` et `budget_contraint`.
+
+## Code de construction du prompt
+
+``` r
 prompt_aovsum <- paste(
   "# Interprétation d une ANOVA avec interaction",
   "",
@@ -222,147 +230,106 @@ prompt_aovsum <- paste(
 )
 ```
 
-Ce prompt porte sur une analyse de variance.
+Le principe est le même que pour la régression linéaire : on assemble un contexte, une sortie statistique et des consignes.
 
-## Structure du prompt `AovSum`
+## Structure du prompt pour `AovSum()`
 
-Le prompt précise :
+Le prompt précise les éléments nécessaires à une lecture prudente de l'ANOVA.
 
 | Élément            | Contenu                                     |
-| ------------------ | ------------------------------------------- |
+|--------------------|---------------------------------------------|
 | Variable expliquée | `satisfaction`                              |
 | Facteurs           | `type_produit`, `budget_contraint`          |
 | Sortie statistique | `texte_aovsum`                              |
 | Consignes          | effets significatifs, interaction, prudence |
 
-Le modèle est guidé vers une lecture statistique contrôlée.
+Le modèle est orienté vers une interprétation limitée aux résultats fournis.
 
-## Pourquoi parler d’interaction avec prudence ?
+## Pourquoi parler prudemment d'interaction ?
 
-Dans une ANOVA, une interaction indique que l’effet d’un facteur peut dépendre du niveau d’un autre facteur.
+Dans une ANOVA, une interaction signifie que l'effet d'un facteur peut dépendre du niveau d'un autre facteur.
 
-Mais une interaction significative ne suffit pas à décrire toutes les comparaisons possibles.
+Mais une interaction significative ne suffit pas à décrire toutes les comparaisons possibles entre modalités.
 
-C’est pourquoi le prompt précise :
+C'est pourquoi le prompt précise :
 
-```text
+``` text
 ne pas inventer de comparaisons post-hoc
 ```
 
-Le modèle doit rester au niveau des résultats fournis.
+Cette consigne évite que l'interprétation dépasse les résultats disponibles.
 
-## Afficher seulement un aperçu
+## Afficher un aperçu du second prompt
 
-La case affiche seulement le début du prompt :
+Comme pour le premier prompt, on peut afficher seulement le début du texte :
 
-```r
-cat(substr(prompt_linearmodel, 1, 1500))
-```
-
-ou :
-
-```r
+``` r
 cat(substr(prompt_aovsum, 1, 1500))
 ```
 
-Cela évite d’inonder la console avec un texte trop long.
+Le but n'est pas de lire l'intégralité du prompt dans la console, mais de vérifier qu'il est correctement structuré.
 
-Le prompt complet existe bien dans l’objet R.
+L'objet complet reste disponible sous le nom :
 
-## Pourquoi tronquer l’affichage ?
+``` r
+prompt_aovsum
+```
 
-Le prompt peut être long parce qu’il contient une sortie statistique complète.
+## Objets créés
 
-La console sert ici à vérifier que le prompt est correctement construit.
+À la fin du workflow, deux objets importants sont disponibles :
 
-Il n’est pas nécessaire d’afficher tout le contenu pour comprendre la logique.
-
-## Objets créés dans la case
-
-À la fin de la case, deux objets importants sont disponibles :
-
-```r
+``` r
 prompt_linearmodel
 prompt_aovsum
 ```
 
 Ces objets sont des chaînes de caractères.
 
-Ils peuvent être transmis à un modèle de langage ou repris par une fonction d’automatisation.
+Ils peuvent être transmis à un modèle de langage, sauvegardés, comparés ou repris par une fonction d'automatisation.
 
 ## Ce que contient `prompt_linearmodel`
 
-```r
-prompt_linearmodel
-```
+L'objet `prompt_linearmodel` contient :
 
-contient :
+-   le contexte du questionnaire ;
+-   la variable `intention_achat` ;
+-   les variables explicatives `satisfaction` et `prix_percu` ;
+-   la sortie capturée de `LinearModel()` ;
+-   des consignes d'interprétation prudente.
 
-* le contexte du questionnaire ;
-* la variable `intention_achat` ;
-* les variables explicatives `satisfaction` et `prix_percu` ;
-* la sortie complète de `LinearModel()` ;
-* des consignes d’interprétation.
-
-C’est un prompt construit à partir d’une analyse statistique réelle.
+Il s'agit d'un prompt construit à partir d'une analyse statistique réelle.
 
 ## Ce que contient `prompt_aovsum`
 
-```r
-prompt_aovsum
-```
+L'objet `prompt_aovsum` contient :
 
-contient :
+-   la variable `satisfaction` ;
+-   les facteurs `type_produit` et `budget_contraint` ;
+-   la sortie capturée de `AovSum()` ;
+-   des consignes sur les effets, l'interaction et les limites d'interprétation.
 
-* la variable `satisfaction` ;
-* les facteurs `type_produit` et `budget_contraint` ;
-* la sortie complète de `AovSum()` ;
-* des consignes sur les effets et l’interaction.
+Il s'agit d'un prompt adapté à une ANOVA avec interaction.
 
-C’est un prompt adapté à une ANOVA.
+## Ce que permet cette organisation
 
-## Ce que la case apprend
+Construire les prompts comme des objets R permet de mieux contrôler le workflow.
 
-Cette case montre que le prompt peut être construit comme un objet structuré.
+On peut :
 
-On ne tape pas simplement :
+-   vérifier les sorties statistiques avant de les transmettre ;
+-   expliciter les consignes données au modèle ;
+-   éviter les copier-coller non reproductibles ;
+-   conserver une trace des prompts utilisés ;
+-   automatiser ensuite la construction de prompts similaires.
 
-```text
-Interprète mon analyse.
-```
+## Point clé
 
-On construit un texte qui organise :
+Un prompt robuste ne vient pas seulement d'une bonne formulation.
 
-```text
-contexte
-+ variables
-+ résultats statistiques
-+ consignes
-+ limites
-```
+Il vient surtout d'un matériau bien préparé.
 
-## Lien avec la suite du plateau
-
-À partir de cette case, deux chemins deviennent possibles :
-
-1. automatiser cette construction avec EnTraineR ;
-2. améliorer le prompt pour éviter de coder en dur les noms de variables.
-
-Dans les deux cas, le principe reste le même :
-
-[
-\text{sortie statistique}
-\quad \longrightarrow \quad
-\text{prompt contrôlé}
-]
-
-## Message clé
-
-Un prompt robuste ne vient pas seulement d’une bonne formulation.
-
-Il vient surtout d’un matériau bien préparé.
-
-```text
+``` text
 sorties R
 → texte capturé
 → prompt structuré
@@ -373,40 +340,17 @@ La qualité du prompt dépend donc de la qualité des objets construits en amont
 
 ## À retenir
 
-Dans cette case :
+La logique présentée ici repose sur une idée simple :
 
-```r
-paste()
-```
+> Un prompt statistique devient plus fiable lorsqu'il est construit à partir d'objets R explicites et de sorties contrôlées.
 
-sert à construire le prompt.
+Dans ce workflow :
 
-```r
-cat()
-```
+| Objet                | Rôle                                            |
+|----------------------|-------------------------------------------------|
+| `texte_linearmodel`  | matériau statistique capturé pour la régression |
+| `texte_aovsum`       | matériau statistique capturé pour l'ANOVA       |
+| `prompt_linearmodel` | prompt structuré pour la régression             |
+| `prompt_aovsum`      | prompt structuré pour l'ANOVA                   |
 
-sert à l’afficher.
-
-```r
-texte_linearmodel
-```
-
-et
-
-```r
-texte_aovsum
-```
-
-sont les matériaux statistiques injectés dans le prompt.
-
-```r
-prompt_linearmodel
-```
-
-et
-
-```r
-prompt_aovsum
-```
-
-sont les objets disponibles pour la suite.
+Cette organisation prépare la suite : automatiser la construction des prompts ou les transmettre à un modèle de langage dans un cadre plus contrôlé.

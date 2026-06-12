@@ -1,0 +1,468 @@
+---
+title: "prompt_manuel_6a"
+format: html
+editor: visual
+---
+
+------------------------------------------------------------------------
+
+title: "Case 6a — Faire un prompt (1)" subtitle: "Construire un prompt manuellement à partir de sorties statistiques" author: "SeRiouS" format: beamer: aspectratio: 169 theme: Madrid colortheme: seahorse fontsize: 10pt execute: echo: true eval: false -----------
+
+## Objectif de la case
+
+Dans la case précédente, nous avons récupéré des sorties statistiques dans des objets R.
+
+Dans cette case, l’objectif est de construire un premier prompt manuellement à partir de ces sorties.
+
+On passe donc de :
+
+\[ \text{sorties statistiques capturées} \quad \longrightarrow \quad \text{texte organisé pour un LLM}\]
+
+## Ce que cette case suppose
+
+Cette case suppose que la case 5 a été exécutée.
+
+Elle utilise notamment deux objets créés précédemment :
+
+``` r
+texte_linearmodel
+texte_aovsum
+```
+
+Ces deux objets contiennent des sorties statistiques transformées en texte.
+
+Ils constituent le matériau brut du prompt.
+
+## Pourquoi construire un prompt dans R ?
+
+L’objectif n’est pas seulement d’écrire une question à un modèle de langage.
+
+L’objectif est de construire un objet R reproductible :
+
+``` text
+résultat statistique
+→ sortie capturée
+→ prompt structuré
+→ interprétation contrôlée
+```
+
+Le prompt devient alors inspectable, modifiable et réutilisable.
+
+## Un prompt n’est pas une question vague
+
+On ne veut pas simplement écrire :
+
+``` text
+Interprète mon analyse.
+```
+
+On veut construire un texte organisé contenant :
+
+-   un contexte ;
+-   les variables analysées ;
+-   les sorties statistiques ;
+-   des consignes ;
+-   des limites d’interprétation.
+
+## Deux fonctions importantes
+
+Cette case introduit deux fonctions simples mais essentielles :
+
+``` r
+paste()
+cat()
+```
+
+Elles jouent deux rôles différents.
+
+| Fonction  | Rôle                                           |
+|-----------|------------------------------------------------|
+| `paste()` | construire une chaîne de caractères            |
+| `cat()`   | afficher proprement cette chaîne de caractères |
+
+## Construire une chaîne avec `paste()`
+
+Le code commence par un exemple simple :
+
+``` r
+exemple_texte <- paste(
+  "Première ligne",
+  "Deuxième ligne",
+  "Troisième ligne",
+  sep = "\n"
+)
+```
+
+Ici, `paste()` rassemble plusieurs éléments de texte dans un seul objet.
+
+L’argument `sep = "\n"` ajoute un retour à la ligne entre les éléments.
+
+## Le rôle de `sep = "\n"`
+
+Le caractère `\n` signifie : retour à la ligne.
+
+Avec :
+
+``` r
+sep = "\n"
+```
+
+on obtient un texte structuré sur plusieurs lignes.
+
+Cela est très utile pour fabriquer un prompt lisible.
+
+## Afficher le texte avec `cat()`
+
+Une fois l’objet texte créé, on peut l’afficher avec :
+
+``` r
+cat(exemple_texte)
+```
+
+La fonction `cat()` affiche le texte en respectant les retours à la ligne.
+
+Elle est donc bien adaptée pour visualiser un prompt dans la console.
+
+## Premier prompt : `LinearModel()`
+
+Le premier prompt concerne une régression linéaire produite avec :
+
+``` r
+FactoMineR::LinearModel()
+```
+
+L’objet créé est :
+
+``` r
+prompt_linearmodel
+```
+
+Ce prompt vise à interpréter la variable :
+
+``` r
+intention_achat
+```
+
+à partir de :
+
+``` r
+satisfaction
+prix_percu
+```
+
+## Structure du prompt `LinearModel`
+
+Le prompt contient plusieurs parties :
+
+| Partie du prompt       | Rôle                      |
+|------------------------|---------------------------|
+| Titre                  | annoncer la tâche         |
+| Contexte               | situer l’analyse          |
+| Variable à expliquer   | préciser la réponse       |
+| Variables explicatives | préciser les prédicteurs  |
+| Sortie statistique     | fournir le matériau       |
+| Consignes              | encadrer l’interprétation |
+
+## Code de construction du prompt
+
+``` r
+prompt_linearmodel <- paste(
+  "# Interprétation d une régression linéaire",
+  "",
+  "Contexte : questionnaire consommateur sur un produit alimentaire.",
+  "Variable à expliquer : intention_achat.",
+  "Variables explicatives : satisfaction et prix_percu.",
+  "",
+  "Sortie FactoMineR::LinearModel :",
+  texte_linearmodel,
+  "",
+  "Consignes :",
+  "- interpréter uniquement les résultats fournis ;",
+  "- distinguer effet global et coefficients ;",
+  "- ne pas confondre association et causalité ;",
+  "- produire une interprétation pédagogique courte.",
+  sep = "\n"
+)
+```
+
+## Pourquoi intégrer `texte_linearmodel` ?
+
+La ligne importante est :
+
+``` r
+texte_linearmodel
+```
+
+Elle insère dans le prompt la sortie statistique capturée à la case précédente.
+
+Le modèle de langage ne reçoit donc pas une demande abstraite.
+
+Il reçoit une sortie statistique réelle, produite par R.
+
+## Les consignes du prompt
+
+Le prompt précise :
+
+``` text
+- interpréter uniquement les résultats fournis ;
+- distinguer effet global et coefficients ;
+- ne pas confondre association et causalité ;
+- produire une interprétation pédagogique courte.
+```
+
+Ces consignes sont essentielles.
+
+Elles limitent les risques de surinterprétation.
+
+## Point de vigilance : association et causalité
+
+Une régression linéaire sur des données de questionnaire permet souvent d’étudier des associations.
+
+Mais elle ne prouve pas automatiquement une relation causale.
+
+C’est pourquoi le prompt demande explicitement :
+
+``` text
+ne pas confondre association et causalité
+```
+
+## Afficher un aperçu du prompt
+
+Le code affiche seulement le début du prompt :
+
+``` r
+cat(substr(prompt_linearmodel, 1, 1500))
+```
+
+Cela permet de vérifier que le prompt est bien construit sans saturer la console.
+
+Le prompt complet reste disponible dans l’objet :
+
+``` r
+prompt_linearmodel
+```
+
+## Deuxième prompt : `AovSum()`
+
+Le deuxième prompt concerne une ANOVA avec interaction produite avec :
+
+``` r
+FactoMineR::AovSum()
+```
+
+L’objet créé est :
+
+``` r
+prompt_aovsum
+```
+
+Ce prompt vise à interpréter la variable :
+
+``` r
+satisfaction
+```
+
+en fonction de deux facteurs :
+
+``` r
+type_produit
+budget_contraint
+```
+
+## Structure du prompt `AovSum`
+
+Le prompt contient :
+
+| Partie du prompt     | Rôle                                        |
+|----------------------|---------------------------------------------|
+| Variable à expliquer | `satisfaction`                              |
+| Facteurs             | `type_produit`, `budget_contraint`          |
+| Sortie statistique   | `texte_aovsum`                              |
+| Consignes            | effets significatifs, interaction, prudence |
+
+Il est adapté à une lecture d’ANOVA.
+
+## Code de construction du prompt
+
+``` r
+prompt_aovsum <- paste(
+  "# Interprétation d une ANOVA avec interaction",
+  "",
+  "Variable à expliquer : satisfaction.",
+  "Facteurs : type_produit et budget_contraint.",
+  "",
+  "Sortie FactoMineR::AovSum :",
+  texte_aovsum,
+  "",
+  "Consignes :",
+  "- identifier les effets significatifs ;",
+  "- commenter prudemment l interaction ;",
+  "- ne pas inventer de comparaisons post-hoc.",
+  sep = "\n"
+)
+```
+
+## Pourquoi intégrer `texte_aovsum` ?
+
+L’objet :
+
+``` r
+texte_aovsum
+```
+
+contient la sortie complète de l’ANOVA capturée à la case précédente.
+
+Il sert de base à l’interprétation.
+
+Le prompt ne demande donc pas au modèle d’imaginer les résultats : il lui fournit les résultats à commenter.
+
+## Pourquoi parler prudemment de l’interaction ?
+
+Une interaction signifie que l’effet d’un facteur peut dépendre du niveau d’un autre facteur.
+
+Mais la présence d’une interaction ne suffit pas à justifier toutes les comparaisons possibles.
+
+C’est pourquoi le prompt demande :
+
+``` text
+ne pas inventer de comparaisons post-hoc
+```
+
+## Afficher un aperçu du second prompt
+
+Comme pour le premier prompt, on affiche seulement le début :
+
+``` r
+cat(substr(prompt_aovsum, 1, 1500))
+```
+
+Si le prompt est plus long, le code affiche aussi sa longueur totale.
+
+L’objet complet reste disponible dans R.
+
+## Les objets créés dans cette case
+
+À la fin de la case, deux objets importants sont disponibles :
+
+``` r
+prompt_linearmodel
+prompt_aovsum
+```
+
+Ce sont des chaînes de caractères.
+
+Elles peuvent être envoyées à un modèle de langage ou reprises par une fonction d’automatisation.
+
+## Ce que contient `prompt_linearmodel`
+
+L’objet :
+
+``` r
+prompt_linearmodel
+```
+
+contient :
+
+-   le contexte du questionnaire ;
+-   la variable `intention_achat` ;
+-   les variables `satisfaction` et `prix_percu` ;
+-   la sortie de `LinearModel()` ;
+-   des consignes d’interprétation.
+
+## Ce que contient `prompt_aovsum`
+
+L’objet :
+
+``` r
+prompt_aovsum
+```
+
+contient :
+
+-   la variable `satisfaction` ;
+-   les facteurs `type_produit` et `budget_contraint` ;
+-   la sortie de `AovSum()` ;
+-   des consignes sur les effets et l’interaction.
+
+## Résumé de la case
+
+Cette case crée deux prompts :
+
+``` r
+prompt_linearmodel
+prompt_aovsum
+```
+
+Ils sont construits avec :
+
+``` r
+paste()
+```
+
+et affichés avec :
+
+``` r
+cat()
+```
+
+Le prompt devient un objet R, et non une simple question écrite à la main.
+
+## Ce qu’il faut retenir
+
+Le point important n’est pas seulement la formulation du prompt.
+
+Le point important est la chaîne de construction :
+
+``` text
+sortie statistique
+→ sortie capturée
+→ texte organisé
+→ prompt
+→ interprétation contrôlée
+```
+
+## Transition vers la suite
+
+Deux chemins deviennent possibles.
+
+Premier chemin :
+
+``` text
+utiliser EnTraineR pour automatiser cette construction
+```
+
+Deuxième chemin :
+
+``` text
+rendre le prompt plus générique sans coder en dur les noms de variables
+```
+
+Dans les deux cas, on garde la même idée :
+
+\[ \text{le prompt doit être construit à partir d’objets contrôlés}\]
+
+## Message clé
+
+Un bon prompt statistique ne commence pas par une phrase bien tournée.
+
+Il commence par une sortie statistique bien récupérée.
+
+``` text
+objets R
+→ sorties capturées
+→ prompt structuré
+→ interprétation inspectable
+```
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
