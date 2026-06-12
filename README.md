@@ -1,5 +1,7 @@
 # SeRiouS
 
+# SeRiouS <img src="man/figures/logo.png" align="right" height="139" />
+
 🎲 Bienvenue dans SeRiouS !
 SeRiouS n'est pas un package R classique : c'est un tutoriel interactif conçu comme un plateau de jeu.
 
