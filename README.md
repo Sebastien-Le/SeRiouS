@@ -1,18 +1,21 @@
 # SeRiouS
 
-**SeRiouS** est un package R pédagogique qui propose un tutoriel interactif sous forme de plateau de jeu Shiny.
+🎲 Bienvenue dans SeRiouS !
+SeRiouS n'est pas un package R classique : c'est un tutoriel interactif conçu comme un plateau de jeu.
 
-Le tutoriel accompagne progressivement les apprenants depuis des analyses statistiques explicites jusqu’à l’interprétation de structures plus latentes et textuelles. Il met en scène un workflow allant de **FactoMineR** à **EnTraineR** et **NaileR**, autour d’un même jeu de données de questionnaire alimentaire.
+Le but ? Vous apprendre à lier l'analyse de données avec l'intelligence artificielle, sans jamais 
+perdre le contrôle sur vos résultats. Nous allons utiliser un écosystème d'outils (FactoMineR, EnTraineR et NaileR) 
+pour analyser un jeu de données autour de l'alimentation.
 
 ## Objectif pédagogique
 
-L’objectif de **SeRiouS** est d’aider les apprenants à comprendre comment passer :
+L’objectif de **SeRiouS** est de vous aider à comprendre comment passer :
 
 1. d’une analyse statistique classique ;
 2. à la récupération structurée des sorties R ;
 3. à la construction de prompts contrôlés ;
 4. à l’utilisation de fonctions d’aide à l’interprétation ;
-5. puis à l’interprétation de classes latentes et de verbatims.
+5. puis à l’interprétation de variables latentes.
 
 Le fil conducteur du tutoriel est le suivant :
 
@@ -30,9 +33,9 @@ Statistiques explicites
 
 ## Contenu du tutoriel
 
-Le plateau interactif guide l’apprenant à travers plusieurs étapes :
+Le plateau interactif va vous guider à travers plusieurs étapes :
 
-* découverte d’un questionnaire alimentaire simulé ;
+* découverte du questionnaire ;
 * exploration de variables quantitatives, qualitatives et textuelles ;
 * régression linéaire avec `FactoMineR::LinearModel()` ;
 * analyse de variance avec `FactoMineR::AovSum()` ;
@@ -42,9 +45,9 @@ Le plateau interactif guide l’apprenant à travers plusieurs étapes :
 * passage d’analyses simples à des analyses systématiques ;
 * utilisation de `condes()` et `catdes()` dans **FactoMineR** ;
 * introduction à **NaileR** ;
-* construction d’une typologie par ACP et HCPC ;
+* construction d’une typologie par ACP et CAH ;
 * description statistique des classes ;
-* préparation de verbatims par classe ;
+* préparation des données textuelles par classe ;
 * synthèse contextualisée à partir d’artefacts textuels et structurés.
 
 ## Jeu de données inclus
@@ -60,8 +63,7 @@ Ce jeu de données contient un questionnaire alimentaire fictif avec :
 * des variables quantitatives d’évaluation du produit ;
 * des variables décrivant le rapport à l’alimentation ;
 * des variables qualitatives de contexte ;
-* une variable textuelle de commentaire libre ;
-* des variables actives permettant de construire une typologie par ACP et classification.
+* une variable textuelle de commentaire libre.
 
 Le jeu de données est utilisé comme fil rouge dans tout le tutoriel.
 
@@ -153,7 +155,8 @@ Le système de progression permet de découvrir le code progressivement, au lieu
 
 ## Philosophie pédagogique
 
-**SeRiouS** repose sur une idée centrale : les modèles de langage peuvent aider à interpréter des résultats statistiques, mais ils ne doivent pas être utilisés comme des générateurs isolés de réponses.
+**SeRiouS** repose sur une idée centrale : les modèles de langage peuvent aider à interpréter des résultats statistiques, 
+mais ils ne doivent pas être utilisés comme de simples générateurs de réponses.
 
 Le tutoriel insiste donc sur les objets intermédiaires :
 
@@ -166,38 +169,34 @@ résultats statistiques
 → interprétation contextualisée
 ```
 
-Ces objets rendent le workflow plus visible, plus inspectable et plus contrôlable.
+Ces objets rendent le workflow plus visible et plus contrôlable.
 
-## Développement
+Plutôt que de jeter vos données brutes à l'IA, le plateau va vous forcer à créer des objets intermédiaires 
+(des résumés statistiques, des textes préparés, des artefacts). C'est vous qui faites l'analyse, 
+c'est vous qui structurez les résultats, et l'IA n'intervient qu'à la toute fin pour vous aider 
+à contextualiser. Vous restez les pilotes !
 
-Pendant le développement de l’application, il est souvent plus simple de lancer directement :
+## Comment lancer la partie ?
+
+1. Installation (à faire une seule fois) :
+Ouvrez RStudio et tapez ces lignes dans votre console :
 
 ```r
-shiny::runApp("inst/app")
+install.packages("remotes")
+remotes::install_github("Sebastien-Le/SeRiouS")
 ```
 
-Pour tester le package comme un utilisateur final :
+2. Démarrer le jeu :
+À chaque début de séance, il vous suffira de charger le package et de lancer le plateau interactif :
 
 ```r
-devtools::load_all()
-run_plateau()
-```
-
-ou après installation locale :
-
-```r
-devtools::install()
 library(SeRiouS)
 run_plateau()
 ```
 
-Avant diffusion :
+Une fenêtre s'ouvrira dans votre navigateur. Chaque case du plateau vous donnera un objectif, un petit défi pour débloquer la suite, et le code R dont vous avez besoin pour avancer.
 
-```r
-devtools::document()
-devtools::check()
-pkgbuild::build()
-```
+Bonne partie !
 
 ## Auteur
 
@@ -207,3 +206,4 @@ Institut Agro Rennes-Angers
 ## Licence
 
 Ce package est distribué sous licence MIT.
+

@@ -2443,6 +2443,113 @@ cat('- texte_aovsum\n')
 cat('- prompt_linearmodel_utilise\n')
 cat('- prompt_aovsum_utilise\n')
 ",
+code_display = "
+# Vérifier si le package EnTraineR est disponible
+entrainer_pkg <- if (requireNamespace('EnTraineR', quietly = TRUE)) {
+  'EnTraineR'
+} else {
+  NA_character_
+}
+
+entrainer_disponible <- !is.na(entrainer_pkg)
+
+# Repérer les fonctions trainer_* disponibles
+if (entrainer_disponible) {
+
+  fonctions_entrainer <- grep(
+    '^trainer_',
+    getNamespaceExports(entrainer_pkg),
+    value = TRUE
+  )
+
+} else {
+
+  fonctions_entrainer <- c(
+    'trainer_linear_model',
+    'trainer_LinearModel',
+    'trainer_aovsum',
+    'trainer_AovSum',
+    'trainer_cor',
+    'trainer_chisq_test',
+    'trainer_var',
+    'trainer_MCA'
+  )
+}
+
+# Choisir les prompts disponibles
+# Si les prompts génériques de niveau 2 existent, on les utilise.
+# Sinon, on garde les prompts manuels de niveau 1.
+prompt_linearmodel_utilise <- if (exists('prompt_linearmodel_n2')) {
+  prompt_linearmodel_n2
+} else {
+  prompt_linearmodel
+}
+
+prompt_aovsum_utilise <- if (exists('prompt_aovsum_n2')) {
+  prompt_aovsum_n2
+} else {
+  prompt_aovsum
+}
+
+source_prompts <- if (exists('prompt_linearmodel_n2')) {
+  'prompts génériques de niveau 2'
+} else {
+  'prompts manuels de niveau 1'
+}
+
+# Construire un objet de transition vers EnTraineR
+objet_transition_entrainer <- list(
+  analyse = 'LinearModel et AovSum',
+  source_prompts = source_prompts,
+  sorties_completes = list(
+    linearmodel = texte_linearmodel,
+    aovsum = texte_aovsum
+  ),
+  prompts_complets = list(
+    linearmodel = prompt_linearmodel_utilise,
+    aovsum = prompt_aovsum_utilise
+  )
+)
+
+# Résumer les objets disponibles
+resume_entrainer <- data.frame(
+  element = c(
+    'Package EnTraineR installé ?',
+    'Nom technique du package utilisé',
+    'Source des prompts utilisés',
+    'Fonctions trainer_* repérées',
+    'Sortie LinearModel capturée',
+    'Sortie AovSum capturée',
+    'Prompt LinearModel utilisé',
+    'Prompt AovSum utilisé'
+  ),
+  valeur = c(
+    as.character(entrainer_disponible),
+    ifelse(is.na(entrainer_pkg), 'non installé', entrainer_pkg),
+    source_prompts,
+    as.character(length(fonctions_entrainer)),
+    paste0(nchar(texte_linearmodel), ' caractères'),
+    paste0(nchar(texte_aovsum), ' caractères'),
+    paste0(nchar(prompt_linearmodel_utilise), ' caractères'),
+    paste0(nchar(prompt_aovsum_utilise), ' caractères')
+  )
+)
+
+fonctions_entrainer_df <- data.frame(
+  fonction = fonctions_entrainer
+)
+
+# Examiner les objets créés
+fonctions_entrainer_df
+resume_entrainer
+
+# Examiner les prompts utilisés
+substr(prompt_linearmodel_utilise, 1, 1000)
+substr(prompt_aovsum_utilise, 1, 1000)
+
+# Objet complet conservé pour la suite
+objet_transition_entrainer
+",
     sortie_attendue = "Une liste des fonctions EnTraineR disponibles si le package est installé, sinon une structure pédagogique de transition.",
     transition = "On examine maintenant les options communes : générer ou non, moteur LLM, modèle, style.",
     question = "Dans notre logique, EnTraineR automatise le passage de la sortie statistique vers quoi ?",
