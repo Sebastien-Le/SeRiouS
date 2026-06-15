@@ -205,7 +205,8 @@ ensure_pdf_asset <- function(pdf_file) {
     dest <- file.path(pdf_asset_dir, basename(pdf_file))
     file.copy(pdf_file, dest, overwrite = TRUE)
 
-    return(file.path("serious_pdf", basename(pdf_file)))
+    pdf_url <- paste0("serious_pdf/", basename(pdf_file))
+    return(pdf_url)
   }
 
   warning(
@@ -227,6 +228,20 @@ try(
   shiny::addResourcePath("plateau_pdf", plateau_pdf_asset_dir),
   silent = TRUE
 )
+
+app_www_dir <- system.file("app", "www", package = "SeRiouS")
+
+if (nzchar(app_www_dir) && dir.exists(app_www_dir)) {
+  try(
+    shiny::addResourcePath("serious_www", app_www_dir),
+    silent = TRUE
+  )
+} else if (dir.exists("www")) {
+  try(
+    shiny::addResourcePath("serious_www", normalizePath("www")),
+    silent = TRUE
+  )
+}
 
 create_fallback_entrainer_pdf <- function(path) {
   grDevices::pdf(path, width = 11, height = 6.2, onefile = TRUE)
@@ -306,8 +321,8 @@ materialise_pdf_for_shiny <- function(filename) {
 cases <- list(
   donnees = make_case(
     partie = "stat",
-    titre = "1. Questionnaire",
-    objectif = "Présenter le questionnaire alimentaire utilisé dans tout le tutoriel : variables quantitatives, qualitatives et textuelles.",
+    titre = "Le Grand Départ",
+    objectif = "Découvrir le terrain de jeu : les variables quantitatives, qualitatives et textuelle du questionnaire.",
     has_plot = FALSE,
     pdf = "questionnaire_SeRiouS_description.pdf",
     code = "
@@ -395,15 +410,15 @@ if ('commentaire' %in% names(questionnaire)) {
   questionnaire$commentaire <- as.character(questionnaire$commentaire)
 }
 
-cat('\\n============================================================\\n')
-cat('2. Types de variables vérifiés\\n')
-cat('============================================================\\n')
-cat('Variables qualitatives converties en factor :\\n')
-print(variables_qualitatives)
-
-if ('commentaire' %in% names(questionnaire)) {
-  cat('\\nVariable textuelle : commentaire\\n')
-}
+# cat('\\n============================================================\\n')
+# cat('2. Types de variables vérifiés\\n')
+# cat('============================================================\\n')
+# cat('Variables qualitatives converties en factor :\\n')
+# print(variables_qualitatives)
+#
+# if ('commentaire' %in% names(questionnaire)) {
+#   cat('\\nVariable textuelle : commentaire\\n')
+# }
 
 
 # ------------------------------------------------------------
@@ -495,7 +510,7 @@ dictionnaire_variables <- data.frame(
     'variable illustrative',
     'variable illustrative',
     'variable illustrative',
-    'variable qualitative explicite pour catdes / nail_catdes',
+    'variable qualitative pour catdes / nail_catdes',
     'variable textuelle pour le flow NaileR'
   ),
   stringsAsFactors = FALSE
@@ -506,11 +521,11 @@ dictionnaire_variables <- dictionnaire_variables[
   dictionnaire_variables$variable %in% names(questionnaire),
 ]
 
-cat('\\n============================================================\\n')
-cat('3. Dictionnaire simplifié des variables\\n')
-cat('============================================================\\n')
-cat('Objet créé : dictionnaire_variables\\n')
-print(dictionnaire_variables, row.names = FALSE)
+# cat('\\n============================================================\\n')
+# cat('3. Dictionnaire simplifié des variables\\n')
+# cat('============================================================\\n')
+# cat('Objet créé : dictionnaire_variables\\n')
+# print(dictionnaire_variables, row.names = FALSE)
 
 
 # ------------------------------------------------------------
@@ -524,7 +539,7 @@ structure_variables <- data.frame(
 )
 
 cat('\\n============================================================\\n')
-cat('4. Structure R du questionnaire\\n')
+cat('2. Structure R du questionnaire\\n')
 cat('============================================================\\n')
 cat('Objet créé : structure_variables\\n')
 print(structure_variables, row.names = FALSE)
@@ -555,7 +570,7 @@ variables_cles <- data.frame(
     'modéliser une intention d achat',
     'tester des effets de facteurs et une interaction',
     'décrire une variable quantitative',
-    'décrire une variable qualitative explicite',
+    'décrire une variable qualitative',
     'construire une classe latente',
     'interpréter les classes à partir des verbatims'
   ),
@@ -563,7 +578,7 @@ variables_cles <- data.frame(
 )
 
 cat('\\n============================================================\\n')
-cat('5. Variables clés pour la suite du plateau\\n')
+cat('3. Variables clés pour la suite du plateau\\n')
 cat('============================================================\\n')
 cat('Objet créé : variables_cles\\n')
 print(variables_cles, row.names = FALSE)
@@ -591,11 +606,11 @@ variables_typologie_presentes <- intersect(
   names(questionnaire)
 )
 
-cat('\\n============================================================\\n')
-cat('6. Variables actives prévues pour la typologie\\n')
-cat('============================================================\\n')
-cat('Objet créé : variables_typologie\\n')
-print(variables_typologie_presentes)
+# cat('\\n============================================================\\n')
+# cat('6. Variables actives prévues pour la typologie\\n')
+# cat('============================================================\\n')
+# cat('Objet créé : variables_typologie\\n')
+# print(variables_typologie_presentes)
 
 if (length(variables_typologie_presentes) < length(variables_typologie)) {
   cat('\\nAttention : certaines variables de typologie sont absentes du questionnaire.\\n')
@@ -609,7 +624,7 @@ if (length(variables_typologie_presentes) < length(variables_typologie)) {
 # ------------------------------------------------------------
 
 cat('\\n============================================================\\n')
-cat('7. Aperçu des premières lignes\\n')
+cat('4. Aperçu des premières lignes\\n')
 cat('============================================================\\n')
 print(head(questionnaire, 3))
 
@@ -621,10 +636,9 @@ print(head(questionnaire, 3))
 if ('commentaire' %in% names(questionnaire)) {
 
   cat('\\n============================================================\\n')
-  cat('8. Aperçu des commentaires libres\\n')
+  cat('5. Aperçu des commentaires libres\\n')
   cat('============================================================\\n')
   cat('Nombre de verbatims : ', length(questionnaire$commentaire), '\\n', sep = '')
-  cat('Nombre de verbatims uniques : ', length(unique(questionnaire$commentaire)), '\\n', sep = '')
   cat('\\nExemples :\\n')
   cat(paste('-', head(unique(questionnaire$commentaire), 6), collapse = '\\n'))
   cat('\\n')
@@ -640,7 +654,7 @@ cat('Résumé pédagogique\\n')
 cat('============================================================\\n')
 cat('Le questionnaire est le fil rouge du tutoriel.\\n')
 cat('Il contient des variables explicites, un profil alimentaire calculé,\\n')
-cat('des variables actives pour construire une typologie,\\n')
+cat('des variables pour construire une typologie,\\n')
 cat('et une variable textuelle.\\n')
 cat('\\n')
 cat('La suite du plateau va montrer comment passer :\\n')
@@ -650,150 +664,9 @@ cat('- aux prompts ;\\n')
 cat('- puis à la compréhension des classes latentes.\\n')
 ",
 code_display = "
-# Récupérer le questionnaire utilisé dans tout le tutoriel
-if (!exists('questionnaire')) {
-
-  if (exists('questionnaire_alimentaire_typologie_textes')) {
-
-    questionnaire <- questionnaire_alimentaire_typologie_textes
-
-  } else if (requireNamespace('SeRiouS', quietly = TRUE)) {
-
-    questionnaire <- SeRiouS::questionnaire_alimentaire_typologie_textes
-
-  } else {
-
-    stop(
-      'Aucun objet questionnaire disponible. ',
-      'Le jeu de données questionnaire_alimentaire_typologie_textes doit être intégré au package SeRiouS.'
-    )
-  }
-}
-
 # Dimensions du questionnaire
 nrow(questionnaire)
 ncol(questionnaire)
-
-# Sécuriser les variables qualitatives
-variables_qualitatives <- c(
-  'type_produit',
-  'budget_contraint',
-  'sexe',
-  'age_classe',
-  'lieu_achat',
-  'profil_alim'
-)
-
-variables_qualitatives <- intersect(
-  variables_qualitatives,
-  names(questionnaire)
-)
-
-questionnaire[variables_qualitatives] <- lapply(
-  questionnaire[variables_qualitatives],
-  factor
-)
-
-# Sécuriser la variable textuelle
-if ('commentaire' %in% names(questionnaire)) {
-  questionnaire$commentaire <- as.character(questionnaire$commentaire)
-}
-
-# Construire un dictionnaire simplifié des variables
-dictionnaire_variables <- data.frame(
-  variable = c(
-    'id',
-    'satisfaction',
-    'intention_achat',
-    'prix_percu',
-    'plaisir',
-    'naturalite',
-    'confiance',
-    'ancrage_local',
-    'usage_numerique',
-    'sensibilite_env',
-    'attention_prix',
-    'contrainte_temps',
-    'cuisine_maison',
-    'lecture_labels',
-    'achat_local',
-    'ouverture_innovation',
-    'usage_appli_alim',
-    'preoccupation_sante',
-    'autonomie_alimentaire',
-    'confiance_labels',
-    'type_produit',
-    'budget_contraint',
-    'sexe',
-    'age_classe',
-    'lieu_achat',
-    'profil_alim',
-    'commentaire'
-  ),
-  famille = c(
-    'Identifiant',
-    'Évaluation du produit',
-    'Évaluation du produit',
-    'Évaluation du produit',
-    'Évaluation du produit',
-    'Évaluation du produit',
-    'Évaluation du produit',
-    'Évaluation du produit',
-    'Rapport à l information',
-    'Rapport à l environnement',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Variables actives de typologie',
-    'Contexte produit',
-    'Contexte répondant',
-    'Contexte répondant',
-    'Contexte répondant',
-    'Contexte d achat',
-    'Profil alimentaire explicite',
-    'Texte libre'
-  ),
-  role_dans_le_tutoriel = c(
-    'repérer les individus',
-    'variable réponse possible',
-    'variable réponse pour la régression',
-    'variable explicative et descriptive',
-    'variable explicative',
-    'variable explicative et descriptive',
-    'variable explicative',
-    'variable explicative et descriptive',
-    'variable descriptive',
-    'variable descriptive',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'variable active pour ACP / typologie',
-    'facteur pour ANOVA',
-    'facteur pour ANOVA',
-    'variable illustrative',
-    'variable illustrative',
-    'variable illustrative',
-    'variable qualitative explicite pour catdes / nail_catdes',
-    'variable textuelle pour le flow NaileR'
-  ),
-  stringsAsFactors = FALSE
-)
-
-dictionnaire_variables <- dictionnaire_variables[
-  dictionnaire_variables$variable %in% names(questionnaire),
-]
 
 # Décrire la structure R du questionnaire
 structure_variables <- data.frame(
@@ -824,37 +697,12 @@ variables_cles <- data.frame(
     'modéliser une intention d achat',
     'tester des effets de facteurs et une interaction',
     'décrire une variable quantitative',
-    'décrire une variable qualitative explicite',
+    'décrire une variable qualitative',
     'construire une classe latente',
     'interpréter les classes à partir des verbatims'
   ),
   stringsAsFactors = FALSE
 )
-
-# Définir les variables actives prévues pour la typologie
-variables_typologie <- c(
-  'attention_prix',
-  'contrainte_temps',
-  'cuisine_maison',
-  'lecture_labels',
-  'achat_local',
-  'ouverture_innovation',
-  'usage_appli_alim',
-  'preoccupation_sante',
-  'autonomie_alimentaire',
-  'confiance_labels'
-)
-
-variables_typologie_presentes <- intersect(
-  variables_typologie,
-  names(questionnaire)
-)
-
-# Vérifier rapidement les objets créés
-dictionnaire_variables
-structure_variables
-variables_cles
-variables_typologie_presentes
 
 # Aperçu du questionnaire et des commentaires libres
 head(questionnaire, 3)
@@ -863,16 +711,16 @@ if ('commentaire' %in% names(questionnaire)) {
   head(unique(questionnaire$commentaire), 6)
 }
 ",
-sortie_attendue = "Une présentation structurée du questionnaire et des variables utilisées dans le tutoriel.",
-transition = "On peut maintenant explorer le jeu de données avant de modéliser.",
+sortie_attendue = "Une vision structurée des données et la création de l'objet de base questionnaire",
+transition = "Les bases sont posées, il est temps de partir en reconnaissance pour explorer visuellement ces variables.",
 question = "Quel objet contient le questionnaire utilisé dans le tutoriel ?",
 reponse = "questionnaire"
   ),
 
 exploration = make_case(
   partie = "stat",
-  titre = "2. Explorer",
-  objectif = "Identifier les types de variables et les premières relations visuelles.",
+  titre = "L'Exploration",
+  objectif = "Inspecter la distribution des variables et repérer les premières relations visuellement.",
   has_plot = TRUE,
   code = "
 # ============================================================
@@ -885,6 +733,13 @@ exploration = make_case(
 # ------------------------------------------------------------
 # 1. Identifier les variables quantitatives
 # ------------------------------------------------------------
+
+if (!exists('questionnaire')) {
+  stop(
+    'L objet questionnaire est absent. Exécute d abord la case 1.',
+    call. = FALSE
+  )
+}
 
 variables_quanti_exploration <- setdiff(
   names(questionnaire)[vapply(questionnaire, is.numeric, logical(1))],
@@ -1151,8 +1006,8 @@ boxplot(
 
 par(op)
 ",
-sortie_attendue = "Des résumés lisibles des variables et deux graphiques descriptifs.",
-transition = "On commence par une régression explicite : une variable Y expliquée par quelques X.",
+sortie_attendue = "Des résumés statistiques clés (resume_quanti, resume_quali) et deux graphiques.",
+transition = "L'exploration visuelle terminée, nous pouvons entrer dans l'atelier pour modéliser ces relations.",
 question = "Combien de lignes contient le jeu de données `questionnaire` ?",
 validator = function(answer, envir) {
   if (!exists("questionnaire", envir = envir)) return(FALSE)
@@ -1162,8 +1017,8 @@ validator = function(answer, envir) {
 
 linearmodel = make_case(
   partie = "stat",
-  titre = "3. Régression linéaire",
-  objectif = "Ajuster une régression linéaire avec FactoMineR::LinearModel().",
+  titre = "L'Atelier Linéaire",
+  objectif = "Ajuster une première régression linéaire avec FactoMineR::LinearModel() pour modéliser une intention d'achat.",
   has_plot = TRUE,
   code = "
 # ============================================================
@@ -1173,6 +1028,13 @@ linearmodel = make_case(
 # Objectif de cette case :
 # expliquer une variable quantitative Y par deux variables explicatives.
 # Ici : intention_achat est expliquée par satisfaction et prix_percu.
+
+if (!exists('questionnaire')) {
+  stop(
+    'L objet questionnaire est absent. Exécute d abord la case 1.',
+    call. = FALSE
+  )
+}
 
 if (!requireNamespace('FactoMineR', quietly = TRUE)) {
   stop('Installe FactoMineR : install.packages(\"FactoMineR\")')
@@ -1305,16 +1167,16 @@ abline(
   lwd = 2
 )
 ",
-sortie_attendue = "Un objet `formule_lm` et un objet `res_lm_fm` contenant notamment F-tests, T-tests et résumé du modèle.",
-transition = "On passe ensuite à une ANOVA explicite avec interaction.",
+sortie_attendue = "Des objets R, `formule_lm` et `res_lm_fm`, contenant notamment F-tests, T-tests et résumé du modèle.",
+transition = "Après la droite de régression, intéressons-nous au croisement de facteurs avec l'analyse de variance.",
 question = "Quelle fonction de FactoMineR est utilisée pour la régression linéaire ?",
 reponse = "LinearModel"
 ),
 
 aovsum = make_case(
   partie = "stat",
-  titre = "4. Analyse de variance",
-  objectif = "Ajuster une ANOVA avec interaction avec FactoMineR::AovSum().",
+  titre = "Le Carrefour de la Variance",
+  objectif = "Tester l'effet de variables catégorielles et de leurs interactions sur la satisfaction à l'aide de la fonction FactoMineR::AovSum().",
   has_plot = TRUE,
   code = "
 # ============================================================
@@ -1324,6 +1186,13 @@ aovsum = make_case(
 # Objectif de cette case :
 # expliquer une variable quantitative par des facteurs qualitatifs
 # et examiner une interaction entre facteurs.
+
+if (!exists('questionnaire')) {
+  stop(
+    'L objet questionnaire est absent. Exécute d abord la case 1.',
+    call. = FALSE
+  )
+}
 
 if (!requireNamespace('FactoMineR', quietly = TRUE)) {
   stop('Installe FactoMineR : install.packages(\"FactoMineR\")')
@@ -1445,16 +1314,16 @@ interaction.plot(
   main = 'Interaction produit x budget'
 )
 ",
-sortie_attendue = "Un objet `formule_aov` et un objet `res_aovsum` avec les F-tests et T-tests de l'ANOVA.",
-transition = "Les sorties affichées deviennent maintenant des objets à récupérer.",
+sortie_attendue = "Deux objets R, `formule_aov` et `res_aovsum`, avec les F-tests et T-tests de l'ANOVA.",
+transition = "Lire les résultats dans la console ne suffit plus : il faut maintenant capturer ces sorties pour les exploiter.",
 question = "Quelle fonction de FactoMineR est utilisée pour l'analyse de la variance ?",
 reponse = "AovSum"
 ),
 
 recuperer_sorties = make_case(
   partie = "r_sorties",
-  titre = "5. Récupérer une sortie",
-  objectif = "Ne plus seulement lire la console : récupérer les sorties dans des objets R.",
+  titre = "La Zone de Capture",
+  objectif = "Extraire et sauvegarder les sorties statistiques (tests, coefficients) dans des objets R manipulables.",
   has_plot = FALSE,
   pdf_on_run = "recuperer.pdf",
   code = "
@@ -1469,6 +1338,20 @@ recuperer_sorties = make_case(
 # ------------------------------------------------------------
 # 1. Inspecter les objets retournés par FactoMineR
 # ------------------------------------------------------------
+
+if (!exists('res_lm_fm')) {
+  stop(
+    'L objet res_lm_fm est absent. Exécute d abord la case 3.',
+    call. = FALSE
+  )
+}
+
+if (!exists('res_aovsum')) {
+  stop(
+    'L objet res_aovsum est absent. Exécute d abord la case 4.',
+    call. = FALSE
+  )
+}
 
 cat('\\n============================================================\\n')
 cat('1. Que contient l objet res_lm_fm ?\\n')
@@ -1637,16 +1520,16 @@ substr(texte_aovsum, 1, 1200)
 nchar(texte_linearmodel)
 nchar(texte_aovsum)
 ",
-sortie_attendue = "Des objets `lm_ftest`, `lm_ttest`, `aov_ftest`, `aov_ttest`, `texte_linearmodel`, `texte_aovsum`, affichés avec des titres explicites.",
-transition = "Ces éléments sont le matériau brut d'un prompt contrôlé : on sait maintenant extraire, nommer et transformer les sorties statistiques.",
+sortie_attendue = "Des objets `lm_ftest`, `lm_ttest`, `aov_ftest`, `aov_ttest`, `texte_linearmodel`, `texte_aovsum`, que l'on va pouvoir afficher avec des titres explicites.",
+transition = "Ces éléments sont le matériau brut d'un prompt : on sait maintenant extraire, nommer et transformer les sorties statistiques.",
 question = "Quel objet contient la sortie ANOVA créée à la case précédente ?",
 reponse = "res_aovsum"
 ),
 
 prompt_manuel = make_case(
   partie = "r_sorties",
-  titre = "6a. Faire un prompt (1)",
-  objectif = "Construire un premier prompt à la main à partir des sorties statistiques.",
+  titre = "Le Premier Prompt",
+  objectif = "Construire un premier prompt à la main à partir des sorties statistiques : assembler manuellement le contexte, les consignes et les résultats statistiques pour éventuellement interroger une IA.",
   has_plot = FALSE,
   pdf_on_run = "prompt_manuel.pdf",
   code = "
@@ -1661,6 +1544,21 @@ prompt_manuel = make_case(
 # ------------------------------------------------------------
 # 1. Comprendre paste() et cat()
 # ------------------------------------------------------------
+
+objets_requis <- c('texte_linearmodel', 'texte_aovsum')
+
+objets_absents <- objets_requis[
+  !vapply(objets_requis, exists, logical(1))
+]
+
+if (length(objets_absents) > 0) {
+  stop(
+    'Objets absents : ',
+    paste(objets_absents, collapse = ', '),
+    '. Exécute d abord la case 5.',
+    call. = FALSE
+  )
+}
 
 cat('\\n============================================================\\n')
 cat('1. Principe : paste() construit une chaîne de caractères\\n')
@@ -1827,15 +1725,15 @@ substr(prompt_aovsum, 1, 1500)
 nchar(prompt_aovsum)
 ",
 sortie_attendue = "Deux prompts : `prompt_linearmodel` et `prompt_aovsum`, construits avec `paste()` puis affichés avec `cat()`.",
-transition = "Deux chemins sont possibles : aller vers EnTraineR, ou approfondir la construction d un prompt générique sans coder en dur les noms de variables.",
+transition = "Ce travail manuel est fastidieux. Nous allons le faire en deux temps : approfondir la construction d un prompt générique sans coder en dur les noms de variables, puis découvrir l'outil qui le fera pour nous, EnTraineR.",
 question = "Quelle fonction R permet ici de rassembler des lignes avec des retours à la ligne ?",
 reponse = "paste"
 ),
 
 prompt_manuel_n2 = make_case(
   partie = "r_sorties",
-  titre = "6b. Faire un prompt (2)",
-  objectif = "Construire un prompt générique : récupérer automatiquement le nom de Y et les noms des X à partir des formules.",
+  titre = "L'Épreuve Générique",
+  objectif = "Rendre la création de prompts automatique en extrayant automatiquement les noms de variables depuis les formules R.",
   has_plot = FALSE,
   code = "
 # ============================================================
@@ -1849,6 +1747,26 @@ prompt_manuel_n2 = make_case(
 # ------------------------------------------------------------
 # 1. Observer les formules utilisées
 # ------------------------------------------------------------
+
+objets_requis <- c(
+  'formule_lm',
+  'formule_aov',
+  'texte_linearmodel',
+  'texte_aovsum'
+)
+
+objets_absents <- objets_requis[
+  !vapply(objets_requis, exists, logical(1))
+]
+
+if (length(objets_absents) > 0) {
+  stop(
+    'Objets absents : ',
+    paste(objets_absents, collapse = ', '),
+    '. Exécute d abord les cases précédentes.',
+    call. = FALSE
+  )
+}
 
 cat('\\n============================================================\\n')
 cat('1. Formules utilisées dans les analyses\\n')
@@ -2113,448 +2031,680 @@ question = "Quel objet contient la formule utilisée pour LinearModel ?",
 reponse = "formule_lm"
 ),
 
-  entrainer_presentation = make_case(
-    partie = "entrainer",
-    titre = "7b. Présentation EnTraineR",
-    objectif = "Situer le package EnTraineR avant d'utiliser ses fonctions.",
-    has_plot = FALSE,
-    code = "
+entrainer_presentation = make_case(
+  partie = "entrainer",
+  titre = "La Forge EnTraineR",
+  objectif = "Comprendre l'intérêt d'EnTraineR par rapport à la création manuelle d'un prompt.",
+  has_plot = FALSE,
+  pdf_on_run = "entrainer_presentation.pdf",
+  code = "
 # ============================================================
-# Case 7b : petite présentation du package EnTraineR
+# Case 7a : La Forge EnTraineR
 # ============================================================
+
+# Objectif de cette case :
+# Découvrir l'existence et la philosophie du package EnTraineR.
+# La théorie détaillée (le schéma d'automatisation) sera disponible
+# dans le PDF associé après exécution.
+
+cat('\\n============================================================\\n')
+cat('1. Disponibilité du package\\n')
+cat('============================================================\\n')
 
 entrainer_disponible <- requireNamespace('EnTraineR', quietly = TRUE)
 
+cat('Package EnTraineR installé sur cette machine : ', entrainer_disponible, '\\n\\n', sep = '')
+
 if (entrainer_disponible) {
-  version_entrainer <- as.character(utils::packageVersion('EnTraineR'))
+  fonctions_entrainer <- grep(
+    '^trainer_',
+    getNamespaceExports('EnTraineR'),
+    value = TRUE
+  )
+  cat('Fonctions prêtes à l emploi repérées dans le package :\\n')
+  print(fonctions_entrainer)
+} else {
+  fonctions_entrainer <- c(
+    'trainer_LinearModel',
+    'trainer_linear_model',
+    'trainer_AovSum',
+    'trainer_aovsum',
+    'trainer_cor',
+    'trainer_chisq_test'
+  )
+  cat('Le package n est pas installé. Voici les fonctions attendues :\\n')
+  print(fonctions_entrainer)
+}
+
+cat('\\n============================================================\\n')
+cat('2. La Philosophie de la Forge\\n')
+cat('============================================================\\n')
+cat('À l\\'étape 6, vous avez écrit beaucoup de code avec paste() et cat()\\n')
+cat('pour transformer une sortie FactoMineR en prompt.\\n\\n')
+cat('EnTraineR a été conçu pour industrialiser cela : il prend directement\\n')
+cat('un objet statistique (comme res_lm_fm) et forge le prompt pour vous.\\n')
+",
+code_display = "
+# Vérifier si EnTraineR est disponible sur votre machine
+entrainer_disponible <- requireNamespace('EnTraineR', quietly = TRUE)
+
+entrainer_disponible
+
+# Lister les fonctions d'automatisation disponibles
+if (entrainer_disponible) {
   fonctions_entrainer <- grep(
     '^trainer_',
     getNamespaceExports('EnTraineR'),
     value = TRUE
   )
 } else {
-  version_entrainer <- 'non installé'
   fonctions_entrainer <- c(
-    'trainer_linear_model',
     'trainer_LinearModel',
-    'trainer_aovsum',
+    'trainer_linear_model',
     'trainer_AovSum',
+    'trainer_aovsum',
     'trainer_cor',
-    'trainer_chisq_test',
-    'trainer_var',
-    'trainer_MCA'
+    'trainer_chisq_test'
   )
 }
 
-presentation_entrainer <- data.frame(
-  question = c(
-    'Quel est le rôle du package ?',
-    'Que reçoit-il en entrée ?',
-    'Que produit-il en sortie ?',
-    'Pourquoi generate = FALSE est important ?',
-    'Comment se situe-t-il par rapport à NaileR ?'
-  ),
-  reponse = c(
-    'Transformer des résultats statistiques explicites en prompts pédagogiques contrôlés.',
-    'Des objets ou sorties issus de fonctions statistiques comme LinearModel() ou AovSum().',
-    'Un prompt inspectable, et éventuellement une réponse LLM si la génération est activée.',
-    'Cette option permet de vérifier le prompt avant tout appel au modèle.',
-    'EnTraineR traite les analyses explicites ; NaileR prolonge la logique vers condes(), catdes(), les axes, les classes et le texte.'
-  ),
-  stringsAsFactors = FALSE
-)
-
-schema_entrainer <- data.frame(
-  etape = c(
-    '1. Analyse statistique',
-    '2. Extraction des résultats',
-    '3. Construction du prompt',
-    '4. Contrôle humain',
-    '5. Appel optionnel au LLM'
-  ),
-  exemple = c(
-    'LinearModel(), AovSum(), cor(), chisq.test()',
-    'F-test, T-test, coefficients, p-values, R2',
-    'Contexte + résultats + consignes + format attendu',
-    'generate = FALSE',
-    'llm_engine + llm_model'
-  ),
-  stringsAsFactors = FALSE
-)
-
-resume_package_entrainer <- data.frame(
-  element = c(
-    'Package installé',
-    'Version détectée',
-    'Nombre de fonctions trainer_* repérées ou attendues'
-  ),
-  valeur = c(
-    as.character(entrainer_disponible),
-    version_entrainer,
-    as.character(length(fonctions_entrainer))
-  ),
-  stringsAsFactors = FALSE
-)
-
-cat('## Présentation rapide de EnTraineR\\n\\n')
-print(resume_package_entrainer, row.names = FALSE)
-
-cat('\\nFonctions repérées ou attendues :\\n')
-print(data.frame(fonction = fonctions_entrainer), row.names = FALSE)
-
-cat('\\nIdée générale :\\n')
-print(presentation_entrainer, row.names = FALSE)
-
-cat('\\nSchéma du workflow EnTraineR :\\n')
-print(schema_entrainer, row.names = FALSE)
-
-cat('\\nMessage pédagogique :\\n')
-cat('EnTraineR ne remplace pas l analyse statistique.\\n')
-cat('Il organise le passage entre une sortie statistique explicite et un prompt contrôlé.\\n')
-cat('La logique centrale reste : analyser -> extraire -> structurer -> prompter -> éventuellement générer.\\n')
+fonctions_entrainer
 ",
-code_display = "
+sortie_attendue = "Une vérification de l'installation d'EnTraineR et la création de l'objet `fonctions_entrainer`.",
+transition = "Maintenant que nous connaissons l'outil en théorie, utilisons-le concrètement à la case suivante.",
+question = "Quel package transforme automatiquement les sorties FactoMineR en prompts ?",
+reponse = "entrainer"
+),
 
-# Vérifier si EnTraineR est disponible
+entrainer_intro = make_case(
+  partie = "entrainer",
+  titre = "L'Équipement",
+  objectif = "Utiliser concrètement EnTraineR pour générer un prompt en une seule ligne de code.",
+  has_plot = FALSE,
+  pdf_on_run = "entrainer_exemple.pdf",
+  code = "
+# ============================================================
+# Case 7b : Utilisation pratique d'EnTraineR
+# ============================================================
+
+# Objectif de cette case :
+# Remplacer les dizaines de lignes de notre 'Prompt Manuel'
+# par une seule ligne de code EnTraineR.
+
+if (!exists('res_lm_fm')) {
+  stop(
+    'L objet res_lm_fm est absent. Exécutez d abord la case 3.',
+    call. = FALSE
+  )
+}
+
+prompt_manuel_utilise <- if (exists('prompt_linearmodel_n2')) {
+  prompt_linearmodel_n2
+} else if (exists('prompt_linearmodel')) {
+  prompt_linearmodel
+} else {
+  'Aucun prompt manuel trouvé'
+}
+
+cat('\\n============================================================\\n')
+cat('1. Le problème : la méthode manuelle\\n')
+cat('============================================================\\n')
+cat('Pour créer l objet prompt_linearmodel, il fallait extraire le F-test,\\n')
+cat('le T-test, formater les résultats en texte, et dicter les consignes.\\n')
+
+cat('\\n============================================================\\n')
+cat('2. La solution : exécution robuste\\n')
+cat('============================================================\\n')
 
 entrainer_disponible <- requireNamespace('EnTraineR', quietly = TRUE)
 
 if (entrainer_disponible) {
 
-version_entrainer <- as.character(
-utils::packageVersion('EnTraineR')
-)
+  fonctions_entrainer <- getNamespaceExports('EnTraineR')
+  nom_trainer_lm <- intersect(
+    c('trainer_LinearModel', 'trainer_linear_model'),
+    fonctions_entrainer
+  )[1]
 
-fonctions_entrainer <- grep(
-'^trainer_',
-getNamespaceExports('EnTraineR'),
-value = TRUE
-)
+  if (is.na(nom_trainer_lm)) {
+    stop(
+      'Aucune fonction trainer_LinearModel ou trainer_linear_model n a été trouvée dans EnTraineR.',
+      call. = FALSE
+    )
+  }
 
-} else {
+  trainer_lm <- getExportedValue('EnTraineR', nom_trainer_lm)
 
-version_entrainer <- 'non installé'
-
-fonctions_entrainer <- c(
-'trainer_linear_model',
-'trainer_LinearModel',
-'trainer_aovsum',
-'trainer_AovSum',
-'trainer_cor',
-'trainer_chisq_test',
-'trainer_var',
-'trainer_MCA'
-)
-}
-
-# Résumer l état du package
-
-resume_package_entrainer <- data.frame(
-element = c(
-'Package installé',
-'Version détectée',
-'Nombre de fonctions trainer_* repérées ou attendues'
-),
-valeur = c(
-as.character(entrainer_disponible),
-version_entrainer,
-as.character(length(fonctions_entrainer))
-),
-stringsAsFactors = FALSE
-)
-
-# Présenter le rôle de EnTraineR dans le workflow
-
-presentation_entrainer <- data.frame(
-question = c(
-'Quel est le rôle du package ?',
-'Que reçoit-il en entrée ?',
-'Que produit-il en sortie ?',
-'Pourquoi generate = FALSE est important ?',
-'Comment se situe-t-il par rapport à NaileR ?'
-),
-reponse = c(
-'Transformer des résultats statistiques explicites en prompts pédagogiques contrôlés.',
-'Des objets ou sorties issus de fonctions statistiques comme LinearModel() ou AovSum().',
-'Un prompt inspectable, et éventuellement une réponse LLM si la génération est activée.',
-'Cette option permet de vérifier le prompt avant tout appel au modèle.',
-'EnTraineR traite les analyses explicites ; NaileR prolonge la logique vers condes(), catdes(), les axes, les classes et le texte.'
-),
-stringsAsFactors = FALSE
-)
-
-# Schématiser le workflow EnTraineR
-
-schema_entrainer <- data.frame(
-etape = c(
-'1. Analyse statistique',
-'2. Extraction des résultats',
-'3. Construction du prompt',
-'4. Contrôle humain',
-'5. Appel optionnel au LLM'
-),
-exemple = c(
-'LinearModel(), AovSum(), cor(), chisq.test()',
-'F-test, T-test, coefficients, p-values, R2',
-'Contexte + résultats + consignes + format attendu',
-'generate = FALSE',
-'llm_engine + llm_model'
-),
-stringsAsFactors = FALSE
-)
-
-# Examiner les objets créés
-
-resume_package_entrainer
-data.frame(fonction = fonctions_entrainer)
-presentation_entrainer
-schema_entrainer
-",
-    sortie_attendue = "Une présentation courte de EnTraineR, de son rôle et de sa place dans le workflow.",
-    transition = "On peut maintenant entrer dans la mécanique pratique de EnTraineR.",
-    pdf = "entrainer_presentation.pdf",
-    question = "Quel package est présenté dans cette case ?",
-    reponse = "entrainer"
-  ),
-
-  entrainer_intro = make_case(
-    partie = "entrainer",
-    titre = "7a. EnTraineR",
-    objectif = "Repérer les fonctions EnTraineR et préparer leur utilisation sur les prompts construits.",
-    has_plot = FALSE,
-    code = "
-# ============================================================
-# Case 7a : entrer dans EnTraineR
-# ============================================================
-
-# On cherche le package sous son nom attendu : EnTraineR.
-entrainer_pkg <- if (requireNamespace('EnTraineR', quietly = TRUE)) {
-  'EnTraineR'
-} else {
-  NA_character_
-}
-
-entrainer_disponible <- !is.na(entrainer_pkg)
-
-if (entrainer_disponible) {
-  fonctions_entrainer <- grep(
-    '^trainer_',
-    getNamespaceExports(entrainer_pkg),
-    value = TRUE
+  prompt_auto_lm <- tryCatch(
+    trainer_lm(res_lm_fm, generate = FALSE),
+    error = function(e) paste('Erreur :', conditionMessage(e))
   )
-} else {
-  message('Le package EnTraineR n est pas installé sur cette machine.')
-  message('On conserve ici la logique pédagogique : analyse -> sortie -> prompt.')
 
-  fonctions_entrainer <- c(
-    'trainer_linear_model',
-    'trainer_LinearModel',
-    'trainer_aovsum',
-    'trainer_AovSum',
-    'trainer_cor',
-    'trainer_chisq_test',
-    'trainer_var',
-    'trainer_MCA'
+  texte_prompt_auto_lm <- if(is.list(prompt_auto_lm) && 'prompt' %in% names(prompt_auto_lm)) {
+     prompt_auto_lm$prompt
+  } else {
+     as.character(prompt_auto_lm)
+  }
+  texte_prompt_auto_lm <- gsub('\\\\n', '\\n', texte_prompt_auto_lm)
+
+  cat('Objet créé : prompt_auto_lm\\n\\n')
+
+  cat('--- Comparaison avec l ancienne méthode ---\\n')
+  comparaison_prompt_manuel_auto <- data.frame(
+    methode = c('Prompt manuel', 'Prompt EnTraineR'),
+    objet = c('prompt_linearmodel', 'prompt_auto_lm'),
+    logique = c(
+      'capture.output() + paste() + consignes écrites à la main',
+      'appel direct à une fonction trainer_*'
+    ),
+    caracteres = c(nchar(prompt_manuel_utilise), nchar(texte_prompt_auto_lm)),
+    stringsAsFactors = FALSE
   )
-}
+  print(comparaison_prompt_manuel_auto, row.names = FALSE)
 
-# Si la branche niveau 2 a été exécutée, on utilise les prompts génériques.
-# Sinon, on conserve les prompts manuels de niveau 1.
-prompt_linearmodel_utilise <- if (exists('prompt_linearmodel_n2')) {
-  prompt_linearmodel_n2
+  cat('\\nAperçu du prompt généré magiquement par le package :\\n\\n')
+  cat(substr(texte_prompt_auto_lm, 1, 1000))
+  if(nchar(texte_prompt_auto_lm) > 1000) cat('\\n\\n[... suite du prompt tronquée ...]\\n')
+
 } else {
-  prompt_linearmodel
+
+  cat('Le package EnTraineR n\\'est pas installé.\\n')
+  cat('Si c\\'était le cas, voici le code robuste que nous aurions exécuté :\\n\\n')
+  cat('trainer_lm <- getExportedValue(\"EnTraineR\", nom_trainer_lm)\\n')
+  cat('prompt_auto_lm <- trainer_lm(\\n')
+  cat('  res_lm_fm, \\n')
+  cat('  generate = FALSE\\n')
+  cat(')\\n\\n')
+  cat('En une seule ligne, la fonction extrait les données de res_lm_fm\\n')
+  cat('et produit un prompt similaire à notre ancien prompt_linearmodel.\\n')
 }
-
-prompt_aovsum_utilise <- if (exists('prompt_aovsum_n2')) {
-  prompt_aovsum_n2
-} else {
-  prompt_aovsum
-}
-
-source_prompts <- if (exists('prompt_linearmodel_n2')) {
-  'prompts génériques de niveau 2'
-} else {
-  'prompts manuels de niveau 1'
-}
-
-# Les objets complets sont conservés en mémoire, mais ne sont pas imprimés
-# brutalement dans la sortie console.
-objet_transition_entrainer <- list(
-  analyse = 'LinearModel et AovSum',
-  source_prompts = source_prompts,
-  sorties_completes = list(
-    linearmodel = texte_linearmodel,
-    aovsum = texte_aovsum
-  ),
-  prompts_complets = list(
-    linearmodel = prompt_linearmodel_utilise,
-    aovsum = prompt_aovsum_utilise
-  )
-)
-
-resume_entrainer <- data.frame(
-  element = c(
-    'Package EnTraineR installé ?',
-    'Nom technique du package utilisé',
-    'Source des prompts utilisés',
-    'Fonctions trainer_* repérées',
-    'Sortie LinearModel capturée',
-    'Sortie AovSum capturée',
-    'Prompt LinearModel utilisé',
-    'Prompt AovSum utilisé'
-  ),
-  valeur = c(
-    as.character(entrainer_disponible),
-    ifelse(is.na(entrainer_pkg), 'non installé', entrainer_pkg),
-    source_prompts,
-    as.character(length(fonctions_entrainer)),
-    paste0(nchar(texte_linearmodel), ' caractères'),
-    paste0(nchar(texte_aovsum), ' caractères'),
-    paste0(nchar(prompt_linearmodel_utilise), ' caractères'),
-    paste0(nchar(prompt_aovsum_utilise), ' caractères')
-  )
-)
-
-fonctions_entrainer_df <- data.frame(
-  fonction = fonctions_entrainer
-)
-
-cat('## Entrée dans EnTraineR\n\n')
-
-cat('Fonctions EnTraineR repérées ou attendues :\n')
-print(fonctions_entrainer_df)
-
-cat('\nRésumé des objets disponibles :\n')
-print(resume_entrainer, row.names = FALSE)
-
-cat('\nAperçu du prompt LinearModel utilisé :\n')
-cat(substr(prompt_linearmodel_utilise, 1, 1000))
-cat('\n\n[... prompt tronqué dans l affichage ...]\n\n')
-
-cat('Aperçu du prompt AovSum utilisé :\n')
-cat(substr(prompt_aovsum_utilise, 1, 1000))
-cat('\n\n[... prompt tronqué dans l affichage ...]\n\n')
-
-cat('Objets complets conservés en mémoire :\n')
-cat('- objet_transition_entrainer\n')
-cat('- texte_linearmodel\n')
-cat('- texte_aovsum\n')
-cat('- prompt_linearmodel_utilise\n')
-cat('- prompt_aovsum_utilise\n')
 ",
 code_display = "
-# Vérifier si le package EnTraineR est disponible
-entrainer_pkg <- if (requireNamespace('EnTraineR', quietly = TRUE)) {
-  'EnTraineR'
-} else {
-  NA_character_
-}
+# Rappel : res_lm_fm contient notre régression construite à la case 3.
 
-entrainer_disponible <- !is.na(entrainer_pkg)
-
-# Repérer les fonctions trainer_* disponibles
-if (entrainer_disponible) {
-
-  fonctions_entrainer <- grep(
-    '^trainer_',
-    getNamespaceExports(entrainer_pkg),
-    value = TRUE
-  )
-
-} else {
-
-  fonctions_entrainer <- c(
-    'trainer_linear_model',
-    'trainer_LinearModel',
-    'trainer_aovsum',
-    'trainer_AovSum',
-    'trainer_cor',
-    'trainer_chisq_test',
-    'trainer_var',
-    'trainer_MCA'
+if (!exists('res_lm_fm')) {
+  stop(
+    'L objet res_lm_fm est absent. Exécutez d abord la case 3.',
+    call. = FALSE
   )
 }
 
-# Choisir les prompts disponibles
-# Si les prompts génériques de niveau 2 existent, on les utilise.
-# Sinon, on garde les prompts manuels de niveau 1.
-prompt_linearmodel_utilise <- if (exists('prompt_linearmodel_n2')) {
-  prompt_linearmodel_n2
-} else {
-  prompt_linearmodel
-}
+# Au lieu de construire le prompt avec paste(),
+# on laisse EnTraineR produire le prompt automatiquement.
 
-prompt_aovsum_utilise <- if (exists('prompt_aovsum_n2')) {
-  prompt_aovsum_n2
-} else {
-  prompt_aovsum
-}
+if (requireNamespace('EnTraineR', quietly = TRUE)) {
 
-source_prompts <- if (exists('prompt_linearmodel_n2')) {
-  'prompts génériques de niveau 2'
-} else {
-  'prompts manuels de niveau 1'
-}
+  fonctions_entrainer <- getNamespaceExports('EnTraineR')
 
-# Construire un objet de transition vers EnTraineR
-objet_transition_entrainer <- list(
-  analyse = 'LinearModel et AovSum',
-  source_prompts = source_prompts,
-  sorties_completes = list(
-    linearmodel = texte_linearmodel,
-    aovsum = texte_aovsum
-  ),
-  prompts_complets = list(
-    linearmodel = prompt_linearmodel_utilise,
-    aovsum = prompt_aovsum_utilise
+  nom_trainer_lm <- intersect(
+    c('trainer_LinearModel', 'trainer_linear_model'),
+    fonctions_entrainer
+  )[1]
+
+  trainer_lm <- getExportedValue(
+    'EnTraineR',
+    nom_trainer_lm
   )
-)
 
-# Résumer les objets disponibles
-resume_entrainer <- data.frame(
-  element = c(
-    'Package EnTraineR installé ?',
-    'Nom technique du package utilisé',
-    'Source des prompts utilisés',
-    'Fonctions trainer_* repérées',
-    'Sortie LinearModel capturée',
-    'Sortie AovSum capturée',
-    'Prompt LinearModel utilisé',
-    'Prompt AovSum utilisé'
-  ),
-  valeur = c(
-    as.character(entrainer_disponible),
-    ifelse(is.na(entrainer_pkg), 'non installé', entrainer_pkg),
-    source_prompts,
-    as.character(length(fonctions_entrainer)),
-    paste0(nchar(texte_linearmodel), ' caractères'),
-    paste0(nchar(texte_aovsum), ' caractères'),
-    paste0(nchar(prompt_linearmodel_utilise), ' caractères'),
-    paste0(nchar(prompt_aovsum_utilise), ' caractères')
+  prompt_auto_lm <- trainer_lm(
+    res_lm_fm,
+    generate = FALSE
   )
-)
 
-fonctions_entrainer_df <- data.frame(
-  fonction = fonctions_entrainer
-)
+  prompt_auto_lm
 
-# Examiner les objets créés
-fonctions_entrainer_df
-resume_entrainer
-
-# Examiner les prompts utilisés
-substr(prompt_linearmodel_utilise, 1, 1000)
-substr(prompt_aovsum_utilise, 1, 1000)
-
-# Objet complet conservé pour la suite
-objet_transition_entrainer
+} else {
+  message('Installez le package EnTraineR pour tester cette commande.')
+}
 ",
-    sortie_attendue = "Une liste des fonctions EnTraineR disponibles si le package est installé, sinon une structure pédagogique de transition.",
-    transition = "On examine maintenant les options communes : générer ou non, moteur LLM, modèle, style.",
-    question = "Dans notre logique, EnTraineR automatise le passage de la sortie statistique vers quoi ?",
-    reponse = "prompt"
-  ),
+sortie_attendue = "Un prompt généré automatiquement (`prompt_auto_lm`) et une comparaison avec la méthode manuelle.",
+transition = "Nous savons automatiser la création d'un prompt. Comment automatiser l'analyse de plusieurs variables d'un coup ?",
+question = "Quelle option cruciale d'EnTraineR permet de vérifier le prompt sans appeler l'IA ?",
+reponse = "generate = FALSE"
+),
+
+# entrainer_intro = make_case(
+#   partie = "entrainer",
+#   titre = "L'Équipement",
+#   objectif = "Repérer les fonctions EnTraineR et préparer leur utilisation sur les prompts construits.",
+#   has_plot = FALSE,
+#   code = "
+# # ============================================================
+# # Case 7a : entrer dans EnTraineR
+# # ============================================================
+#
+# # On cherche le package sous son nom attendu : EnTraineR.
+# entrainer_pkg <- if (requireNamespace('EnTraineR', quietly = TRUE)) {
+#   'EnTraineR'
+# } else {
+#   NA_character_
+# }
+#
+# entrainer_disponible <- !is.na(entrainer_pkg)
+#
+# if (entrainer_disponible) {
+#   fonctions_entrainer <- grep(
+#     '^trainer_',
+#     getNamespaceExports(entrainer_pkg),
+#     value = TRUE
+#   )
+# } else {
+#   message('Le package EnTraineR n est pas installé sur cette machine.')
+#   message('On conserve ici la logique pédagogique : analyse -> sortie -> prompt.')
+#
+#   fonctions_entrainer <- c(
+#     'trainer_linear_model',
+#     'trainer_LinearModel',
+#     'trainer_aovsum',
+#     'trainer_AovSum',
+#     'trainer_cor',
+#     'trainer_chisq_test',
+#     'trainer_var',
+#     'trainer_MCA'
+#   )
+# }
+#
+# # Si la branche niveau 2 a été exécutée, on utilise les prompts génériques.
+# # Sinon, on conserve les prompts manuels de niveau 1.
+# prompt_linearmodel_utilise <- if (exists('prompt_linearmodel_n2')) {
+#   prompt_linearmodel_n2
+# } else {
+#   prompt_linearmodel
+# }
+#
+# prompt_aovsum_utilise <- if (exists('prompt_aovsum_n2')) {
+#   prompt_aovsum_n2
+# } else {
+#   prompt_aovsum
+# }
+#
+# source_prompts <- if (exists('prompt_linearmodel_n2')) {
+#   'prompts génériques de niveau 2'
+# } else {
+#   'prompts manuels de niveau 1'
+# }
+#
+# # Les objets complets sont conservés en mémoire, mais ne sont pas imprimés
+# # brutalement dans la sortie console.
+# objet_transition_entrainer <- list(
+#   analyse = 'LinearModel et AovSum',
+#   source_prompts = source_prompts,
+#   sorties_completes = list(
+#     linearmodel = texte_linearmodel,
+#     aovsum = texte_aovsum
+#   ),
+#   prompts_complets = list(
+#     linearmodel = prompt_linearmodel_utilise,
+#     aovsum = prompt_aovsum_utilise
+#   )
+# )
+#
+# resume_entrainer <- data.frame(
+#   element = c(
+#     'Package EnTraineR installé ?',
+#     'Nom technique du package utilisé',
+#     'Source des prompts utilisés',
+#     'Fonctions trainer_* repérées',
+#     'Sortie LinearModel capturée',
+#     'Sortie AovSum capturée',
+#     'Prompt LinearModel utilisé',
+#     'Prompt AovSum utilisé'
+#   ),
+#   valeur = c(
+#     as.character(entrainer_disponible),
+#     ifelse(is.na(entrainer_pkg), 'non installé', entrainer_pkg),
+#     source_prompts,
+#     as.character(length(fonctions_entrainer)),
+#     paste0(nchar(texte_linearmodel), ' caractères'),
+#     paste0(nchar(texte_aovsum), ' caractères'),
+#     paste0(nchar(prompt_linearmodel_utilise), ' caractères'),
+#     paste0(nchar(prompt_aovsum_utilise), ' caractères')
+#   )
+# )
+#
+# fonctions_entrainer_df <- data.frame(
+#   fonction = fonctions_entrainer
+# )
+#
+# cat('## Entrée dans EnTraineR\n\n')
+#
+# cat('Fonctions EnTraineR repérées ou attendues :\n')
+# print(fonctions_entrainer_df)
+#
+# cat('\nRésumé des objets disponibles :\n')
+# print(resume_entrainer, row.names = FALSE)
+#
+# cat('\nAperçu du prompt LinearModel utilisé :\n')
+# cat(substr(prompt_linearmodel_utilise, 1, 1000))
+# cat('\n\n[... prompt tronqué dans l affichage ...]\n\n')
+#
+# cat('Aperçu du prompt AovSum utilisé :\n')
+# cat(substr(prompt_aovsum_utilise, 1, 1000))
+# cat('\n\n[... prompt tronqué dans l affichage ...]\n\n')
+#
+# cat('Objets complets conservés en mémoire :\n')
+# cat('- objet_transition_entrainer\n')
+# cat('- texte_linearmodel\n')
+# cat('- texte_aovsum\n')
+# cat('- prompt_linearmodel_utilise\n')
+# cat('- prompt_aovsum_utilise\n')
+# ",
+# code_display = "
+# # Vérifier si le package EnTraineR est disponible
+# entrainer_pkg <- if (requireNamespace('EnTraineR', quietly = TRUE)) {
+#   'EnTraineR'
+# } else {
+#   NA_character_
+# }
+#
+# entrainer_disponible <- !is.na(entrainer_pkg)
+#
+# # Repérer les fonctions trainer_* disponibles
+# if (entrainer_disponible) {
+#
+#   fonctions_entrainer <- grep(
+#     '^trainer_',
+#     getNamespaceExports(entrainer_pkg),
+#     value = TRUE
+#   )
+#
+# } else {
+#
+#   fonctions_entrainer <- c(
+#     'trainer_linear_model',
+#     'trainer_LinearModel',
+#     'trainer_aovsum',
+#     'trainer_AovSum',
+#     'trainer_cor',
+#     'trainer_chisq_test',
+#     'trainer_var',
+#     'trainer_MCA'
+#   )
+# }
+#
+# # Choisir les prompts disponibles
+# # Si les prompts génériques de niveau 2 existent, on les utilise.
+# # Sinon, on garde les prompts manuels de niveau 1.
+# prompt_linearmodel_utilise <- if (exists('prompt_linearmodel_n2')) {
+#   prompt_linearmodel_n2
+# } else {
+#   prompt_linearmodel
+# }
+#
+# prompt_aovsum_utilise <- if (exists('prompt_aovsum_n2')) {
+#   prompt_aovsum_n2
+# } else {
+#   prompt_aovsum
+# }
+#
+# source_prompts <- if (exists('prompt_linearmodel_n2')) {
+#   'prompts génériques de niveau 2'
+# } else {
+#   'prompts manuels de niveau 1'
+# }
+#
+# # Construire un objet de transition vers EnTraineR
+# objet_transition_entrainer <- list(
+#   analyse = 'LinearModel et AovSum',
+#   source_prompts = source_prompts,
+#   sorties_completes = list(
+#     linearmodel = texte_linearmodel,
+#     aovsum = texte_aovsum
+#   ),
+#   prompts_complets = list(
+#     linearmodel = prompt_linearmodel_utilise,
+#     aovsum = prompt_aovsum_utilise
+#   )
+# )
+#
+# # Résumer les objets disponibles
+# resume_entrainer <- data.frame(
+#   element = c(
+#     'Package EnTraineR installé ?',
+#     'Nom technique du package utilisé',
+#     'Source des prompts utilisés',
+#     'Fonctions trainer_* repérées',
+#     'Sortie LinearModel capturée',
+#     'Sortie AovSum capturée',
+#     'Prompt LinearModel utilisé',
+#     'Prompt AovSum utilisé'
+#   ),
+#   valeur = c(
+#     as.character(entrainer_disponible),
+#     ifelse(is.na(entrainer_pkg), 'non installé', entrainer_pkg),
+#     source_prompts,
+#     as.character(length(fonctions_entrainer)),
+#     paste0(nchar(texte_linearmodel), ' caractères'),
+#     paste0(nchar(texte_aovsum), ' caractères'),
+#     paste0(nchar(prompt_linearmodel_utilise), ' caractères'),
+#     paste0(nchar(prompt_aovsum_utilise), ' caractères')
+#   )
+# )
+#
+# fonctions_entrainer_df <- data.frame(
+#   fonction = fonctions_entrainer
+# )
+#
+# # Examiner les objets créés
+# fonctions_entrainer_df
+# resume_entrainer
+#
+# # Examiner les prompts utilisés
+# substr(prompt_linearmodel_utilise, 1, 1000)
+# substr(prompt_aovsum_utilise, 1, 1000)
+#
+# # Objet complet conservé pour la suite
+# objet_transition_entrainer
+# ",
+# sortie_attendue = "Une liste des fonctions EnTraineR disponibles si le package est installé, sinon une structure pédagogique de transition.",
+# transition = "On examine maintenant les options communes : générer ou non, moteur LLM, modèle, style.",
+# question = "Dans notre logique, EnTraineR automatise le passage de la sortie statistique vers quoi ?",
+# reponse = "prompt"
+# ),
+#
+#   entrainer_presentation = make_case(
+#     partie = "entrainer",
+#     titre = "La Forge EnTraineR",
+#     objectif = "Situer le package EnTraineR avant d'utiliser ses fonctions.",
+#     has_plot = FALSE,
+#     code = "
+# # ============================================================
+# # Case 7b : petite présentation du package EnTraineR
+# # ============================================================
+#
+# entrainer_disponible <- requireNamespace('EnTraineR', quietly = TRUE)
+#
+# if (entrainer_disponible) {
+#   version_entrainer <- as.character(utils::packageVersion('EnTraineR'))
+#   fonctions_entrainer <- grep(
+#     '^trainer_',
+#     getNamespaceExports('EnTraineR'),
+#     value = TRUE
+#   )
+# } else {
+#   version_entrainer <- 'non installé'
+#   fonctions_entrainer <- c(
+#     'trainer_linear_model',
+#     'trainer_LinearModel',
+#     'trainer_aovsum',
+#     'trainer_AovSum',
+#     'trainer_cor',
+#     'trainer_chisq_test',
+#     'trainer_var',
+#     'trainer_MCA'
+#   )
+# }
+#
+# presentation_entrainer <- data.frame(
+#   question = c(
+#     'Quel est le rôle du package ?',
+#     'Que reçoit-il en entrée ?',
+#     'Que produit-il en sortie ?',
+#     'Pourquoi generate = FALSE est important ?',
+#     'Comment se situe-t-il par rapport à NaileR ?'
+#   ),
+#   reponse = c(
+#     'Transformer des résultats statistiques explicites en prompts pédagogiques contrôlés.',
+#     'Des objets ou sorties issus de fonctions statistiques comme LinearModel() ou AovSum().',
+#     'Un prompt inspectable, et éventuellement une réponse LLM si la génération est activée.',
+#     'Cette option permet de vérifier le prompt avant tout appel au modèle.',
+#     'EnTraineR traite les analyses explicites ; NaileR prolonge la logique vers condes(), catdes(), les axes, les classes et le texte.'
+#   ),
+#   stringsAsFactors = FALSE
+# )
+#
+# schema_entrainer <- data.frame(
+#   etape = c(
+#     '1. Analyse statistique',
+#     '2. Extraction des résultats',
+#     '3. Construction du prompt',
+#     '4. Contrôle humain',
+#     '5. Appel optionnel au LLM'
+#   ),
+#   exemple = c(
+#     'LinearModel(), AovSum(), cor(), chisq.test()',
+#     'F-test, T-test, coefficients, p-values, R2',
+#     'Contexte + résultats + consignes + format attendu',
+#     'generate = FALSE',
+#     'llm_engine + llm_model'
+#   ),
+#   stringsAsFactors = FALSE
+# )
+#
+# resume_package_entrainer <- data.frame(
+#   element = c(
+#     'Package installé',
+#     'Version détectée',
+#     'Nombre de fonctions trainer_* repérées ou attendues'
+#   ),
+#   valeur = c(
+#     as.character(entrainer_disponible),
+#     version_entrainer,
+#     as.character(length(fonctions_entrainer))
+#   ),
+#   stringsAsFactors = FALSE
+# )
+#
+# cat('## Présentation rapide de EnTraineR\\n\\n')
+# print(resume_package_entrainer, row.names = FALSE)
+#
+# cat('\\nFonctions repérées ou attendues :\\n')
+# print(data.frame(fonction = fonctions_entrainer), row.names = FALSE)
+#
+# cat('\\nIdée générale :\\n')
+# print(presentation_entrainer, row.names = FALSE)
+#
+# cat('\\nSchéma du workflow EnTraineR :\\n')
+# print(schema_entrainer, row.names = FALSE)
+#
+# cat('\\nMessage pédagogique :\\n')
+# cat('EnTraineR ne remplace pas l analyse statistique.\\n')
+# cat('Il organise le passage entre une sortie statistique explicite et un prompt contrôlé.\\n')
+# cat('La logique centrale reste : analyser -> extraire -> structurer -> prompter -> éventuellement générer.\\n')
+# ",
+# code_display = "
+#
+# # Vérifier si EnTraineR est disponible
+#
+# entrainer_disponible <- requireNamespace('EnTraineR', quietly = TRUE)
+#
+# if (entrainer_disponible) {
+#
+# version_entrainer <- as.character(
+# utils::packageVersion('EnTraineR')
+# )
+#
+# fonctions_entrainer <- grep(
+# '^trainer_',
+# getNamespaceExports('EnTraineR'),
+# value = TRUE
+# )
+#
+# } else {
+#
+# version_entrainer <- 'non installé'
+#
+# fonctions_entrainer <- c(
+# 'trainer_linear_model',
+# 'trainer_LinearModel',
+# 'trainer_aovsum',
+# 'trainer_AovSum',
+# 'trainer_cor',
+# 'trainer_chisq_test',
+# 'trainer_var',
+# 'trainer_MCA'
+# )
+# }
+#
+# # Résumer l état du package
+#
+# resume_package_entrainer <- data.frame(
+# element = c(
+# 'Package installé',
+# 'Version détectée',
+# 'Nombre de fonctions trainer_* repérées ou attendues'
+# ),
+# valeur = c(
+# as.character(entrainer_disponible),
+# version_entrainer,
+# as.character(length(fonctions_entrainer))
+# ),
+# stringsAsFactors = FALSE
+# )
+#
+# # Présenter le rôle de EnTraineR dans le workflow
+#
+# presentation_entrainer <- data.frame(
+# question = c(
+# 'Quel est le rôle du package ?',
+# 'Que reçoit-il en entrée ?',
+# 'Que produit-il en sortie ?',
+# 'Pourquoi generate = FALSE est important ?',
+# 'Comment se situe-t-il par rapport à NaileR ?'
+# ),
+# reponse = c(
+# 'Transformer des résultats statistiques explicites en prompts pédagogiques contrôlés.',
+# 'Des objets ou sorties issus de fonctions statistiques comme LinearModel() ou AovSum().',
+# 'Un prompt inspectable, et éventuellement une réponse LLM si la génération est activée.',
+# 'Cette option permet de vérifier le prompt avant tout appel au modèle.',
+# 'EnTraineR traite les analyses explicites ; NaileR prolonge la logique vers condes(), catdes(), les axes, les classes et le texte.'
+# ),
+# stringsAsFactors = FALSE
+# )
+#
+# # Schématiser le workflow EnTraineR
+#
+# schema_entrainer <- data.frame(
+# etape = c(
+# '1. Analyse statistique',
+# '2. Extraction des résultats',
+# '3. Construction du prompt',
+# '4. Contrôle humain',
+# '5. Appel optionnel au LLM'
+# ),
+# exemple = c(
+# 'LinearModel(), AovSum(), cor(), chisq.test()',
+# 'F-test, T-test, coefficients, p-values, R2',
+# 'Contexte + résultats + consignes + format attendu',
+# 'generate = FALSE',
+# 'llm_engine + llm_model'
+# ),
+# stringsAsFactors = FALSE
+# )
+#
+# # Examiner les objets créés
+#
+# resume_package_entrainer
+# data.frame(fonction = fonctions_entrainer)
+# presentation_entrainer
+# schema_entrainer
+# ",
+#     sortie_attendue = "Une présentation courte de EnTraineR, de son rôle et de sa place dans le workflow.",
+#     transition = "On peut maintenant entrer dans la mécanique pratique de EnTraineR.",
+#     pdf = "entrainer_presentation.pdf",
+#     question = "Quel package est présenté dans cette case ?",
+#     reponse = "entrainer"
+#   ),
 
 #   entrainer_options = make_case(
 #     partie = "entrainer",
@@ -2661,7 +2811,7 @@ objet_transition_entrainer
 
 boucle_y_x = make_case(
   partie = "r_sorties",
-  titre = "8. Boucler",
+  titre = "La Boucle d'Automatisation",
   objectif = "Passer de Y~X à Y~tous les X pour comprendre la logique d'automatisation.",
   has_plot = FALSE,
   pdf_on_run = "boucle_y_x.pdf",
@@ -2895,6 +3045,111 @@ cat('\\n')
 cat('Idée clé : on vient d automatiser une série de modèles simples.\\n')
 cat('La case suivante montrera que condes() généralise cette logique.\\n')
 ",
+code_display = "
+
+# Vérifier que FactoMineR est disponible
+
+if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+stop('Installe FactoMineR : install.packages('FactoMineR')')
+}
+
+# Définir la variable à expliquer
+
+y <- 'intention_achat'
+
+# Définir les variables explicatives à tester
+
+variables_x <- c(
+'prix_percu',
+'plaisir',
+'naturalite',
+'confiance',
+'ancrage_local',
+'usage_numerique',
+'sensibilite_env'
+)
+
+y
+variables_x
+
+# Construire une première formule automatiquement
+
+premier_x <- variables_x[1]
+
+formule_texte <- paste(y, '~', premier_x)
+formule_exemple <- as.formula(formule_texte)
+
+formule_texte
+formule_exemple
+
+# Ajuster un premier modèle sans boucle
+
+modele_exemple <- FactoMineR::LinearModel(
+formule_exemple,
+data = questionnaire,
+selection = 'none'
+)
+
+modele_exemple$Ftest
+modele_exemple$Ttest
+
+# Écrire une fonction qui ajuste un modèle pour une variable X
+
+ajuster_un_modele <- function(x) {
+
+formule_texte <- paste(y, '~', x)
+formule <- as.formula(formule_texte)
+
+modele <- FactoMineR::LinearModel(
+formule,
+data = questionnaire,
+selection = 'none'
+)
+
+modele
+}
+
+# Appliquer la fonction à toutes les variables X
+
+modeles_univaries <- lapply(
+variables_x,
+ajuster_un_modele
+)
+
+names(modeles_univaries) <- variables_x
+
+length(modeles_univaries)
+names(modeles_univaries)
+
+# Examiner les deux premiers modèles obtenus
+
+modeles_univaries[[1]]$Ftest
+modeles_univaries[[1]]$Ttest
+
+modeles_univaries[[2]]$Ftest
+modeles_univaries[[2]]$Ttest
+
+# Capturer les sorties complètes sous forme de texte
+
+textes_modeles_univaries <- lapply(
+modeles_univaries,
+function(modele) {
+paste(
+capture.output(print(modele)),
+collapse = '\n'
+)
+}
+)
+
+names(textes_modeles_univaries)
+
+# Examiner un premier texte capturé
+
+premier_texte <- textes_modeles_univaries[[1]]
+
+substr(premier_texte, 1, 1200)
+nchar(premier_texte)
+",
 sortie_attendue = "Une liste de modèles `modeles_univaries` et une liste de sorties textuelles `textes_modeles_univaries`, une par variable explicative.",
 transition = "On vient de faire à la main ce que condes() généralise pour décrire une variable quantitative.",
 question = "Quelle fonction R applique une même fonction à tous les éléments d une liste ou d un vecteur ?",
@@ -2903,7 +3158,7 @@ reponse = "lapply"
 
 condes = make_case(
   partie = "stat",
-  titre = "9. condes",
+  titre = "Le Versant Continu",
   objectif = "Utiliser condes() pour décrire une variable quantitative par toutes les autres.",
   has_plot = FALSE,
   code = "
@@ -3085,6 +3340,141 @@ cat('- res_condes : résultat complet de FactoMineR::condes()\\n')
 cat('\\n')
 cat('Idée clé : condes() généralise des analyses simples pour décrire une variable quantitative.\\n')
 ",
+code_display = "
+
+# Vérifier que FactoMineR est disponible
+
+if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+stop('Installe FactoMineR : install.packages('FactoMineR')')
+}
+
+# Préparer le tableau de description
+
+# On retire la variable textuelle libre.
+
+questionnaire_desc <- questionnaire[
+,
+setdiff(names(questionnaire), 'commentaire')
+]
+
+# Définir la variable quantitative à décrire
+
+y_condes <- 'intention_achat'
+
+num_var_condes <- which(
+names(questionnaire_desc) == y_condes
+)
+
+questionnaire_desc
+y_condes
+num_var_condes
+
+# Retrouver manuellement la logique côté variables quantitatives
+
+variables_quanti_condes <- setdiff(
+names(questionnaire_desc)[vapply(questionnaire_desc, is.numeric, logical(1))],
+c('id', y_condes)
+)
+
+correlations_y <- data.frame(
+variable = variables_quanti_condes,
+correlation = vapply(
+variables_quanti_condes,
+function(v) {
+cor(
+questionnaire_desc[[y_condes]],
+questionnaire_desc[[v]],
+use = 'pairwise.complete.obs'
+)
+},
+numeric(1)
+),
+row.names = NULL
+)
+
+correlations_y$abs_correlation <- abs(
+correlations_y$correlation
+)
+
+correlations_y <- correlations_y[
+order(correlations_y$abs_correlation, decreasing = TRUE),
+]
+
+correlations_y$correlation <- round(
+correlations_y$correlation,
+3
+)
+
+correlations_y$abs_correlation <- round(
+correlations_y$abs_correlation,
+3
+)
+
+correlations_y
+
+# Retrouver manuellement la logique côté variables qualitatives
+
+variables_quali_condes <- names(questionnaire_desc)[
+vapply(questionnaire_desc, is.factor, logical(1))
+]
+
+calcul_eta2 <- function(variable_quali) {
+
+formule <- as.formula(
+paste(y_condes, '~', variable_quali)
+)
+
+tab <- summary(
+aov(formule, data = questionnaire_desc)
+)[[1]]
+
+ss <- tab[['Sum Sq']]
+eta2 <- ss[1] / sum(ss)
+
+data.frame(
+variable = variable_quali,
+eta2 = eta2,
+p_value = tab[['Pr(>F)']][1],
+row.names = NULL
+)
+}
+
+liaisons_quali_y <- do.call(
+rbind,
+lapply(variables_quali_condes, calcul_eta2)
+)
+
+liaisons_quali_y <- liaisons_quali_y[
+order(liaisons_quali_y$eta2, decreasing = TRUE),
+]
+
+liaisons_quali_y$eta2 <- round(
+liaisons_quali_y$eta2,
+3
+)
+
+liaisons_quali_y$p_value <- signif(
+liaisons_quali_y$p_value,
+3
+)
+
+liaisons_quali_y
+
+# Utiliser FactoMineR::condes()
+
+res_condes <- FactoMineR::condes(
+questionnaire_desc,
+num.var = num_var_condes
+)
+
+# Examiner le contenu de l objet retourné
+
+names(res_condes)
+
+# Afficher le résultat complet
+
+res_condes
+",
 sortie_attendue = "Une description de `intention_achat` par les variables quantitatives et qualitatives, avec un rappel de la logique statistique sous-jacente.",
 transition = "On passe maintenant à la description d'une variable qualitative avec catdes().",
 question = "Quelle fonction FactoMineR décrit une variable quantitative continue ?",
@@ -3093,7 +3483,7 @@ reponse = "condes"
 
 catdes = make_case(
   partie = "stat",
-  titre = "10. catdes",
+  titre = "Le Versant Catégoriel",
   objectif = "Utiliser catdes() pour décrire une variable qualitative ou des groupes.",
   has_plot = FALSE,
   code = "
@@ -3250,6 +3640,93 @@ cat('- res_catdes : résultat complet de FactoMineR::catdes()\\n')
 cat('\\n')
 cat('Idée clé : catdes() généralise des ANOVA et tableaux croisés pour décrire des groupes.\\n')
 ",
+code_display = "
+
+# Vérifier que FactoMineR est disponible
+
+if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+stop('Installe FactoMineR : install.packages('FactoMineR')')
+}
+
+# Identifier la variable qualitative à décrire
+
+y_catdes <- 'profil_alim'
+
+num_var_catdes <- which(
+names(questionnaire_desc) == y_catdes
+)
+
+y_catdes
+num_var_catdes
+
+# Examiner la répartition des groupes
+
+table(questionnaire_desc[[y_catdes]])
+
+# Comparer quelques moyennes selon le profil alimentaire
+
+variables_quanti_exemple <- c(
+'satisfaction',
+'intention_achat',
+'prix_percu',
+'naturalite',
+'ancrage_local'
+)
+
+moyennes_par_profil <- aggregate(
+questionnaire_desc[variables_quanti_exemple],
+by = list(profil = questionnaire_desc[[y_catdes]]),
+FUN = mean
+)
+
+moyennes_par_profil[, -1] <- round(
+moyennes_par_profil[, -1],
+2
+)
+
+moyennes_par_profil
+
+# Exemple d ANOVA simple pour une variable quantitative
+
+anova_satisfaction_profil <- aov(
+satisfaction ~ profil_alim,
+data = questionnaire_desc
+)
+
+summary(anova_satisfaction_profil)
+
+# Exemple de croisement entre deux variables qualitatives
+
+table_profil_produit <- table(
+questionnaire_desc[[y_catdes]],
+questionnaire_desc$type_produit
+)
+
+table_profil_produit
+
+# Test du khi-deux associé au tableau croisé
+
+test_chi2_profil_produit <- chisq.test(
+table_profil_produit
+)
+
+test_chi2_profil_produit
+
+# Utiliser FactoMineR::catdes()
+
+res_catdes <- FactoMineR::catdes(
+questionnaire_desc,
+num.var = num_var_catdes
+)
+
+# Examiner le contenu de l objet retourné
+
+names(res_catdes)
+
+# Afficher le résultat complet
+
+res_catdes
+",
 sortie_attendue = "Une description des profils alimentaires par variables quantitatives et qualitatives, avec un rappel de la logique statistique sous-jacente.",
 transition = "Les sorties condes/catdes sont plus riches : il faut apprendre à les manipuler.",
 question = "Quelle fonction FactoMineR décrit une variable qualitative ou des groupes ?",
@@ -3258,7 +3735,7 @@ reponse = "catdes"
 
 manip_condes_catdes = make_case(
   partie = "r_sorties",
-  titre = "11. Faire un prompt (3)",
+  titre = "L'Usine à Prompts",
   objectif = "Inspecter et transformer les sorties condes/catdes en texte exploitable.",
   has_plot = FALSE,
   code = "
@@ -3504,17 +3981,438 @@ cat('\\n')
 cat('Idée clé : on sait maintenant transformer des sorties FactoMineR riches\\n')
 cat('en prompts structurés. C est précisément ce que NaileR va systématiser.\\n')
 ",
+code_display = "
+
+# Inspecter les objets retournés par condes() et catdes()
+
+names(res_condes)
+names(res_catdes)
+
+# Observer leur structure sans tout afficher
+
+str(res_condes, max.level = 2)
+str(res_catdes, max.level = 2)
+
+# Capturer les sorties complètes sous forme de texte
+
+texte_condes <- paste(
+capture.output(print(res_condes)),
+collapse = '\n'
+)
+
+texte_catdes <- paste(
+capture.output(print(res_catdes)),
+collapse = '\n'
+)
+
+# Vérifier les textes capturés
+
+nchar(texte_condes)
+nchar(texte_catdes)
+
+substr(texte_condes, 1, 1200)
+substr(texte_catdes, 1, 1200)
+
+# Construire une fonction générique pour produire un prompt
+
+construire_prompt_description <- function(titre,
+variable_decrite,
+type_variable,
+texte_sortie,
+consignes) {
+
+paste(
+titre,
+'',
+paste0('Variable décrite : ', variable_decrite, '.'),
+paste0('Type de variable décrite : ', type_variable, '.'),
+'',
+'Sortie statistique utilisée :',
+texte_sortie,
+'',
+'Consignes :',
+paste0('- ', consignes, collapse = '\n'),
+sep = '\n'
+)
+}
+
+# Définir les consignes pour condes()
+
+consignes_condes <- c(
+'identifier les variables les plus liées à intention_achat',
+'distinguer variables quantitatives et variables qualitatives',
+'interpréter les associations sans parler de causalité',
+'produire une synthèse courte et structurée'
+)
+
+# Construire le prompt pour condes()
+
+prompt_condes <- construire_prompt_description(
+titre = '# Interprétation de condes()',
+variable_decrite = 'intention_achat',
+type_variable = 'quantitative',
+texte_sortie = texte_condes,
+consignes = consignes_condes
+)
+
+# Définir les consignes pour catdes()
+
+consignes_catdes <- c(
+'décrire chaque profil alimentaire',
+'séparer les preuves quantitatives et les modalités qualitatives',
+'ne pas surinterpréter les associations faibles',
+'proposer une synthèse lisible des profils'
+)
+
+# Construire le prompt pour catdes()
+
+prompt_catdes <- construire_prompt_description(
+titre = '# Interprétation de catdes()',
+variable_decrite = 'profil_alim',
+type_variable = 'qualitative',
+texte_sortie = texte_catdes,
+consignes = consignes_catdes
+)
+
+# Examiner les prompts construits
+
+substr(prompt_condes, 1, 1500)
+nchar(prompt_condes)
+
+substr(prompt_catdes, 1, 1500)
+nchar(prompt_catdes)
+",
 sortie_attendue = "Des textes et prompts issus de condes/catdes : `texte_condes`, `texte_catdes`, `prompt_condes`, `prompt_catdes`, construits de manière plus générique.",
 transition = "NaileR prolonge cette logique en produisant des artefacts et prompts plus contrôlés.",
 question = "Quelle fonction vient-on d'utiliser pour décrire la variable qualitative `profil_alim` ?",
 reponse = "catdes"
 ),
 
+nailer_presentation = make_case(
+  partie = "entrainer",
+  titre = "L'Arsenal NaileR",
+  objectif = "Présenter le rôle de NaileR dans le workflow : de FactoMineR aux prompts, puis aux variables latentes et aux textes.",
+  has_plot = FALSE,
+  pdf_on_run = "NaileR.pdf",
+  code = "
+# ============================================================
+# Case 12b : présenter le package NaileR
+# ============================================================
+
+# Objectif de cette case :
+# prendre du recul après un premier exemple avec nail_catdes().
+#
+# NaileR est présenté ici comme un package qui prolonge
+# les sorties de FactoMineR vers des prompts, artefacts
+# et interprétations contrôlées.
+
+# ------------------------------------------------------------
+# 1. Vérifier les fonctions disponibles
+# ------------------------------------------------------------
+
+nailer_disponible <- requireNamespace('NaileR', quietly = TRUE)
+
+if (nailer_disponible) {
+
+  exports_nailer <- getNamespaceExports('NaileR')
+
+  fonctions_nailer <- grep(
+    '^nail_',
+    exports_nailer,
+    value = TRUE
+  )
+
+} else {
+
+  exports_nailer <- character(0)
+
+  fonctions_nailer <- c(
+    'nail_condes',
+    'nail_catdes',
+    'nail_textual',
+    'nail_textual_prep',
+    'nail_textual_contextualized'
+  )
+}
+
+fonctions_nailer_df <- data.frame(
+  fonction = fonctions_nailer,
+  stringsAsFactors = FALSE
+)
+
+cat('\\n============================================================\\n')
+cat('1. Fonctions NaileR repérées ou attendues\\n')
+cat('============================================================\\n')
+cat('Package NaileR installé : ', nailer_disponible, '\\n', sep = '')
+cat('Objet créé : fonctions_nailer\\n')
+print(fonctions_nailer_df, row.names = FALSE)
+
+
+# ------------------------------------------------------------
+# 2. Situer NaileR dans le workflow du tutoriel
+# ------------------------------------------------------------
+
+schema_nailer <- data.frame(
+  etape = c(
+    'FactoMineR',
+    'R',
+    'Prompt manuel',
+    'NaileR',
+    'LLM éventuel'
+  ),
+  role = c(
+    'produire des sorties statistiques structurées',
+    'inspecter, extraire et transformer les objets',
+    'construire une demande interprétative contrôlée',
+    'systématiser la production de prompts et d artefacts',
+    'générer une interprétation à partir d un prompt contrôlé'
+  ),
+  exemple = c(
+    'catdes(), condes(), PCA(), HCPC()',
+    'names(), str(), capture.output(), paste()',
+    'prompt_catdes, prompt_condes',
+    'nail_catdes(), nail_condes(), nail_textual()',
+    'Ollama, Gemini ou autre moteur'
+  ),
+  stringsAsFactors = FALSE
+)
+
+cat('\\n============================================================\\n')
+cat('2. Place de NaileR dans le workflow\\n')
+cat('============================================================\\n')
+cat('Objet créé : schema_nailer\\n')
+print(schema_nailer, row.names = FALSE)
+
+
+# ------------------------------------------------------------
+# 3. Distinguer EnTraineR et NaileR
+# ------------------------------------------------------------
+
+comparaison_entrainer_nailer <- data.frame(
+  package = c('EnTraineR', 'NaileR'),
+  point_de_depart = c(
+    'analyses statistiques simples ou pédagogiques',
+    'sorties FactoMineR plus riches et objets descriptifs'
+  ),
+  objectif = c(
+    'apprendre à construire et contrôler des prompts statistiques',
+    'produire des prompts et artefacts à partir de sorties complexes'
+  ),
+  exemples = c(
+    'régression, ANOVA, corrélation, tests',
+    'condes, catdes, dimensions latentes, classes, verbatims'
+  ),
+  stringsAsFactors = FALSE
+)
+
+cat('\\n============================================================\\n')
+cat('3. Différence pédagogique entre EnTraineR et NaileR\\n')
+cat('============================================================\\n')
+cat('Objet créé : comparaison_entrainer_nailer\\n')
+print(comparaison_entrainer_nailer, row.names = FALSE)
+
+
+# ------------------------------------------------------------
+# 4. Préparer la suite : explicite vers latent
+# ------------------------------------------------------------
+
+flow_suivant_nailer <- data.frame(
+  objet = c(
+    'variable qualitative explicite',
+    'variable de classe latente',
+    'dimension factorielle',
+    'verbatims par classe',
+    'synthèse statistique + textuelle'
+  ),
+  exemple = c(
+    'profil_alim',
+    'classe_hcpc',
+    'Dim.1 issue de l ACP',
+    'commentaires regroupés par classe',
+    'interprétation finale des profils'
+  ),
+  fonction_ou_logique = c(
+    'nail_catdes()',
+    'catdes() puis logique NaileR',
+    'condes() puis prompt latent',
+    'nail_textual() / nail_textual_prep()',
+    'nail_textual_contextualized()'
+  ),
+  stringsAsFactors = FALSE
+)
+
+cat('\\n============================================================\\n')
+cat('4. Suite du workflow : de l explicite au latent\\n')
+cat('============================================================\\n')
+cat('Objet créé : flow_suivant_nailer\\n')
+print(flow_suivant_nailer, row.names = FALSE)
+
+
+# ------------------------------------------------------------
+# 5. Message pédagogique
+# ------------------------------------------------------------
+
+cat('\\n============================================================\\n')
+cat('Résumé pédagogique\\n')
+cat('============================================================\\n')
+cat('NaileR ne remplace pas FactoMineR.\\n')
+cat('NaileR prolonge les sorties de FactoMineR.\\n')
+cat('\\n')
+cat('Dans les cases précédentes, nous avons construit la logique à la main :\\n')
+cat('1. produire une sortie statistique ;\\n')
+cat('2. récupérer cette sortie dans R ;\\n')
+cat('3. transformer cette sortie en texte ;\\n')
+cat('4. construire un prompt contrôlé.\\n')
+cat('\\n')
+cat('La case suivante montrera un premier exemple de cette automatisation avec nail_catdes().\\n')
+cat('La suite du tutoriel va déplacer cette logique vers des objets moins explicites :\\n')
+cat('- classes issues d une classification ;\\n')
+cat('- dimensions factorielles ;\\n')
+cat('- profils textuels ;\\n')
+cat('- interprétation de variables latentes.\\n')
+
+
+# ------------------------------------------------------------
+# 6. Objets disponibles pour la suite
+# ------------------------------------------------------------
+
+cat('\\n============================================================\\n')
+cat('Objets disponibles pour la suite\\n')
+cat('============================================================\\n')
+cat('- fonctions_nailer : fonctions nail_* repérées ou attendues\\n')
+cat('- schema_nailer : place de NaileR dans le workflow\\n')
+cat('- comparaison_entrainer_nailer : distinction EnTraineR / NaileR\\n')
+cat('- flow_suivant_nailer : transition vers latent et données textuelles\\n')
+",
+code_display = "
+
+# Vérifier si NaileR est disponible
+
+nailer_disponible <- requireNamespace('NaileR', quietly = TRUE)
+
+if (nailer_disponible) {
+
+exports_nailer <- getNamespaceExports('NaileR')
+
+fonctions_nailer <- grep(
+'^nail_',
+exports_nailer,
+value = TRUE
+)
+
+} else {
+
+exports_nailer <- character(0)
+
+fonctions_nailer <- c(
+'nail_condes',
+'nail_catdes',
+'nail_textual',
+'nail_textual_prep',
+'nail_textual_contextualized'
+)
+}
+
+fonctions_nailer_df <- data.frame(
+fonction = fonctions_nailer,
+stringsAsFactors = FALSE
+)
+
+nailer_disponible
+fonctions_nailer_df
+
+# Situer NaileR dans le workflow du tutoriel
+
+schema_nailer <- data.frame(
+etape = c(
+'FactoMineR',
+'R',
+'Prompt manuel',
+'NaileR',
+'LLM éventuel'
+),
+role = c(
+'produire des sorties statistiques structurées',
+'inspecter, extraire et transformer les objets',
+'construire une demande interprétative contrôlée',
+'systématiser la production de prompts et d artefacts',
+'générer une interprétation à partir d un prompt contrôlé'
+),
+exemple = c(
+'catdes(), condes(), PCA(), HCPC()',
+'names(), str(), capture.output(), paste()',
+'prompt_catdes, prompt_condes',
+'nail_catdes(), nail_condes(), nail_textual()',
+'Ollama, Gemini ou autre moteur'
+),
+stringsAsFactors = FALSE
+)
+
+schema_nailer
+
+# Distinguer EnTraineR et NaileR
+
+comparaison_entrainer_nailer <- data.frame(
+package = c('EnTraineR', 'NaileR'),
+point_de_depart = c(
+'analyses statistiques simples ou pédagogiques',
+'sorties FactoMineR plus riches et objets descriptifs'
+),
+objectif = c(
+'apprendre à construire et contrôler des prompts statistiques',
+'produire des prompts et artefacts à partir de sorties complexes'
+),
+exemples = c(
+'régression, ANOVA, corrélation, tests',
+'condes, catdes, dimensions latentes, classes, verbatims'
+),
+stringsAsFactors = FALSE
+)
+
+comparaison_entrainer_nailer
+
+# Préparer la suite : de l explicite vers le latent et le textuel
+
+flow_suivant_nailer <- data.frame(
+objet = c(
+'variable qualitative explicite',
+'variable de classe latente',
+'dimension factorielle',
+'verbatims par classe',
+'synthèse statistique + textuelle'
+),
+exemple = c(
+'profil_alim',
+'classe_hcpc',
+'Dim.1 issue de l ACP',
+'commentaires regroupés par classe',
+'interprétation finale des profils'
+),
+fonction_ou_logique = c(
+'nail_catdes()',
+'catdes() puis logique NaileR',
+'condes() puis prompt latent',
+'nail_textual() / nail_textual_prep()',
+'nail_textual_contextualized()'
+),
+stringsAsFactors = FALSE
+)
+
+flow_suivant_nailer
+",
+
+sortie_attendue = "Une présentation structurée de NaileR : fonctions, rôle dans le workflow, différence avec EnTraineR et transition vers les variables latentes et les textes.",
+transition = "On passe ensuite au flow : variable de classe latente, description statistique et analyse textuelle.",
+question = "Quel package prolonge les sorties FactoMineR vers des prompts et artefacts interprétables ?",
+reponse = "nailer"
+),
+
 nailer_catdes_exemple = make_case(
   partie = "entrainer",
-  titre = "12a. Exemple NaileR",
+  titre = "L'Épreuve NaileR",
   objectif = "Utiliser nail_catdes() sur une variable qualitative du jeu de données.",
   has_plot = FALSE,
+  pdf_on_run = "nailer_exemple.pdf",
   code = "
 # ============================================================
 # Case 12a : premier exemple avec NaileR et nail_catdes()
@@ -3746,219 +4644,163 @@ cat('- prompt_nail_catdes : prompt extrait si disponible\\n')
 cat('- comparaison_catdes_nailer : comparaison entre travail manuel et NaileR\\n')
 cat('\\n')
 cat('Idée clé : nail_catdes() prolonge le travail manuel réalisé autour de catdes().\\n')
-cat('La case suivante prend du recul pour présenter le package NaileR.\\n')
+cat('La case suivante passe de la variable explicite profil_alim à une classe latente construite par ACP + HCPC.\\n')
+",
+code_display = "
+
+# Vérifier la disponibilité de NaileR
+
+nailer_disponible <- requireNamespace('NaileR', quietly = TRUE)
+
+nailer_disponible
+
+# Définir la variable qualitative à décrire
+
+var_catdes_nailer <- 'profil_alim'
+
+num_var_catdes_nailer <- which(
+names(questionnaire_desc) == var_catdes_nailer
+)
+
+var_catdes_nailer
+num_var_catdes_nailer
+
+# Examiner la répartition de la variable
+
+table(questionnaire_desc[[var_catdes_nailer]])
+
+# Rappeler le travail fait à la main
+
+res_catdes
+texte_catdes
+
+if (exists('prompt_catdes')) {
+substr(prompt_catdes, 1, 1000)
+nchar(prompt_catdes)
+}
+
+# Appeler nail_catdes() si NaileR est disponible
+
+res_nail_catdes <- NULL
+
+if (nailer_disponible) {
+
+exports_nailer <- getNamespaceExports('NaileR')
+
+if ('nail_catdes' %in% exports_nailer) {
+
+```
+res_nail_catdes <- tryCatch(
+  NaileR::nail_catdes(
+    questionnaire_desc,
+    num.var = num_var_catdes_nailer,
+    generate = FALSE
+  ),
+  error = function(e) {
+    paste('nail_catdes non exécuté :', conditionMessage(e))
+  }
+)
+```
+
+} else {
+
+```
+res_nail_catdes <- 'La fonction nail_catdes() n est pas exportée par cette version de NaileR.'
+```
+
+}
+
+} else {
+
+res_nail_catdes <- 'NaileR n est pas installé : on conserve le prompt manuel prompt_catdes comme point de comparaison.'
+}
+
+# Inspecter l objet retourné
+
+class(res_nail_catdes)
+
+if (is.list(res_nail_catdes)) {
+names(res_nail_catdes)
+} else {
+res_nail_catdes
+}
+
+# Fonction utilitaire pour extraire un champ possible
+
+extraire_champ_possible <- function(objet, noms_possibles) {
+
+if (!is.list(objet)) {
+return(NULL)
+}
+
+noms_objet <- names(objet)
+
+if (is.null(noms_objet)) {
+return(NULL)
+}
+
+for (nom in noms_possibles) {
+if (nom %in% noms_objet) {
+return(objet[[nom]])
+}
+}
+
+NULL
+}
+
+# Essayer d extraire le prompt produit par nail_catdes()
+
+prompt_nail_catdes <- extraire_champ_possible(
+res_nail_catdes,
+c('prompt', 'prompts', 'request', 'text_prompt')
+)
+
+if (!is.null(prompt_nail_catdes)) {
+
+prompt_nail_catdes <- paste(
+as.character(prompt_nail_catdes),
+collapse = '\n'
+)
+
+substr(prompt_nail_catdes, 1, 1500)
+nchar(prompt_nail_catdes)
+}
+
+# Comparer le travail manuel et l automatisation NaileR
+
+comparaison_catdes_nailer <- data.frame(
+etape = c(
+'catdes()',
+'capture.output()',
+'prompt manuel',
+'nail_catdes()'
+),
+role = c(
+'décrire statistiquement une variable qualitative',
+'transformer la sortie en texte',
+'organiser une demande interprétative',
+'systématiser cette logique dans NaileR'
+),
+objet = c(
+'res_catdes',
+'texte_catdes',
+'prompt_catdes',
+'res_nail_catdes'
+),
+stringsAsFactors = FALSE
+)
+
+comparaison_catdes_nailer
 ",
 sortie_attendue = "Un premier exemple de `nail_catdes()` appliqué à `profil_alim`, avec comparaison entre le travail manuel et l'automatisation NaileR.",
-transition = "On prend ensuite du recul pour présenter le rôle général du package NaileR.",
+transition = "On passe maintenant des variables explicites aux classes latentes construites par ACP et HCPC.",
 question = "Quelle fonction NaileR utilise-t-on ici pour prolonger catdes() ?",
 reponse = "nail_catdes"
 ),
 
-nailer_presentation = make_case(
-  partie = "entrainer",
-  titre = "12b. Présenter NaileR",
-  objectif = "Présenter le rôle de NaileR dans le workflow : de FactoMineR aux prompts, puis aux variables latentes et aux textes.",
-  has_plot = FALSE,
-  pdf_on_run = "NaileR.pdf",
-  code = "
-# ============================================================
-# Case 12b : présenter le package NaileR
-# ============================================================
-
-# Objectif de cette case :
-# prendre du recul après un premier exemple avec nail_catdes().
-#
-# NaileR est présenté ici comme un package qui prolonge
-# les sorties de FactoMineR vers des prompts, artefacts
-# et interprétations contrôlées.
-
-# ------------------------------------------------------------
-# 1. Vérifier les fonctions disponibles
-# ------------------------------------------------------------
-
-nailer_disponible <- requireNamespace('NaileR', quietly = TRUE)
-
-if (nailer_disponible) {
-
-  exports_nailer <- getNamespaceExports('NaileR')
-
-  fonctions_nailer <- grep(
-    '^nail_',
-    exports_nailer,
-    value = TRUE
-  )
-
-} else {
-
-  exports_nailer <- character(0)
-
-  fonctions_nailer <- c(
-    'nail_condes',
-    'nail_catdes',
-    'nail_textual',
-    'nail_textual_prep',
-    'nail_textual_contextualized'
-  )
-}
-
-fonctions_nailer_df <- data.frame(
-  fonction = fonctions_nailer,
-  stringsAsFactors = FALSE
-)
-
-cat('\\n============================================================\\n')
-cat('1. Fonctions NaileR repérées ou attendues\\n')
-cat('============================================================\\n')
-cat('Package NaileR installé : ', nailer_disponible, '\\n', sep = '')
-cat('Objet créé : fonctions_nailer\\n')
-print(fonctions_nailer_df, row.names = FALSE)
-
-
-# ------------------------------------------------------------
-# 2. Situer NaileR dans le workflow du tutoriel
-# ------------------------------------------------------------
-
-schema_nailer <- data.frame(
-  etape = c(
-    'FactoMineR',
-    'R',
-    'Prompt manuel',
-    'NaileR',
-    'LLM éventuel'
-  ),
-  role = c(
-    'produire des sorties statistiques structurées',
-    'inspecter, extraire et transformer les objets',
-    'construire une demande interprétative contrôlée',
-    'systématiser la production de prompts et d artefacts',
-    'générer une interprétation à partir d un prompt contrôlé'
-  ),
-  exemple = c(
-    'catdes(), condes(), PCA(), HCPC()',
-    'names(), str(), capture.output(), paste()',
-    'prompt_catdes, prompt_condes',
-    'nail_catdes(), nail_condes(), nail_textual()',
-    'Ollama, Gemini ou autre moteur'
-  ),
-  stringsAsFactors = FALSE
-)
-
-cat('\\n============================================================\\n')
-cat('2. Place de NaileR dans le workflow\\n')
-cat('============================================================\\n')
-cat('Objet créé : schema_nailer\\n')
-print(schema_nailer, row.names = FALSE)
-
-
-# ------------------------------------------------------------
-# 3. Distinguer EnTraineR et NaileR
-# ------------------------------------------------------------
-
-comparaison_entrainer_nailer <- data.frame(
-  package = c('EnTraineR', 'NaileR'),
-  point_de_depart = c(
-    'analyses statistiques simples ou pédagogiques',
-    'sorties FactoMineR plus riches et objets descriptifs'
-  ),
-  objectif = c(
-    'apprendre à construire et contrôler des prompts statistiques',
-    'produire des prompts et artefacts à partir de sorties complexes'
-  ),
-  exemples = c(
-    'régression, ANOVA, corrélation, tests',
-    'condes, catdes, dimensions latentes, classes, verbatims'
-  ),
-  stringsAsFactors = FALSE
-)
-
-cat('\\n============================================================\\n')
-cat('3. Différence pédagogique entre EnTraineR et NaileR\\n')
-cat('============================================================\\n')
-cat('Objet créé : comparaison_entrainer_nailer\\n')
-print(comparaison_entrainer_nailer, row.names = FALSE)
-
-
-# ------------------------------------------------------------
-# 4. Préparer la suite : explicite vers latent
-# ------------------------------------------------------------
-
-flow_suivant_nailer <- data.frame(
-  objet = c(
-    'variable qualitative explicite',
-    'variable de classe latente',
-    'dimension factorielle',
-    'verbatims par classe',
-    'synthèse statistique + textuelle'
-  ),
-  exemple = c(
-    'profil_alim',
-    'classe_hcpc',
-    'Dim.1 issue de l ACP',
-    'commentaires regroupés par classe',
-    'interprétation finale des profils'
-  ),
-  fonction_ou_logique = c(
-    'nail_catdes()',
-    'catdes() puis logique NaileR',
-    'condes() puis prompt latent',
-    'nail_textual() / nail_textual_prep()',
-    'nail_textual_contextualized()'
-  ),
-  stringsAsFactors = FALSE
-)
-
-cat('\\n============================================================\\n')
-cat('4. Suite du workflow : de l explicite au latent\\n')
-cat('============================================================\\n')
-cat('Objet créé : flow_suivant_nailer\\n')
-print(flow_suivant_nailer, row.names = FALSE)
-
-
-# ------------------------------------------------------------
-# 5. Message pédagogique
-# ------------------------------------------------------------
-
-cat('\\n============================================================\\n')
-cat('Résumé pédagogique\\n')
-cat('============================================================\\n')
-cat('NaileR ne remplace pas FactoMineR.\\n')
-cat('NaileR prolonge les sorties de FactoMineR.\\n')
-cat('\\n')
-cat('Dans les cases précédentes, nous avons construit la logique à la main :\\n')
-cat('1. produire une sortie statistique ;\\n')
-cat('2. récupérer cette sortie dans R ;\\n')
-cat('3. transformer cette sortie en texte ;\\n')
-cat('4. construire un prompt contrôlé.\\n')
-cat('\\n')
-cat('Avec nail_catdes(), nous avons vu un premier exemple de cette automatisation.\\n')
-cat('La suite du tutoriel va déplacer cette logique vers des objets moins explicites :\\n')
-cat('- classes issues d une classification ;\\n')
-cat('- dimensions factorielles ;\\n')
-cat('- profils textuels ;\\n')
-cat('- interprétation de variables latentes.\\n')
-
-
-# ------------------------------------------------------------
-# 6. Objets disponibles pour la suite
-# ------------------------------------------------------------
-
-cat('\\n============================================================\\n')
-cat('Objets disponibles pour la suite\\n')
-cat('============================================================\\n')
-cat('- fonctions_nailer : fonctions nail_* repérées ou attendues\\n')
-cat('- schema_nailer : place de NaileR dans le workflow\\n')
-cat('- comparaison_entrainer_nailer : distinction EnTraineR / NaileR\\n')
-cat('- flow_suivant_nailer : transition vers latent et données textuelles\\n')
-",
-sortie_attendue = "Une présentation structurée de NaileR : fonctions, rôle dans le workflow, différence avec EnTraineR et transition vers les variables latentes et les textes.",
-transition = "On passe ensuite au flow : variable de classe latente, description statistique et analyse textuelle.",
-question = "Quel package prolonge les sorties FactoMineR vers des prompts et artefacts interprétables ?",
-reponse = "nailer"
-),
-
 acp_hcpc_classes = make_case(
   partie = "stat",
-  titre = "13. ACP + HCPC",
+  titre = "Le Sommet Latent",
   objectif = "Construire une variable de classe (latente) à partir de variables actives.",
   has_plot = TRUE,
   code = "
@@ -4138,6 +4980,112 @@ cat('Elle résulte d une ACP puis d une classification.\\n')
 cat('\\n')
 cat('La prochaine étape consiste à décrire statistiquement ces classes.\\n')
 ",
+code_display = "
+
+# Vérifier les prérequis
+
+if (!exists('questionnaire')) {
+stop(
+'L objet questionnaire est absent. Exécute d abord la case 1.',
+call. = FALSE
+)
+}
+
+if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+stop(
+'Le package FactoMineR est nécessaire pour cette case.',
+call. = FALSE
+)
+}
+
+# Définir les variables actives qui vont construire la typologie
+
+variables_typologie <- c(
+'attention_prix',
+'contrainte_temps',
+'cuisine_maison',
+'lecture_labels',
+'achat_local',
+'ouverture_innovation',
+'usage_appli_alim',
+'preoccupation_sante',
+'autonomie_alimentaire',
+'confiance_labels'
+)
+
+# Vérifier que toutes les variables actives sont présentes
+
+variables_absentes <- setdiff(
+variables_typologie,
+names(questionnaire)
+)
+
+if (length(variables_absentes) > 0) {
+stop(
+'Variables de typologie absentes du questionnaire : ',
+paste(variables_absentes, collapse = ', '),
+call. = FALSE
+)
+}
+
+variables_typologie
+
+# Préparer le tableau actif pour l ACP
+
+donnees_typologie <- questionnaire[, variables_typologie]
+
+# Vérifier que les variables actives sont bien numériques
+
+variables_non_numeriques <- names(donnees_typologie)[
+!vapply(donnees_typologie, is.numeric, logical(1))
+]
+
+if (length(variables_non_numeriques) > 0) {
+stop(
+'Les variables suivantes ne sont pas numériques : ',
+paste(variables_non_numeriques, collapse = ', '),
+'. Une ACP nécessite ici des variables quantitatives.',
+call. = FALSE
+)
+}
+
+dim(donnees_typologie)
+head(donnees_typologie, 3)
+
+# Réaliser l ACP sur les variables actives
+
+res_pca <- FactoMineR::PCA(
+donnees_typologie,
+scale.unit = TRUE,
+graph = FALSE
+)
+
+# Examiner l inertie des premiers axes
+
+res_pca$eig
+
+# Réaliser la classification HCPC à partir de l ACP
+
+set.seed(123)
+
+res_hcpc <- FactoMineR::HCPC(
+res_pca,
+nb.clust = 3,
+graph = FALSE
+)
+
+# Examiner la variable de classe construite
+
+table(res_hcpc$data.clust$clust)
+
+# Visualiser les classes sur le premier plan factoriel
+
+FactoMineR::plot.HCPC(
+res_hcpc,
+choice = 'map',
+draw.tree = FALSE
+)
+",
 sortie_attendue = "Une ACP `res_pca`, une classification `res_hcpc` et une variable `res_hcpc$data.clust$clust`.",
 transition = "On décrit maintenant les classes construites avec catdes(), puis avec nail_catdes().",
 question = "Quelle fonction de FactoMineR permet de construire une classification à partir d'une ACP ?",
@@ -4146,7 +5094,7 @@ reponse = "HCPC"
 
 decrire_classes = make_case(
   partie = "stat",
-  titre = "14. Décrire les classes",
+  titre = "Le Profilage",
   objectif = "Décrire la variable de classe construite avec catdes() et nail_catdes().",
   has_plot = FALSE,
   code = "
@@ -4378,6 +5326,161 @@ cat('nail_catdes() prolonge cette logique vers un prompt ou une interprétation 
 cat('\\n')
 cat('La prochaine étape ajoute les verbatims associés à ces classes.\\n')
 ",
+code_display = "
+
+# Vérifier les prérequis
+
+if (!exists('questionnaire')) {
+stop(
+'L objet questionnaire est absent. Exécute d abord la case 1.',
+call. = FALSE
+)
+}
+
+if (!exists('res_hcpc')) {
+stop(
+'L objet res_hcpc est absent. Exécute d abord la case 13.',
+call. = FALSE
+)
+}
+
+if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+stop(
+'Le package FactoMineR est nécessaire pour cette case.',
+call. = FALSE
+)
+}
+
+# Ajouter au questionnaire la variable de classe construite par HCPC
+
+questionnaire$classe_hcpc <- res_hcpc$data.clust$clust
+
+# Préparer le tableau de description des classes
+
+# On retire l identifiant et le commentaire libre.
+
+questionnaire_desc_classes <- questionnaire[
+,
+setdiff(names(questionnaire), c('id', 'commentaire'))
+]
+
+# Repérer la position de la variable de classe
+
+num_var_classe <- which(
+names(questionnaire_desc_classes) == 'classe_hcpc'
+)
+
+# Examiner la répartition des classes
+
+table(questionnaire_desc_classes$classe_hcpc)
+
+# Décrire les classes avec FactoMineR::catdes()
+
+res_catdes_classes <- FactoMineR::catdes(
+questionnaire_desc_classes,
+num.var = num_var_classe
+)
+
+# Examiner l objet retourné par catdes()
+
+names(res_catdes_classes)
+res_catdes_classes
+
+# Capturer la sortie catdes() sous forme de texte
+
+texte_catdes_classes <- paste(
+capture.output(print(res_catdes_classes)),
+collapse = '\n'
+)
+
+substr(texte_catdes_classes, 1, 2500)
+nchar(texte_catdes_classes)
+
+# Prolonger avec NaileR::nail_catdes() si NaileR est disponible
+
+if (!requireNamespace('NaileR', quietly = TRUE)) {
+
+res_nail_catdes_classes <- 'NaileR n est pas installé : nail_catdes() ne peut pas être exécuté.'
+
+} else {
+
+res_nail_catdes_classes <- tryCatch(
+NaileR::nail_catdes(
+questionnaire_desc_classes,
+num.var = num_var_classe,
+generate = FALSE,
+interpretation_mode = 'latent'
+),
+error = function(e) {
+paste('nail_catdes() non exécuté :', conditionMessage(e))
+}
+)
+}
+
+# Inspecter l objet retourné par nail_catdes()
+
+class(res_nail_catdes_classes)
+
+if (is.list(res_nail_catdes_classes)) {
+names(res_nail_catdes_classes)
+} else {
+res_nail_catdes_classes
+}
+
+# Extraire un champ textuel possible depuis l objet NaileR
+
+extraire_champ_possible <- function(objet, noms_possibles) {
+
+if (!is.list(objet)) {
+return(NULL)
+}
+
+noms_objet <- names(objet)
+
+if (is.null(noms_objet)) {
+return(NULL)
+}
+
+for (nom in noms_possibles) {
+if (nom %in% noms_objet) {
+return(objet[[nom]])
+}
+}
+
+NULL
+}
+
+prompt_nail_catdes_classes <- extraire_champ_possible(
+res_nail_catdes_classes,
+c(
+'prompt',
+'prompts',
+'request',
+'text_prompt',
+'text',
+'result'
+)
+)
+
+# Transformer le prompt éventuel en texte lisible
+
+if (!is.null(prompt_nail_catdes_classes)) {
+
+prompt_nail_catdes_classes <- paste(
+as.character(prompt_nail_catdes_classes),
+collapse = '\n'
+)
+
+prompt_nail_catdes_classes <- gsub(
+'\\n',
+'\n',
+prompt_nail_catdes_classes
+)
+
+substr(prompt_nail_catdes_classes, 1, 2000)
+nchar(prompt_nail_catdes_classes)
+}
+",
 sortie_attendue = "Une description statistique `res_catdes_classes` et, si NaileR est disponible, un objet `res_nail_catdes_classes`.",
 transition = "On prépare maintenant les verbatims associés aux classes construites.",
 question = "Quelle fonction FactoMineR permet de décrire des classes ou une variable qualitative ?",
@@ -4386,7 +5489,7 @@ reponse = "catdes"
 
 preparer_textes_classes = make_case(
   partie = "r_sorties",
-  titre = "15. Relier classes et verbatims",
+  titre = "Le Pont Textuel",
   objectif = "Préparer le tableau qui permettra à NaileR de croiser classes, commentaires libres et variables du questionnaire.",
   has_plot = FALSE,
   code = "
@@ -4548,6 +5651,129 @@ cat('Cette case ne produit pas une nouvelle analyse statistique.\n')
 cat('Elle prépare le format de données nécessaire pour passer de catdes() aux fonctions textuelles de NaileR.\n')
 cat('On conserve une ligne par répondant afin de garder le lien entre classe, commentaire et variables structurées.\n')
 ",
+code_display = "
+
+# Vérifier les prérequis
+
+if (!exists('questionnaire')) {
+stop(
+'L objet questionnaire est absent. Exécute d abord la case 1.',
+call. = FALSE
+)
+}
+
+variables_requises <- c(
+'classe_hcpc',
+'commentaire'
+)
+
+variables_absentes <- setdiff(
+variables_requises,
+names(questionnaire)
+)
+
+if (length(variables_absentes) > 0) {
+stop(
+'Variables absentes : ',
+paste(variables_absentes, collapse = ', '),
+'. Exécute d abord les cases précédentes.',
+call. = FALSE
+)
+}
+
+# Définir les variables à conserver pour relier classes et verbatims
+
+variables_textuelles_classes <- c(
+'classe_hcpc',
+'commentaire',
+'satisfaction',
+'intention_achat',
+'prix_percu',
+'plaisir',
+'naturalite',
+'confiance',
+'ancrage_local',
+'usage_numerique',
+'sensibilite_env',
+'attention_prix',
+'contrainte_temps',
+'cuisine_maison',
+'lecture_labels',
+'achat_local',
+'ouverture_innovation',
+'usage_appli_alim',
+'preoccupation_sante',
+'autonomie_alimentaire',
+'confiance_labels',
+'type_produit',
+'budget_contraint',
+'sexe',
+'age_classe',
+'lieu_achat',
+'profil_alim'
+)
+
+variables_textuelles_classes <- intersect(
+variables_textuelles_classes,
+names(questionnaire)
+)
+
+# Construire le tableau textuel par classe
+
+dataset_textuel_classes <- questionnaire[
+,
+variables_textuelles_classes
+]
+
+# Sécuriser les types des deux variables centrales
+
+dataset_textuel_classes$classe_hcpc <- factor(
+dataset_textuel_classes$classe_hcpc
+)
+
+dataset_textuel_classes$commentaire <- as.character(
+dataset_textuel_classes$commentaire
+)
+
+# Examiner le tableau créé
+
+dim(dataset_textuel_classes)
+names(dataset_textuel_classes)
+
+# Examiner la répartition des classes
+
+table(dataset_textuel_classes$classe_hcpc)
+
+# Examiner les commentaires libres
+
+length(dataset_textuel_classes$commentaire)
+length(unique(dataset_textuel_classes$commentaire))
+
+head(
+unique(dataset_textuel_classes$commentaire),
+8
+)
+
+# Préparer les verbatims par classe
+
+verbatims_par_classe <- split(
+dataset_textuel_classes$commentaire,
+dataset_textuel_classes$classe_hcpc
+)
+
+verbatims_par_classe <- lapply(
+verbatims_par_classe,
+unique
+)
+
+# Afficher quelques verbatims par classe
+
+lapply(
+verbatims_par_classe,
+head,
+4
+)
+",
 sortie_attendue = "Un tableau `dataset_textuel_classes` associant `classe_hcpc`, `commentaire` et les variables structurées.",
 transition = "On prépare maintenant deux artefacts : un profil textuel et un profil structuré des classes.",
 question = "Quelle variable construite sert à regrouper les commentaires libres ?",
@@ -4556,7 +5782,7 @@ reponse = "classe_hcpc"
 
 preparer_artefacts_classes = make_case(
   partie = "entrainer",
-  titre = "16. Artefacts NaileR",
+  titre = "La Fabrique d'Artefacts",
   objectif = "Préparer les artefacts textuels et structurés des classes avec NaileR.",
   has_plot = FALSE,
   code = "
@@ -4823,36 +6049,135 @@ cat('\\n')
 cat('La dernière case combine ces deux sources.\\n')
 ",
 code_display = "
-# Identifier la variable de classe et la variable textuelle
-num_var_classes <- which(names(dataset_textuel_classes) == 'classe_hcpc')
-num_text_classes <- which(names(dataset_textuel_classes) == 'commentaire')
 
-# Préparer l artefact textuel à partir des verbatims
-res_textual_prep_classes <- NaileR::nail_textual_prep(
-  dataset = dataset_textuel_classes,
-  num.var = num_var_classes,
-  num.text = num_text_classes,
-  model = 'llama3',
-  generate = FALSE
+# Vérifier que le tableau textuel par classe existe
+
+if (!exists('dataset_textuel_classes')) {
+stop(
+'L objet dataset_textuel_classes est absent. Exécute d abord la case 15.',
+call. = FALSE
+)
+}
+
+# Vérifier que NaileR est disponible
+
+if (!requireNamespace('NaileR', quietly = TRUE)) {
+
+res_textual_prep_classes <- 'NaileR n est pas installé : nail_textual_prep() ne peut pas être exécuté.'
+res_group_profile_classes <- 'NaileR n est pas installé : nail_group_profile_prep() ne peut pas être exécuté.'
+
+} else {
+
+# Identifier la variable de classe et la variable textuelle
+
+num_var_classes <- which(
+names(dataset_textuel_classes) == 'classe_hcpc'
 )
 
-# Retirer la colonne textuelle pour préparer le profil structuré
+num_text_classes <- which(
+names(dataset_textuel_classes) == 'commentaire'
+)
+
+num_var_classes
+num_text_classes
+
+# Préparer l artefact textuel à partir des verbatims
+
+res_textual_prep_classes <- tryCatch(
+NaileR::nail_textual_prep(
+dataset = dataset_textuel_classes,
+num.var = num_var_classes,
+num.text = num_text_classes,
+model = 'llama3',
+generate = FALSE
+),
+error = function(e) {
+paste(
+'nail_textual_prep() non exécuté :',
+conditionMessage(e)
+)
+}
+)
+
+# Inspecter l artefact textuel
+
+class(res_textual_prep_classes)
+
+if (is.list(res_textual_prep_classes)) {
+names(res_textual_prep_classes)
+str(res_textual_prep_classes[[1]], max.level = 2)
+} else {
+res_textual_prep_classes
+}
+
+# Préparer le tableau structuré :
+
+# même tableau, mais sans la colonne de commentaires libres.
+
 dataset_profil_classes <- dataset_textuel_classes[
-  ,
-  setdiff(names(dataset_textuel_classes), 'commentaire')
+,
+setdiff(names(dataset_textuel_classes), 'commentaire')
 ]
 
 num_var_profil_classes <- which(
-  names(dataset_profil_classes) == 'classe_hcpc'
+names(dataset_profil_classes) == 'classe_hcpc'
 )
 
+names(dataset_profil_classes)
+num_var_profil_classes
+
 # Préparer l artefact structuré à partir des variables du questionnaire
-res_group_profile_classes <- NaileR::nail_group_profile_prep(
-  dataset = dataset_profil_classes,
-  num.var = num_var_profil_classes,
-  model = 'llama3',
-  generate = FALSE
+
+res_group_profile_classes <- tryCatch(
+NaileR::nail_group_profile_prep(
+dataset = dataset_profil_classes,
+num.var = num_var_profil_classes,
+model = 'llama3',
+generate = FALSE
+),
+error = function(e) {
+paste(
+'nail_group_profile_prep() non exécuté :',
+conditionMessage(e)
 )
+}
+)
+
+# Inspecter l artefact structuré
+
+class(res_group_profile_classes)
+
+if (is.list(res_group_profile_classes)) {
+names(res_group_profile_classes)
+str(res_group_profile_classes[[1]], max.level = 2)
+} else {
+res_group_profile_classes
+}
+}
+
+# Comparer les deux artefacts préparés
+
+comparaison_artefacts_classes <- data.frame(
+fonction = c(
+'nail_textual_prep()',
+'nail_group_profile_prep()'
+),
+materiau = c(
+'commentaires libres',
+'variables structurées du questionnaire'
+),
+objet_cree = c(
+'res_textual_prep_classes',
+'res_group_profile_classes'
+),
+role = c(
+'préparer un profil textuel par classe',
+'préparer un profil statistique ou descriptif par classe'
+),
+stringsAsFactors = FALSE
+)
+
+comparaison_artefacts_classes
 ",
 sortie_attendue = "Deux artefacts : `res_textual_prep_classes` et `res_group_profile_classes`.",
 transition = "On combine maintenant les artefacts textuels et structurés dans une synthèse contextualisée.",
@@ -4862,7 +6187,7 @@ reponse = "nail_textual_prep"
 
 synthese_contextualisee_classes = make_case(
   partie = "entrainer",
-  titre = "17. Synthèse contextualisée",
+  titre = "La Grande Synthèse",
   objectif = "Combiner artefact textuel et artefact structuré pour interpréter les classes.",
   has_plot = FALSE,
   code = "
@@ -5246,6 +6571,221 @@ cat('\\n')
 cat('C est le principe central du workflow : stabiliser l interprétation\\n')
 cat('par des objets intermédiaires visibles et inspectables.\\n')
 ",
+code_display = "
+
+# Chercher une génération pré-calculée
+
+precomputed_error <- NULL
+
+precomputed_case17 <- tryCatch(
+load_precomputed_asset('case17_nailer_contextualized.rds'),
+error = function(e) {
+precomputed_error <<- conditionMessage(e)
+NULL
+}
+)
+
+generation_precalculee <- !is.null(precomputed_case17)
+
+# Si le résultat pré-calculé existe, on le charge.
+
+# Sinon, on reconstruit seulement la structure avec generate = FALSE.
+
+if (generation_precalculee) {
+
+res_textual_prep_classes <- precomputed_case17$res_textual_prep_classes
+res_group_profile_classes <- precomputed_case17$res_group_profile_classes
+res_contextualized_classes <- precomputed_case17$res_contextualized_classes
+
+precomputed_case17$metadata
+
+} else {
+
+precomputed_error
+
+if (!exists('res_textual_prep_classes')) {
+stop(
+'L objet res_textual_prep_classes est absent. Exécute d abord la case 16.',
+call. = FALSE
+)
+}
+
+if (!exists('res_group_profile_classes')) {
+stop(
+'L objet res_group_profile_classes est absent. Exécute d abord la case 16.',
+call. = FALSE
+)
+}
+
+if (!requireNamespace('NaileR', quietly = TRUE)) {
+stop(
+'NaileR est nécessaire si aucun résultat pré-calculé n est disponible.',
+call. = FALSE
+)
+}
+
+if (!is.list(res_textual_prep_classes) ||
+!is.list(res_group_profile_classes)) {
+stop(
+'Les artefacts attendus ne sont pas disponibles sous forme de listes. ',
+'Vérifie que la case 16 a bien été exécutée avec NaileR installé.',
+call. = FALSE
+)
+}
+
+res_contextualized_classes <- tryCatch(
+NaileR::nail_textual_contextualized(
+group_profile_prep = res_group_profile_classes,
+textual_prep = res_textual_prep_classes,
+interpretation_mode = 'comparative',
+model = 'llama3',
+generate = FALSE
+),
+error = function(e) {
+paste(
+'nail_textual_contextualized() non exécuté :',
+conditionMessage(e)
+)
+}
+)
+}
+
+# Vérifier le mode de production
+
+generation_precalculee
+class(res_contextualized_classes)
+
+# Présenter le principe de contextualisation
+
+flow_contextualisation_classes <- data.frame(
+source = c(
+'Verbatims',
+'Variables structurées',
+'Synthèse contextualisée'
+),
+objet_R = c(
+'res_textual_prep_classes',
+'res_group_profile_classes',
+'res_contextualized_classes'
+),
+role = c(
+'faire émerger les thèmes et formulations associés aux classes',
+'décrire les classes à partir des variables du questionnaire',
+'combiner les deux sources pour interpréter les classes'
+),
+stringsAsFactors = FALSE
+)
+
+flow_contextualisation_classes
+
+# Fonction utilitaire pour retrouver un champ textuel dans un objet imbriqué
+
+trouver_champ_texte <- function(objet, champs, profondeur = 0) {
+
+if (profondeur > 3) {
+return(NULL)
+}
+
+if (is.list(objet)) {
+
+```
+noms <- names(objet)
+
+if (!is.null(noms)) {
+  champ_direct <- intersect(champs, noms)
+
+  if (length(champ_direct) > 0) {
+    return(objet[[champ_direct[1]]])
+  }
+}
+
+for (element in objet) {
+  resultat <- trouver_champ_texte(
+    element,
+    champs = champs,
+    profondeur = profondeur + 1
+  )
+
+  if (!is.null(resultat)) {
+    return(resultat)
+  }
+}
+```
+
+}
+
+NULL
+}
+
+extraire_champ_texte <- function(objet, champs) {
+
+champ <- trouver_champ_texte(
+objet = objet,
+champs = champs
+)
+
+if (is.null(champ)) {
+texte <- paste(
+capture.output(str(objet, max.level = 2)),
+collapse = '\n'
+)
+} else {
+texte <- paste(
+as.character(champ),
+collapse = '\n'
+)
+}
+
+texte <- gsub(
+paste0(intToUtf8(92), 'n'),
+'\n',
+texte,
+fixed = TRUE
+)
+
+texte <- gsub(
+paste0(intToUtf8(92), 't'),
+'\t',
+texte,
+fixed = TRUE
+)
+
+texte
+}
+
+# Extraire le prompt ou l objet préparé
+
+texte_prompt_contextualized <- extraire_champ_texte(
+res_contextualized_classes,
+champs = c(
+'prompt',
+'prompts',
+'request',
+'instruction',
+'instructions'
+)
+)
+
+substr(texte_prompt_contextualized, 1, 2000)
+nchar(texte_prompt_contextualized)
+
+# Extraire la réponse ou l interprétation générée si elle existe
+
+texte_reponse_contextualized <- extraire_champ_texte(
+res_contextualized_classes,
+champs = c(
+'response',
+'answer',
+'result',
+'interpretation',
+'summary',
+'text'
+)
+)
+
+substr(texte_reponse_contextualized, 1, 2500)
+nchar(texte_reponse_contextualized)
+",
 sortie_attendue = "Un objet `res_contextualized_classes` combinant profils textuels et profils structurés des classes.",
 transition = "Le tutoriel se termine sur l'idée d'un workflow artefact-centré : les interprétations reposent sur des objets intermédiaires inspectables.",
 question = "Quelle fonction de NaileR combine les artefacts textuels et structurés ?",
@@ -5263,17 +6803,17 @@ edges <- data.frame(
   from = c(
     'donnees', 'exploration', 'linearmodel', 'aovsum', 'recuperer_sorties',
     'prompt_manuel', 'prompt_manuel_n2',
-    'entrainer_intro',
-    'entrainer_presentation', 'boucle_y_x', 'condes', 'catdes',
-    'manip_condes_catdes', 'nailer_catdes_exemple', 'nailer_presentation', 'acp_hcpc_classes',
+    'entrainer_presentation','entrainer_intro',
+     'boucle_y_x', 'condes', 'catdes',
+    'manip_condes_catdes', 'nailer_presentation', 'nailer_catdes_exemple', 'acp_hcpc_classes',
     'decrire_classes', 'preparer_textes_classes', 'preparer_artefacts_classes'
   ),
   to = c(
     'exploration', 'linearmodel', 'aovsum', 'recuperer_sorties', 'prompt_manuel',
-    'prompt_manuel_n2','entrainer_intro',
-    'entrainer_presentation',
+    'prompt_manuel_n2','entrainer_presentation',
+    'entrainer_intro',
     'boucle_y_x', 'condes', 'catdes', 'manip_condes_catdes',
-    'nailer_catdes_exemple', 'nailer_presentation', 'acp_hcpc_classes', 'decrire_classes',
+    'nailer_presentation', 'nailer_catdes_exemple', 'acp_hcpc_classes', 'decrire_classes',
     'preparer_textes_classes', 'preparer_artefacts_classes', 'synthese_contextualisee_classes'
   ),
   arrows = 'to',
@@ -5284,9 +6824,9 @@ edges <- data.frame(
 plateau_positions <- data.frame(
   id = c(
     'donnees', 'exploration', 'linearmodel', 'aovsum', 'recuperer_sorties', 'prompt_manuel',
-    'prompt_manuel_n2', 'entrainer_intro', 'entrainer_presentation',
-    'boucle_y_x', 'condes', 'catdes', 'manip_condes_catdes', 'nailer_catdes_exemple',
-    'nailer_presentation', 'acp_hcpc_classes', 'decrire_classes', 'preparer_textes_classes',
+    'prompt_manuel_n2', 'entrainer_presentation', 'entrainer_intro',
+    'boucle_y_x', 'condes', 'catdes', 'manip_condes_catdes', 'nailer_presentation', 'nailer_catdes_exemple',
+    'acp_hcpc_classes', 'decrire_classes', 'preparer_textes_classes',
     'preparer_artefacts_classes', 'synthese_contextualisee_classes'
   ),
   x = c(
@@ -5609,10 +7149,25 @@ ui <- fluidPage(
   ),
   div(
     class = "serious-header",
-    div(class = "serious-title", "SeRiouS"),
     div(
-      class = "serious-subtitle",
-      "De LinearModel à NaileR — de l’explicite au latent, par les artefacts"
+      class = "serious-header-content",
+
+      tags$img(
+        src = "logo.png",
+        class = "serious-logo",
+        alt = "Logo SeRiouS"
+      ),
+
+      div(
+        class = "serious-header-text",
+        div(class = "serious-title", "SeRiouS: Playing with Data Seriously"),
+        div(
+          class = "serious-subtitle",
+          "Episode One: Making Sense of Stats through Prompting"
+        )
+      )
+
+
     )
   ),
   div(
@@ -5640,7 +7195,7 @@ ui <- fluidPage(
         ),
         br(),
         visNetworkOutput("plateau", height = "680px"),
-        div(class = "small-note", "Couleurs = parties pédagogiques ; icônes = statut : 🔒 verrouillée, 🔓 déverrouillée, ✅ visitée.")
+        div(class = "small-note", "Statut : 🔒 verrouillée, 🔓 déverrouillée, ✅ visitée.")
       )
     )
   ),
@@ -5653,7 +7208,7 @@ ui <- fluidPage(
   fluidRow(
     column(width = 12,
            div(class = "serious-card case-card",
-               h3("Case sélectionnée"),
+               h3("Le défi actif"),
                uiOutput("case_info"),
                hr(),
                uiOutput("question_ui"),
@@ -5674,10 +7229,10 @@ ui <- fluidPage(
   fluidRow(
     column(width = 6,
       div(class = "serious-card case-card",
-        h3("Code essentiel"),
+        h3("Code simplifié"),
         div(
           class = "small-note",
-          "Ce bloc affiche le code à comprendre. La sortie console peut être produite par une version enrichie avec des messages pédagogiques."
+          "Le code ci-dessous a été simplifié. La sortie console inclut des annotations pédagogiques."
         ),
         verbatimTextOutput("code_affiche")
       )
@@ -5700,7 +7255,7 @@ ui <- fluidPage(
       div(class = "serious-card case-card",
         h3("Graphique généré"),
         uiOutput("plot_status"),
-        imageOutput("graphique", height = "460px")
+        imageOutput("graphique", height = "auto")
       )
     ),
     column(width = 6,
@@ -6167,7 +7722,7 @@ server <- function(input, output, session) {
           width = 6,
           div(
             class = "case-section",
-            div(class = "case-section-label", "Objectif"),
+            div(class = "case-section-label", "La quête"),
             div(class = "case-section-content", x$objectif)
           )
         ),
@@ -6175,12 +7730,12 @@ server <- function(input, output, session) {
           width = 6,
           div(
             class = "case-section",
-            div(class = "case-section-label", "Sortie attendue"),
+            div(class = "case-section-label", "La récompense"),
             div(class = "case-section-content", x$sortie_attendue)
           ),
           div(
             class = "case-section",
-            div(class = "case-section-label", "Transition"),
+            div(class = "case-section-label", "La suite du voyage"),
             div(class = "case-section-content", x$transition)
           )
         )
@@ -6198,8 +7753,8 @@ server <- function(input, output, session) {
       return(
         div(
           class = "case-section",
-          div(class = "case-section-label", "Déverrouillage"),
-          div(class = "case-section-content", "Cette case est déjà déverrouillée.")
+          div(class = "case-section-label", "Autorisation"),
+          div(class = "case-section-content", "Accès autorisé")
         )
       )
     }
@@ -6207,10 +7762,10 @@ server <- function(input, output, session) {
     tagList(
       div(
         class = "case-section",
-        div(class = "case-section-label", "Question pour déverrouiller"),
+        div(class = "case-section-label", "L'énigme"),
         div(class = "case-section-content", x$question)
       ),
-      textInput("reponse", "Réponse", value = "")
+      textInput("reponse", "Mot de passe", value = "")
     )
   })
 
@@ -6446,7 +8001,9 @@ server <- function(input, output, session) {
     list(
       src = etat$plot_file,
       contentType = "image/png",
-      width = "100%"
+      width = "100%",
+      height = "auto",
+      style = "max-width: 100%; object-fit: contain;"
     )
   }, deleteFile = FALSE)
 }

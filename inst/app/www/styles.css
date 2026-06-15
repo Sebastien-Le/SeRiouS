@@ -193,6 +193,26 @@ h1, h2, h3, h4 {
 
 #code_affiche,
 #sortie {
-  font-size: 10px !important;
+  font-size: 13px !important;
   line-height: 1.35 !important;
 }
+
+.serious-header-content {
+display: flex;
+align-items: center;
+gap: 18px;
+}
+
+.serious-logo {
+height: 72px;
+width: auto;
+max-width: 160px;
+object-fit: contain;
+flex-shrink: 0;
+}
+
+.serious-header-text {
+display: flex;
+flex-direction: column;
+}
+
