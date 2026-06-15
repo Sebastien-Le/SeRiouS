@@ -2079,7 +2079,7 @@ if (entrainer_disponible) {
 cat('\\n============================================================\\n')
 cat('2. La Philosophie de la Forge\\n')
 cat('============================================================\\n')
-cat('À l\\'étape 6, vous avez écrit beaucoup de code avec paste() et cat()\\n')
+cat('À l\\'étape précédente, vous avez écrit beaucoup de code avec paste() et cat()\\n')
 cat('pour transformer une sortie FactoMineR en prompt.\\n\\n')
 cat('EnTraineR a été conçu pour industrialiser cela : il prend directement\\n')
 cat('un objet statistique (comme res_lm_fm) et forge le prompt pour vous.\\n')
@@ -7408,6 +7408,25 @@ server <- function(input, output, session) {
     invisible(TRUE)
   }
 
+  clear_global_objects <- function(envir = .GlobalEnv) {
+    objs <- plateau_object_names()
+    objs <- objs[
+      vapply(
+        objs,
+        exists,
+        logical(1),
+        envir = envir,
+        inherits = FALSE
+      )
+    ]
+
+    if (length(objs) > 0) {
+      rm(list = objs, envir = envir)
+    }
+
+    invisible(objs)
+  }
+
   # ----------------------------------------------------------
   # Fonctions locales de statut des noeuds
   # ----------------------------------------------------------
@@ -7564,9 +7583,48 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$clear_state, {
+
+    # 1. Effacer les fichiers de sauvegarde
     clear_plateau_save()
     last_save_time(NULL)
-    showNotification("Sauvegarde effacée.", type = "message")
+
+    # 2. Effacer les objets R du parcours
+    objets_effaces <- clear_global_objects(envir = .GlobalEnv)
+
+    # 3. Réinitialiser l'état courant du plateau
+    selected_case("donnees")
+
+    etat$unlocked <- c("donnees")
+    etat$visited <- character(0)
+
+    etat$output_text <- paste(
+      "Sauvegarde effacée.",
+      "",
+      "Le plateau a été réinitialisé.",
+      paste0(length(objets_effaces), " objet(s) R du parcours ont été effacé(s)."),
+      "",
+      "Seule la première case est maintenant déverrouillée.",
+      sep = "\n"
+    )
+
+    etat$plot_file <- blank_plot
+    etat$last_has_plot <- FALSE
+
+    etat$current_pdf <- NULL
+    etat$current_pdf_case <- NULL
+
+    etat$run_id <- etat$run_id + 1
+
+    # 4. Nettoyer le champ de réponse
+    updateTextInput(session, "reponse", value = "")
+
+    # 5. Mettre à jour visuellement les noeuds du plateau
+    update_plateau_nodes()
+
+    showNotification(
+      "Sauvegarde effacée et plateau réinitialisé.",
+      type = "message"
+    )
   })
 
   # ----------------------------------------------------------
