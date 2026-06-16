@@ -6196,7 +6196,7 @@ synthese_contextualisee_classes = make_case(
   titre = "La Grande Synthèse",
   objectif = "Combiner artefact textuel et artefact structuré pour interpréter les classes.",
   has_plot = FALSE,
-  pdf = "nailer_textual_contextualized.pdf",
+  pdf = "nailer_textual_final.pdf",
   code = "
 # ============================================================
 # Case 17 : synthèse contextualisée des classes
