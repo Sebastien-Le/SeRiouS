@@ -85,7 +85,7 @@ Les packages suivants peuvent être utilisés dans certaines étapes du tutoriel
 * `EnTraineR`
 * `NaileR`
 
-Selon l’installation locale, certaines étapes utilisant **EnTraineR** ou **NaileR** peuvent être présentées comme démonstrations ou exécutées si les packages sont disponibles.
+Selon l’installation, certaines étapes utilisant **EnTraineR** ou **NaileR** peuvent être présentées comme démonstrations ou exécutées si les packages sont disponibles.
 
 
 ## Utilisation en atelier
@@ -102,7 +102,7 @@ Chaque case du plateau contient :
 
 Le système de progression permet de découvrir le code petit à petit, au lieu de fournir un script complet dès le départ.
 
-## Philosophie pédagogique
+## Point de vue pédagogique
 
 **SeRiouS** repose sur une idée centrale : les modèles de langage peuvent aider à interpréter des résultats statistiques, 
 mais ils ne doivent pas être utilisés comme de simples générateurs de réponses.
@@ -118,7 +118,7 @@ résultats statistiques
 → interprétation contextualisée
 ```
 
-Plutôt que de jeter vos données brutes à l'IA, le plateau va vous forcer à créer des objets intermédiaires 
+Plutôt que de jeter vos données brutes à l'IA, le plateau va vous amener à créer des objets intermédiaires 
 (des résumés statistiques, des textes préparés, des artefacts). C'est vous qui faites l'analyse, 
 c'est vous qui structurez les résultats, et l'IA n'intervient qu'à la toute fin pour vous aider 
 à contextualiser.
