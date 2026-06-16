@@ -3,10 +3,10 @@
 # SeRiouS <img src="man/figures/logo.png" align="right" height="139" />
 
 🎲 Bienvenue dans SeRiouS !
-SeRiouS n'est pas un package R classique : c'est un tutoriel interactif conçu comme un plateau de jeu.
+SeRiouS un tutoriel interactif conçu comme un plateau de jeu.
 
 Le but ? Vous apprendre à lier l'analyse de données avec l'intelligence artificielle, sans jamais 
-perdre le contrôle sur vos résultats. Nous allons utiliser un écosystème d'outils (FactoMineR, EnTraineR et NaileR) 
+perdre le contrôle sur vos résultats. Nous allons utiliser un ensemble d'outils (FactoMineR, EnTraineR et NaileR) 
 pour analyser un jeu de données autour de l'alimentation.
 
 ## Objectif pédagogique
@@ -105,43 +105,8 @@ Les packages suivants peuvent être utilisés dans certaines étapes du tutoriel
 
 Selon l’installation locale, certaines étapes utilisant **EnTraineR** ou **NaileR** peuvent être présentées comme démonstrations ou exécutées si les packages sont disponibles.
 
-## Organisation du package
-
-La structure principale du package est la suivante :
-
-```text
-SeRiouS/
-├── R/
-│   ├── run_plateau.R
-│   └── data.R
-├── data/
-│   └── questionnaire_alimentaire_typologie_textes.rda
-├── inst/
-│   └── app/
-│       ├── app.R
-│       └── www/
-│           ├── styles.css
-│           └── fichiers PDF de support
-├── data-raw/
-│   └── scripts de génération des données
-└── DESCRIPTION
-```
-
-L’application Shiny est située dans :
-
-```text
-inst/app/app.R
-```
-
-Les fichiers statiques utilisés par l’application, comme le CSS ou les PDF, sont placés dans :
-
-```text
-inst/app/www/
-```
 
 ## Utilisation en atelier
-
-Le tutoriel est conçu pour être utilisé en séance projetée ou en autonomie guidée.
 
 Chaque case du plateau contient :
 
@@ -153,7 +118,7 @@ Chaque case du plateau contient :
 * parfois un support PDF ;
 * une transition vers l’étape suivante.
 
-Le système de progression permet de découvrir le code progressivement, au lieu de fournir un script complet dès le départ.
+Le système de progression permet de découvrir le code petit à petit, au lieu de fournir un script complet dès le départ.
 
 ## Philosophie pédagogique
 
@@ -171,12 +136,10 @@ résultats statistiques
 → interprétation contextualisée
 ```
 
-Ces objets rendent le workflow plus visible et plus contrôlable.
-
 Plutôt que de jeter vos données brutes à l'IA, le plateau va vous forcer à créer des objets intermédiaires 
 (des résumés statistiques, des textes préparés, des artefacts). C'est vous qui faites l'analyse, 
 c'est vous qui structurez les résultats, et l'IA n'intervient qu'à la toute fin pour vous aider 
-à contextualiser. Vous restez les pilotes !
+à contextualiser.
 
 ## Comment lancer la partie ?
 
@@ -193,17 +156,13 @@ remotes::install_github("Sebastien-Le/SeRiouS")
 
 ```r
 library(SeRiouS)
+
 run_plateau()
 ```
 
 Une fenêtre s'ouvrira dans votre navigateur. Chaque case du plateau vous donnera un objectif, un petit défi pour débloquer la suite, et le code R dont vous avez besoin pour avancer.
 
 Bonne partie !
-
-## Auteur
-
-Sébastien Lê
-Institut Agro Rennes-Angers
 
 ## Licence
 
