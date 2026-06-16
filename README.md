@@ -19,19 +19,6 @@ L’objectif de **SeRiouS** est de vous aider à comprendre comment passer :
 4. à l’utilisation de fonctions d’aide à l’interprétation ;
 5. puis à l’interprétation de variables latentes.
 
-Le fil conducteur du tutoriel est le suivant :
-
-```text
-Statistiques explicites
-→ sorties R
-→ prompts
-→ EnTraineR
-→ condes() / catdes()
-→ NaileR
-→ ACP / HCPC
-→ classes latentes
-→ analyse textuelle contextualisée
-```
 
 ## Contenu du tutoriel
 
@@ -54,11 +41,7 @@ Le plateau interactif va vous guider à travers plusieurs étapes :
 
 ## Jeu de données inclus
 
-Le package inclut un jeu de données simulé :
-
-```r
-questionnaire_alimentaire_typologie_textes
-```
+Le package inclut un jeu de données simulé.
 
 Ce jeu de données contient un questionnaire alimentaire fictif avec :
 
@@ -84,7 +67,6 @@ Après installation :
 
 ```r
 library(SeRiouS)
-
 run_plateau()
 ```
 
@@ -156,7 +138,6 @@ remotes::install_github("Sebastien-Le/SeRiouS")
 
 ```r
 library(SeRiouS)
-
 run_plateau()
 ```
 
