@@ -137,6 +137,12 @@ load_precomputed_asset <- function(filename) {
   )
 }
 
+assign(
+  "load_precomputed_asset",
+  load_precomputed_asset,
+  envir = .GlobalEnv
+)
+
 # ------------------------------------------------------------
 # Ressources PDF robustes
 # ------------------------------------------------------------
