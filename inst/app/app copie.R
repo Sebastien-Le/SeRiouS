@@ -1,8 +1,6 @@
 library(shiny)
 library(visNetwork)
 
-PLATEAU_SAVE_VERSION <- "v1.0"
-
 if (!exists("questionnaire")) {
   questionnaire <- SeRiouS::questionnaire_alimentaire_typologie_textes
 }
@@ -81,22 +79,29 @@ get_case_display_code <- function(case) {
 load_precomputed_asset <- function(filename) {
 
   chemins_candidats <- c(
+    # Cas package installé
     system.file(
       'app',
       'precomputed',
       filename,
       package = 'SeRiouS'
     ),
+
+    # Cas développement lancé depuis la racine du package
     file.path(
       'inst',
       'app',
       'precomputed',
       filename
     ),
+
+    # Cas développement lancé depuis inst/app
     file.path(
       'precomputed',
       filename
     ),
+
+    # Cas où le working directory est dans inst/app mais on veut remonter
     file.path(
       '..',
       '..',
@@ -104,12 +109,6 @@ load_precomputed_asset <- function(filename) {
       'app',
       'precomputed',
       filename
-    ),
-    list.files(
-      '.',
-      pattern = paste0('^', filename, '$'),
-      recursive = TRUE,
-      full.names = TRUE
     )
   )
 
@@ -212,11 +211,7 @@ ensure_pdf_asset <- function(pdf_file) {
     dest <- file.path(pdf_asset_dir, basename(pdf_file))
     file.copy(pdf_file, dest, overwrite = TRUE)
 
-    pdf_url <- paste0(
-      "serious_pdf/",
-      utils::URLencode(basename(pdf_file), reserved = TRUE)
-    )
-
+    pdf_url <- paste0("serious_pdf/", basename(pdf_file))
     return(pdf_url)
   }
 
@@ -2861,28 +2856,6 @@ variables_x <- c(
   'sensibilite_env'
 )
 
-if (!exists('questionnaire')) {
-  stop(
-    'L objet questionnaire est absent. Exécute d abord Le Grand Départ.',
-    call. = FALSE
-  )
-}
-
-variables_requises <- c(y, variables_x)
-
-variables_absentes <- setdiff(
-  variables_requises,
-  names(questionnaire)
-)
-
-if (length(variables_absentes) > 0) {
-  stop(
-    'Variables absentes du questionnaire : ',
-    paste(variables_absentes, collapse = ', '),
-    call. = FALSE
-  )
-}
-
 cat('\\n============================================================\\n')
 cat('1. Variables utilisées pour la boucle\\n')
 cat('============================================================\\n')
@@ -3083,10 +3056,7 @@ code_display = "
 # Vérifier que FactoMineR est disponible
 
 if (!requireNamespace('FactoMineR', quietly = TRUE)) {
-stop(
-  'Installe FactoMineR avec install.packages(\"FactoMineR\")',
-  call. = FALSE
-)
+stop('Installe FactoMineR : install.packages('FactoMineR')')
 }
 
 # Définir la variable à expliquer
@@ -3226,26 +3196,12 @@ if (!requireNamespace('FactoMineR', quietly = TRUE)) {
 # condes() et catdes() travaillent ici sur des variables quantitatives
 # et qualitatives structurées, pas directement sur les verbatims.
 
-if (!exists('questionnaire')) {
-  stop(
-    'L objet questionnaire est absent. Exécute d abord Le Grand Départ.',
-    call. = FALSE
-  )
-}
-
 questionnaire_desc <- questionnaire[
   ,
   setdiff(names(questionnaire), 'commentaire')
 ]
 
 y_condes <- 'intention_achat'
-
-if (!y_condes %in% names(questionnaire_desc)) {
-  stop(
-    'La variable intention_achat est absente de questionnaire_desc.',
-    call. = FALSE
-  )
-}
 
 num_var_condes <- which(names(questionnaire_desc) == y_condes)
 
@@ -3395,10 +3351,7 @@ code_display = "
 # Vérifier que FactoMineR est disponible
 
 if (!requireNamespace('FactoMineR', quietly = TRUE)) {
-stop(
-  'Installe FactoMineR avec install.packages(\"FactoMineR\")',
-  call. = FALSE
-)
+stop('Installe FactoMineR : install.packages('FactoMineR')')
 }
 
 # Préparer le tableau de description
@@ -3560,32 +3513,11 @@ if (!requireNamespace('FactoMineR', quietly = TRUE)) {
 }
 
 
-if (!exists('questionnaire_desc')) {
-  if (!exists('questionnaire')) {
-    stop(
-      'Les objets questionnaire_desc et questionnaire sont absents. Exécute d abord les cases précédentes.',
-      call. = FALSE
-    )
-  }
-
-  questionnaire_desc <- questionnaire[
-    ,
-    setdiff(names(questionnaire), 'commentaire')
-  ]
-}
-
 # ------------------------------------------------------------
 # 1. Identifier la variable qualitative à décrire
 # ------------------------------------------------------------
 
 y_catdes <- 'profil_alim'
-
-if (!y_catdes %in% names(questionnaire_desc)) {
-  stop(
-    'La variable profil_alim est absente de questionnaire_desc.',
-    call. = FALSE
-  )
-}
 
 num_var_catdes <- which(names(questionnaire_desc) == y_catdes)
 
@@ -3719,10 +3651,7 @@ code_display = "
 # Vérifier que FactoMineR est disponible
 
 if (!requireNamespace('FactoMineR', quietly = TRUE)) {
-stop(
-  'Installe FactoMineR avec install.packages(\"FactoMineR\")',
-  call. = FALSE
-)
+stop('Installe FactoMineR : install.packages('FactoMineR')')
 }
 
 # Identifier la variable qualitative à décrire
@@ -3827,27 +3756,6 @@ manip_condes_catdes = make_case(
 # Mais ici, les objets sont plus riches :
 # ils contiennent plusieurs niveaux d information.
 # Il faut donc les inspecter avant de les transformer en texte.
-
-objets_requis <- c('res_condes', 'res_catdes')
-
-objets_absents <- objets_requis[
-  !vapply(
-    objets_requis,
-    exists,
-    logical(1),
-    envir = .GlobalEnv,
-    inherits = FALSE
-  )
-]
-
-if (length(objets_absents) > 0) {
-  stop(
-    'Objets absents : ',
-    paste(objets_absents, collapse = ', '),
-    '. Exécute d abord les cases condes et catdes.',
-    call. = FALSE
-  )
-}
 
 # ------------------------------------------------------------
 # 1. Inspecter les objets retournés par condes() et catdes()
@@ -4182,8 +4090,8 @@ nchar(prompt_catdes)
 ",
 sortie_attendue = "Des textes et prompts issus de condes/catdes : `texte_condes`, `texte_catdes`, `prompt_condes`, `prompt_catdes`, construits de manière plus générique.",
 transition = "NaileR prolonge cette logique en produisant des artefacts et prompts plus contrôlés.",
-question = "Quel objet contient la sortie textuelle capturée à partir de catdes() ?",
-reponse = "texte_catdes"
+question = "Quelle fonction vient-on d'utiliser pour décrire la variable qualitative `profil_alim` ?",
+reponse = "catdes"
 ),
 
 nailer_presentation = make_case(
@@ -4194,7 +4102,7 @@ nailer_presentation = make_case(
   pdf_on_run = "NaileR.pdf",
   code = "
 # ============================================================
-# Case 12a : présenter le package NaileR
+# Case 12b : présenter le package NaileR
 # ============================================================
 
 # Objectif de cette case :
@@ -4513,7 +4421,7 @@ nailer_catdes_exemple = make_case(
   pdf_on_run = "nailer_exemple.pdf",
   code = "
 # ============================================================
-# Case 12b : premier exemple avec NaileR et nail_catdes()
+# Case 12a : premier exemple avec NaileR et nail_catdes()
 # ============================================================
 
 # Objectif de cette case :
@@ -4525,31 +4433,6 @@ nailer_catdes_exemple = make_case(
 # 3. paste() pour construire un prompt.
 #
 # nail_catdes() vise à systématiser cette logique.
-
-objets_requis <- c(
-  'questionnaire_desc',
-  'res_catdes',
-  'texte_catdes'
-)
-
-objets_absents <- objets_requis[
-  !vapply(
-    objets_requis,
-    exists,
-    logical(1),
-    envir = .GlobalEnv,
-    inherits = FALSE
-  )
-]
-
-if (length(objets_absents) > 0) {
-  stop(
-    'Objets absents : ',
-    paste(objets_absents, collapse = ', '),
-    '. Exécute d abord les cases catdes et Usine à Prompts.',
-    call. = FALSE
-  )
-}
 
 # ------------------------------------------------------------
 # 1. Vérifier la disponibilité de NaileR
@@ -4812,6 +4695,7 @@ exports_nailer <- getNamespaceExports('NaileR')
 
 if ('nail_catdes' %in% exports_nailer) {
 
+```
 res_nail_catdes <- tryCatch(
   NaileR::nail_catdes(
     questionnaire_desc,
@@ -4822,10 +4706,13 @@ res_nail_catdes <- tryCatch(
     paste('nail_catdes non exécuté :', conditionMessage(e))
   }
 )
+```
 
 } else {
 
+```
 res_nail_catdes <- 'La fonction nail_catdes() n est pas exportée par cette version de NaileR.'
+```
 
 }
 
@@ -5241,16 +5128,21 @@ if (!exists('questionnaire')) {
   )
 }
 
-
-if (is.null(res_hcpc$data.clust) ||
-    !'clust' %in% names(res_hcpc$data.clust)) {
+if (!exists('res_hcpc')) {
   stop(
-    'res_hcpc existe, mais res_hcpc$data.clust$clust est absent.',
+    'L objet res_hcpc est absent. Exécute d abord la case 13.',
     call. = FALSE
   )
 }
 
-questionnaire$classe_hcpc <- factor(res_hcpc$data.clust$clust)
+questionnaire$classe_hcpc <- res_hcpc$data.clust$clust
+
+if (!'classe_hcpc' %in% names(questionnaire)) {
+  stop(
+    'La variable classe_hcpc est absente. Exécute d abord la case 13.',
+    call. = FALSE
+  )
+}
 
 if (!requireNamespace('FactoMineR', quietly = TRUE)) {
   stop(
@@ -5451,6 +5343,12 @@ call. = FALSE
 )
 }
 
+if (!exists('res_hcpc')) {
+stop(
+'L objet res_hcpc est absent. Exécute d abord la case 13.',
+call. = FALSE
+)
+}
 
 if (!requireNamespace('FactoMineR', quietly = TRUE)) {
 stop(
@@ -5591,8 +5489,8 @@ nchar(prompt_nail_catdes_classes)
 ",
 sortie_attendue = "Une description statistique `res_catdes_classes` et, si NaileR est disponible, un objet `res_nail_catdes_classes`.",
 transition = "On prépare maintenant les verbatims associés aux classes construites.",
-question = "Quel est le nom de la variable de classe ajoutée au questionnaire ?",
-reponse = "classe_hcpc"
+question = "Quelle fonction FactoMineR permet de décrire des classes ou une variable qualitative ?",
+reponse = "catdes"
 ),
 
 preparer_textes_classes = make_case(
@@ -6696,29 +6594,6 @@ NULL
 
 generation_precalculee <- !is.null(precomputed_case17)
 
-if (generation_precalculee) {
-  champs_requis_precomputed <- c(
-    'res_textual_prep_classes',
-    'res_group_profile_classes',
-    'res_contextualized_classes'
-  )
-
-  champs_absents_precomputed <- setdiff(
-    champs_requis_precomputed,
-    names(precomputed_case17)
-  )
-
-  if (length(champs_absents_precomputed) > 0) {
-    precomputed_error <- paste(
-      'Le fichier pré-calculé existe, mais il ne contient pas :',
-      paste(champs_absents_precomputed, collapse = ', ')
-    )
-
-    precomputed_case17 <- NULL
-    generation_precalculee <- FALSE
-  }
-}
-
 # Si le résultat pré-calculé existe, on le charge.
 
 # Sinon, on reconstruit seulement la structure avec generate = FALSE.
@@ -6820,6 +6695,7 @@ return(NULL)
 
 if (is.list(objet)) {
 
+```
 noms <- names(objet)
 
 if (!is.null(noms)) {
@@ -6841,6 +6717,7 @@ for (element in objet) {
     return(resultat)
   }
 }
+```
 
 }
 
@@ -7128,58 +7005,14 @@ eval_code_capture <- function(code, envir = .GlobalEnv) {
 
 execute_case <- function(case, envir = .GlobalEnv, blank_plot = NULL) {
   code <- case$code
-  error_message <- NULL
-
   if (isTRUE(case$has_plot)) {
     plot_file <- tempfile(fileext = ".png")
     png(filename = plot_file, width = 1200, height = 760, res = 120)
-
-    sortie <- tryCatch(
-      eval_code_capture(code, envir = envir),
-      error = function(e) {
-        error_message <<- conditionMessage(e)
-        paste("Erreur :", conditionMessage(e))
-      },
-      finally = dev.off()
-    )
-
-    if (!is.null(error_message)) {
-      if (file.exists(plot_file)) {
-        unlink(plot_file, force = TRUE)
-      }
-
-      return(
-        list(
-          output = sortie,
-          plot_file = blank_plot,
-          has_plot = FALSE,
-          success = FALSE
-        )
-      )
-    }
-
-    list(
-      output = sortie,
-      plot_file = plot_file,
-      has_plot = TRUE,
-      success = TRUE
-    )
-
+    sortie <- tryCatch(eval_code_capture(code, envir = envir), error = function(e) paste("Erreur :", conditionMessage(e)), finally = dev.off())
+    list(output = sortie, plot_file = plot_file, has_plot = TRUE)
   } else {
-    sortie <- tryCatch(
-      eval_code_capture(code, envir = envir),
-      error = function(e) {
-        error_message <<- conditionMessage(e)
-        paste("Erreur :", conditionMessage(e))
-      }
-    )
-
-    list(
-      output = sortie,
-      plot_file = blank_plot,
-      has_plot = FALSE,
-      success = is.null(error_message)
-    )
+    sortie <- tryCatch(eval_code_capture(code, envir = envir), error = function(e) paste("Erreur :", conditionMessage(e)))
+    list(output = sortie, plot_file = blank_plot, has_plot = FALSE)
   }
 }
 
@@ -7222,123 +7055,53 @@ plateau_plot_file <- function() {
 
 plateau_object_names <- function() {
   c(
-    # Données
-    "questionnaire",
-    "questionnaire_desc",
-    "dictionnaire_variables",
-    "structure_variables",
-    "variables_cles",
+    # Données et variables intermédiaires
+    "questionnaire", "questionnaire_desc", "questionnaire_dim", "questionnaire_hcpc",
+    "type_produit", "budget_contraint", "sexe", "age_classe", "lieu_achat",
+    "prix_percu", "naturalite", "ancrage_local", "plaisir", "confiance",
+    "usage_numerique", "sensibilite_env", "satisfaction", "intention_achat",
+    "score_engagement", "profil_alim", "commentaire", "variables_quanti",
 
-    # Exploration
-    "variables_quanti_exploration",
-    "variables_quali_exploration",
-    "resume_quanti",
-    "resume_quali",
+    # LinearModel / AovSum / sorties
+    "res_lm_fm", "res_aovsum", "lm_ftest", "lm_ttest", "lm_resume",
+    "aov_ftest", "aov_ttest", "texte_linearmodel", "texte_aovsum",
+    "formule_lm", "formule_aov", "prompt_linearmodel", "prompt_aovsum", "prompt_linearmodel_n2", "prompt_aovsum_n2", "prompt_linearmodel_utilise", "prompt_aovsum_utilise", "infos_lm", "infos_aov", "extraire_infos_formule", "source_prompts", "format_num",
 
-    # LinearModel / AovSum
-    "formule_lm",
-    "formule_aov",
-    "res_lm_fm",
-    "res_aovsum",
-    "lm_ftest",
-    "lm_ttest",
-    "lm_resume",
-    "aov_ftest",
-    "aov_ttest",
-    "texte_linearmodel",
-    "texte_aovsum",
+    # EnTraineR / transitions
+    "entrainer_pkg", "entrainer_disponible", "version_entrainer",
+    "presentation_entrainer", "schema_entrainer", "resume_package_entrainer",
+    "fonctions_entrainer", "fonctions_entrainer_df", "resume_entrainer", "objet_transition_entrainer",
+    "options_entrainer", "arguments_entrainer",
 
-    # Prompts manuels
-    "prompt_linearmodel",
-    "prompt_aovsum",
-    "prompt_linearmodel_n2",
-    "prompt_aovsum_n2",
-    "prompt_manuel_utilise",
-    "infos_lm",
-    "infos_aov",
-    "extraire_infos_formule",
+    # Boucles
+    "variables_x", "modeles_univaries", "textes_modeles_univaries",
 
-    # EnTraineR
-    "entrainer_disponible",
-    "fonctions_entrainer",
-    "prompt_auto_lm",
-    "texte_prompt_auto_lm",
-    "comparaison_prompt_manuel_auto",
+    # condes / catdes / NaileR
+    "res_condes", "res_catdes", "texte_condes", "texte_catdes",
+    "prompt_condes", "prompt_catdes", "nailer_disponible",
+    "exports_nailer", "fonctions_nailer", "res_nail_condes", "res_nail_catdes",
 
-    # Boucle Y ~ X
-    "y",
-    "variables_x",
-    "formule_exemple",
-    "modele_exemple",
-    "modeles_univaries",
-    "textes_modeles_univaries",
+    # ACP / HCPC / latent
+    "res_pca", "res_condes_dim1", "prompt_dim1",
+    "res_hcpc", "res_catdes_classes",
 
-    # condes / catdes
-    "y_condes",
-    "num_var_condes",
-    "variables_quanti_condes",
-    "variables_quali_condes",
-    "correlations_y",
-    "liaisons_quali_y",
-    "res_condes",
-    "y_catdes",
-    "num_var_catdes",
-    "moyennes_par_profil",
-    "anova_satisfaction_profil",
-    "table_profil_produit",
-    "test_chi2_profil_produit",
-    "res_catdes",
-    "texte_condes",
-    "texte_catdes",
-    "prompt_condes",
-    "prompt_catdes",
-
-    # NaileR explicite
-    "nailer_disponible",
-    "exports_nailer",
-    "fonctions_nailer",
-    "fonctions_nailer_df",
-    "schema_nailer",
-    "comparaison_entrainer_nailer",
-    "flow_suivant_nailer",
-    "var_catdes_nailer",
-    "num_var_catdes_nailer",
-    "res_nail_catdes",
-    "prompt_nail_catdes",
-    "comparaison_catdes_nailer",
-
-    # ACP / HCPC / classes
+    # Texte
+    "verbatims_par_classe", "texte_verbatims", "texte_catdes_classes", "prompt_final",
     "variables_typologie",
     "donnees_typologie",
-    "res_pca",
-    "res_hcpc",
     "questionnaire_desc_classes",
     "num_var_classe",
-    "res_catdes_classes",
-    "texte_catdes_classes",
     "res_nail_catdes_classes",
-    "texte_nail_catdes_classes",
-    "prompt_nail_catdes_classes",
-
-    # Texte et artefacts
-    "variables_textuelles_classes",
     "dataset_textuel_classes",
-    "verbatims_par_classe",
     "dataset_profil_classes",
     "num_var_classes",
     "num_text_classes",
     "num_var_profil_classes",
     "res_textual_prep_classes",
     "res_group_profile_classes",
-    "comparaison_artefacts_classes",
-
-    # Synthèse contextualisée
-    "precomputed_error",
-    "generation_precalculee",
     "res_contextualized_classes",
-    "flow_contextualisation_classes",
-    "texte_prompt_contextualized",
-    "texte_reponse_contextualized"
+    "comparaison_artefacts_classes",
+    "flow_contextualisation_classes"
   )
 }
 
@@ -7550,7 +7313,7 @@ server <- function(input, output, session) {
 
   current_state_as_list <- function() {
     list(
-      version = PLATEAU_SAVE_VERSION,
+      version = "mvp_v14",
       timestamp = Sys.time(),
       selected = selected_case(),
       unlocked = etat$unlocked,
@@ -7612,16 +7375,6 @@ server <- function(input, output, session) {
     }
 
     state <- readRDS(plateau_state_file())
-    if (is.null(state$version) ||
-        !identical(state$version, PLATEAU_SAVE_VERSION)) {
-      showNotification(
-        paste(
-          "Sauvegarde issue d'une autre version du plateau.",
-          "Certaines cases ou objets peuvent ne pas être restaurés correctement."
-        ),
-        type = "warning"
-      )
-    }
     loaded_objects <- load_global_objects(envir = .GlobalEnv)
 
     selected <- state$selected %||% "donnees"
@@ -8263,9 +8016,7 @@ server <- function(input, output, session) {
       etat$output_text <- res$output
       etat$plot_file <- res$plot_file
       etat$last_has_plot <- res$has_plot
-      if (isTRUE(res$success)) {
-        etat$visited <- union(etat$visited, id)
-      }
+      etat$visited <- union(etat$visited, id)
       etat$run_id <- etat$run_id + 1
 
       if (!is.null(x$pdf_on_run)) {
@@ -8278,16 +8029,7 @@ server <- function(input, output, session) {
       incProgress(0.2)
     })
 
-    if (isTRUE(res$success)) {
-      save_current_session(silent = TRUE)
-      showNotification("Case exécutée et sauvegardée.", type = "message")
-    } else {
-      showNotification(
-        "La case a produit une erreur. Elle n'est pas marquée comme visitée.",
-        type = "error"
-      )
-    }
-
+    showNotification("Case exécutée et sauvegardée.", type = "message")
   })
 
   # ----------------------------------------------------------
