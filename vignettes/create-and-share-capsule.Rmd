@@ -1,0 +1,228 @@
+---
+title: "Create and share a SeRiouS capsule"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Create and share a SeRiouS capsule}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# Create and share a SeRiouS capsule
+
+SeRiouS is an R/Shiny framework for creating interactive learning capsules.
+
+A SeRiouS capsule is organised as a pedagogical path made of successive steps. Each step may contain:
+
+- an objective;
+- a piece of R code;
+- a question;
+- a console output;
+- a plot;
+- a PDF or other resource.
+
+The general idea is simple:
+
+```text
+SeRiouS provides the stage.
+The teacher writes the play.
+```
+
+This vignette explains how to create, check, run and share a capsule as a simple folder.
+
+# Create a capsule folder
+
+The easiest way to start is to create a capsule skeleton.
+
+```{r}
+library(SeRiouS)
+
+create_capsule_skeleton(
+  path = "my_capsule",
+  title = "My first SeRiouS capsule"
+)
+```
+
+This creates a folder named `my_capsule`.
+
+# Folder structure
+
+A capsule folder has the following structure:
+
+```text
+my_capsule/
+├── capsule.R
+├── serious.yml
+├── README.md
+├── data/
+├── pdf/
+├── img/
+└── www/
+```
+
+The most important file is:
+
+```text
+capsule.R
+```
+
+It must define a function named `create_capsule()`.
+
+This function must return a `learning_capsule` object.
+
+The other folders are optional resource folders:
+
+```text
+data/   datasets used by the capsule
+pdf/    PDF supports or slides
+img/    images used by the capsule
+www/    web resources for the Shiny app
+```
+
+# Open and edit `capsule.R`
+
+The generated `capsule.R` file contains a minimal working example.
+
+A typical capsule is built in three steps:
+
+```{r}
+sections <- SeRiouS::make_sections(...)
+
+steps <- list(
+  SeRiouS::make_step(...),
+  SeRiouS::make_step(...)
+)
+
+SeRiouS::build_linear_capsule(
+  id = "my_capsule",
+  title = "My capsule",
+  method = "My method",
+  steps = steps,
+  sections = sections
+)
+```
+
+The function `make_step()` defines one step of the learning path.
+
+For example:
+
+```{r}
+SeRiouS::make_step(
+  id = "intro",
+  title = "Discover the data",
+  section = "data",
+  objective = "Display the first rows of the iris dataset.",
+  code = "head(iris)",
+  question = "Which dataset is used in this capsule?",
+  expected_answer = "iris"
+)
+```
+
+A step can also generate a plot:
+
+```{r}
+SeRiouS::make_step(
+  id = "plot",
+  title = "Create a plot",
+  section = "visual",
+  objective = "Plot sepal length against petal length.",
+  outputs = c("console", "plot"),
+  code = paste(
+    "plot(",
+    "  iris$Sepal.Length,",
+    "  iris$Petal.Length,",
+    "  pch = 16",
+    ")",
+    sep = "\n"
+  ),
+  question = "Which base R function creates this graph?",
+  expected_answer = "plot"
+)
+```
+
+# Check the capsule
+
+Before sharing a capsule, it is recommended to check it.
+
+From inside the capsule folder:
+
+```{r}
+check_capsule_dir(".")
+```
+
+Or from the parent folder:
+
+```{r}
+check_capsule_dir("my_capsule")
+```
+
+This function checks that:
+
+```text
+capsule.R exists
+create_capsule() exists
+create_capsule() returns a learning_capsule object
+the capsule can be validated
+the main folder structure is coherent
+```
+
+# Run the capsule
+
+To run the capsule from the parent folder:
+
+```{r}
+run_capsule_dir("my_capsule")
+```
+
+To run it from inside the capsule folder:
+
+```{r}
+run_capsule_dir(".")
+```
+
+This launches the Shiny interface.
+
+# Share the capsule
+
+To share the capsule, zip the folder:
+
+```text
+my_capsule/
+```
+
+The recipient only needs to install SeRiouS and run:
+
+```{r}
+library(SeRiouS)
+
+run_capsule_dir("my_capsule")
+```
+
+This makes it possible to share pedagogical material without creating a full R package.
+
+# Summary
+
+The typical workflow for a contributor is:
+
+```{r}
+library(SeRiouS)
+
+create_capsule_skeleton("my_capsule")
+check_capsule_dir("my_capsule")
+run_capsule_dir("my_capsule")
+```
+
+Then edit:
+
+```text
+my_capsule/capsule.R
+```
+
+and share the folder when the capsule is ready.

@@ -1,22 +1,37 @@
 Package: SeRiouS
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Create and Export Interactive 'Shiny' Learning Capsules
+Version: 0.1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: MIT + file LICENSE
+    person(
+      given = "Sébastien",
+      family = "Lê",
+      role = c("aut", "cre"),
+      email = "sebastien.lel@institut-agro.fr"
+    )
+Description: Provides tools to define, validate, run, and share interactive
+    learning capsules built around a board-game metaphor. Capsules combine
+    ordered steps, unlockable questions, R code execution, console outputs,
+    plots, and local resources. They can be run locally as 'Shiny'
+    applications and optionally exported as standalone 'shinylive'
+    applications for simple web-compatible capsules.
+License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
+Imports: 
+    shiny,
+    visNetwork,
+    utils
+Suggests: 
+    dplyr,
+    FactoMineR,
+    ggplot2,
+    knitr,
+    rmarkdown,
+    SensoMineR,
+    shinylive,
+    testthat (>= 3.0.0)
 Depends: 
     R (>= 3.5)
-LazyData: true
-Imports: 
-    FactoMineR,
-    shiny,
-    visNetwork
-Suggests: 
-    EnTraineR,
-    NaileR
-URL: https://github.com/Sebastien-Le/SeRiouS
-BugReports: https://github.com/Sebastien-Le/SeRiouS/issues
+VignetteBuilder: knitr
+Config/testthat/edition: 3
