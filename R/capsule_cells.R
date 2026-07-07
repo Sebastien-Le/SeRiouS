@@ -605,7 +605,9 @@ serious_cell_to_step <- function(cell) {
     expected_output = cell$expected_output %||% NULL,
     concepts = cell$concepts %||% NULL,
     question = cell$question %||% NULL,
-    expected_answer = cell$expected_answer %||% NULL
+    expected_answer = cell$expected_answer %||% NULL,
+    pdf = cell$pdf %||% NULL,
+    pdf_on_run = cell$pdf_on_run %||% NULL
   )
 
   args <- serious_drop_null(args)
@@ -626,6 +628,8 @@ serious_cell_to_step <- function(cell) {
   step$x <- cell$x %||% step$x %||% NULL
   step$y <- cell$y %||% step$y %||% NULL
   step$next_steps <- serious_as_character_vector(cell$next_cells)
+  step$pdf <- cell$pdf %||% step$pdf %||% NULL
+  step$pdf_on_run <- cell$pdf_on_run %||% step$pdf_on_run %||% NULL
 
   if (!is.null(cell$case_sensitive)) {
     step$case_sensitive <- cell$case_sensitive

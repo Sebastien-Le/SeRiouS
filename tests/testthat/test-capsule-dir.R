@@ -64,15 +64,32 @@ test_that("create_capsule_skeleton creates a valid directory", {
 
   create_capsule_skeleton(path)
 
-  expect_true(file.exists(file.path(path, "capsule.R")))
+  expect_true(dir.exists(path))
+  expect_true(file.exists(file.path(path, "serious.yml")))
+  expect_true(dir.exists(file.path(path, "cells")))
   expect_true(dir.exists(file.path(path, "data")))
   expect_true(dir.exists(file.path(path, "pdf")))
   expect_true(dir.exists(file.path(path, "img")))
   expect_true(dir.exists(file.path(path, "www")))
 
-  expect_true(check_capsule_dir(path, verbose = FALSE))
-})
+  expect_false(file.exists(file.path(path, "capsule.R")))
 
+  cell_files <- list.files(
+    file.path(path, "cells"),
+    pattern = "\\.ya?ml$",
+    full.names = TRUE
+  )
+
+  expect_gt(length(cell_files), 0)
+
+  expect_true(check_capsule_dir(path, verbose = FALSE))
+
+  cap <- load_capsule_dir(path)
+
+  expect_s3_class(cap, "learning_capsule")
+  expect_equal(cap$id, "my_capsule")
+  expect_equal(cap$start_step, "intro")
+})
 
 test_that("load_capsule_dir attaches source directory", {
   path <- tempfile("serious-capsule-")
@@ -99,15 +116,14 @@ test_that("check_capsule_dir detects missing capsule.R", {
 
 
 test_that("check_capsule_dir detects missing PDF files", {
-  path <- tempfile("serious-pdf-capsule-")
+  path <- tempfile("serious-pdf-test-")
 
-  write_minimal_pdf_capsule(path)
+  create_capsule_skeleton(path)
 
-  expect_true(check_capsule_dir(path, verbose = FALSE))
-
-  file.rename(
-    file.path(path, "pdf", "support.pdf"),
-    file.path(path, "pdf", "support_TEMP.pdf")
+  capsule_update_cell(
+    path,
+    id = "intro",
+    pdf_on_run = "pdf/missing-file.pdf"
   )
 
   expect_error(
