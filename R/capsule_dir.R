@@ -224,7 +224,6 @@ create_capsule_skeleton <- function(path,
   invisible(normalizePath(path, mustWork = TRUE))
 }
 
-
 #' Load a SeRiouS capsule from a folder
 #'
 #' @param path Path to a capsule folder.
@@ -240,14 +239,26 @@ load_capsule_dir <- function(path) {
     stop("Capsule directory does not exist: ", path, call. = FALSE)
   }
 
-  capsule_file <- file.path(path, "capsule.R")
+  capsule_dir <- normalizePath(path, mustWork = TRUE)
+
+  # New cell-based format.
+  cells_dir <- file.path(capsule_dir, "cells")
+  has_cell_files <- dir.exists(cells_dir) &&
+    length(list.files(cells_dir, pattern = "\\.ya?ml$", full.names = TRUE)) > 0
+
+  if (isTRUE(has_cell_files)) {
+    return(serious_load_capsule_cells_dir(capsule_dir))
+  }
+
+  # Legacy capsule.R format.
+  capsule_file <- file.path(capsule_dir, "capsule.R")
 
   if (!file.exists(capsule_file)) {
     stop("No 'capsule.R' file found in: ", path, call. = FALSE)
   }
 
   env <- new.env(parent = globalenv())
-  env$capsule_dir <- normalizePath(path, mustWork = TRUE)
+  env$capsule_dir <- capsule_dir
 
   sys.source(capsule_file, envir = env)
 
@@ -279,11 +290,10 @@ load_capsule_dir <- function(path) {
     capsule$resources <- list()
   }
 
-  capsule$resources$capsule_dir <- normalizePath(path, mustWork = TRUE)
+  capsule$resources$capsule_dir <- capsule_dir
 
   capsule
 }
-
 
 #' Run a SeRiouS capsule from a folder
 #'
@@ -315,9 +325,19 @@ check_capsule_dir <- function(path, verbose = TRUE) {
   capsule_dir <- normalizePath(path, mustWork = TRUE)
 
   capsule_file <- file.path(capsule_dir, "capsule.R")
+  cells_dir <- file.path(capsule_dir, "cells")
 
-  if (!file.exists(capsule_file)) {
-    stop("Missing required file: capsule.R", call. = FALSE)
+  has_capsule_file <- file.exists(capsule_file)
+  has_cell_files <- dir.exists(cells_dir) &&
+    length(list.files(cells_dir, pattern = "\\.ya?ml$", full.names = TRUE)) > 0
+
+  if (!has_capsule_file && !has_cell_files) {
+    stop(
+      "Invalid SeRiouS capsule folder. Expected either:\n",
+      "- a legacy 'capsule.R' file, or\n",
+      "- a 'cells/' folder containing .yml files.",
+      call. = FALSE
+    )
   }
 
   yml_file <- file.path(capsule_dir, "serious.yml")
@@ -399,10 +419,11 @@ check_capsule_dir <- function(path, verbose = TRUE) {
 
   if (isTRUE(verbose)) {
     message("Capsule directory is valid: ", capsule_dir)
+    message("Capsule format: ", if (has_cell_files) "cell-based" else "legacy capsule.R")
     message("Capsule id: ", capsule$id)
     message("Capsule title: ", capsule$title)
-    message("Number of steps: ", length(capsule$steps))
-    message("Start step: ", capsule$start_step)
+    message("Number of cells: ", length(capsule$steps))
+    message("Start cell: ", capsule$start_step)
   }
 
   invisible(TRUE)
