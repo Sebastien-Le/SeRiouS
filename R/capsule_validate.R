@@ -8,6 +8,8 @@
 #' @param verbose Logical. If `TRUE`, prints a validation message.
 #'
 #' @return Invisibly returns `TRUE` if the capsule is valid.
+#'
+#' @family advanced capsule builders
 #' @export
 validate_capsule <- function(capsule,
                              parse_code = FALSE,

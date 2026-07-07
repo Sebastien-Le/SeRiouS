@@ -19,3 +19,12 @@ Invisibly returns the normalized path.
 \description{
 Create a SeRiouS capsule folder skeleton
 }
+\seealso{
+Other main user functions: 
+\code{\link{available_capsules}()},
+\code{\link{check_capsule_dir}()},
+\code{\link{get_capsule}()},
+\code{\link{load_capsule_dir}()},
+\code{\link{run_capsule}()}
+}
+\concept{main user functions}

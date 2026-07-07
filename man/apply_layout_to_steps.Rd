@@ -17,3 +17,4 @@ Updated list of \code{"serious_step"} objects.
 \description{
 Apply board layout to steps
 }
+\keyword{internal}

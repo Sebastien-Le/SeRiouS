@@ -6,6 +6,8 @@
 #' @param border Character vector of border colors.
 #'
 #' @return A data frame describing capsule sections.
+#'
+#' @family advanced capsule builders
 #' @export
 make_sections <- function(id,
                           label = id,
@@ -67,6 +69,8 @@ make_linear_edges <- function(ids) {
 #' @param edges Data frame with columns `from` and `to`.
 #'
 #' @return A list of updated `"serious_step"` objects.
+#'
+#' @keywords internal
 #' @export
 apply_edges_to_steps <- function(steps, edges) {
   stopifnot(is.list(steps))
@@ -127,6 +131,8 @@ make_board_layout <- function(ids,
 #' @param layout Data frame with columns `id`, `x`, and `y`.
 #'
 #' @return Updated list of `"serious_step"` objects.
+#'
+#' @keywords internal
 #' @export
 apply_layout_to_steps <- function(steps, layout) {
   stopifnot(is.list(steps))
@@ -182,6 +188,8 @@ make_step_sequence <- function(steps,
 #' @param to Character vector of target step ids.
 #'
 #' @return A data frame with columns `from` and `to`.
+#'
+#' @family advanced capsule builders
 #' @export
 make_edges <- function(from, to) {
   if (!is.character(from)) {
@@ -211,6 +219,8 @@ make_edges <- function(from, to) {
 #' @param y Numeric vector of y positions.
 #'
 #' @return A data frame with columns `id`, `x`, and `y`.
+#'
+#' @family advanced capsule builders
 #' @export
 make_layout <- function(id, x, y) {
   if (!is.character(id)) {
@@ -255,6 +265,8 @@ make_layout <- function(id, x, y) {
 #' @param start_step Optional id of the starting step.
 #'
 #' @return A `"learning_capsule"` object.
+#'
+#' @family advanced capsule builders
 #' @export
 build_capsule <- function(id,
                           title,
@@ -351,6 +363,8 @@ build_capsule <- function(id,
 #' @param y_spacing Vertical spacing between nodes.
 #'
 #' @return A `"learning_capsule"` object.
+#'
+#' @family advanced capsule builders
 #' @export
 build_linear_capsule <- function(id,
                                  title,

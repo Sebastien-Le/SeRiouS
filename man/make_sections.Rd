@@ -21,3 +21,13 @@ A data frame describing capsule sections.
 \description{
 Define capsule sections
 }
+\seealso{
+Other advanced capsule builders: 
+\code{\link{build_capsule}()},
+\code{\link{build_linear_capsule}()},
+\code{\link{make_edges}()},
+\code{\link{make_layout}()},
+\code{\link{make_step}()},
+\code{\link{validate_capsule}()}
+}
+\concept{advanced capsule builders}

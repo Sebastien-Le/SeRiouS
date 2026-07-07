@@ -17,3 +17,4 @@ An environment containing the initial capsule data.
 \description{
 Create a tutorial environment for a capsule
 }
+\keyword{internal}

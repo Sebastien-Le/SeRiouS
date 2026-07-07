@@ -19,3 +19,14 @@ Invisibly returns the updated cell.
 \description{
 Update a cell in a capsule folder
 }
+\seealso{
+Other cell-based capsule API: 
+\code{\link{capsule_add_cell}()},
+\code{\link{capsule_cells}()},
+\code{\link{capsule_connect_cells}()},
+\code{\link{capsule_disconnect_cells}()},
+\code{\link{capsule_get_cell}()},
+\code{\link{capsule_move_cell}()},
+\code{\link{capsule_set_cell_unlock}()}
+}
+\concept{cell-based capsule API}

@@ -75,6 +75,8 @@ serious_write_cell <- function(cell, file) {
 #' @param path Path to a capsule folder.
 #'
 #' @return A data frame describing the cells.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_cells <- function(path) {
   serious_check_capsule_path(path)
@@ -135,6 +137,8 @@ capsule_cells <- function(path) {
 #' @param id Cell id.
 #'
 #' @return A list of class `"serious_cell"`.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_get_cell <- function(path, id) {
   serious_check_capsule_path(path)
@@ -170,6 +174,8 @@ capsule_get_cell <- function(path, id) {
 #' @param overwrite Logical. If `TRUE`, overwrite an existing cell.
 #'
 #' @return Invisibly returns the cell file path.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_add_cell <- function(path,
                              id,
@@ -239,6 +245,8 @@ capsule_add_cell <- function(path,
 #' @param ... Cell fields to update.
 #'
 #' @return Invisibly returns the updated cell.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_update_cell <- function(path, id, ...) {
   cell <- capsule_get_cell(path, id)
@@ -266,6 +274,8 @@ capsule_update_cell <- function(path, id, ...) {
 #' @param x,y Numeric coordinates.
 #'
 #' @return Invisibly returns the updated cell.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_move_cell <- function(path, id, x, y) {
   if (!is.numeric(x) || length(x) != 1 || is.na(x)) {
@@ -291,6 +301,8 @@ capsule_move_cell <- function(path, id, x, y) {
 #' @param failure Optional failure message.
 #'
 #' @return Invisibly returns the updated cell.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_set_cell_unlock <- function(path,
                                     id,
@@ -332,6 +344,8 @@ capsule_set_cell_unlock <- function(path,
 #' @param to Target cell id.
 #'
 #' @return Invisibly returns the updated source cell.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_connect_cells <- function(path, from, to) {
   serious_check_cell_id(from)
@@ -359,6 +373,8 @@ capsule_connect_cells <- function(path, from, to) {
 #' @param to Target cell id.
 #'
 #' @return Invisibly returns the updated source cell.
+#'
+#' @family cell-based capsule API
 #' @export
 capsule_disconnect_cells <- function(path, from, to) {
   serious_check_cell_id(from)

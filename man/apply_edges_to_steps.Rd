@@ -17,3 +17,4 @@ A list of updated \code{"serious_step"} objects.
 \description{
 Apply graph edges to a list of steps
 }
+\keyword{internal}

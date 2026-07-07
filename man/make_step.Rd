@@ -72,3 +72,13 @@ An object of class \code{"serious_step"}.
 \description{
 A learning step represents one pedagogical node in a SeRiouS capsule.
 }
+\seealso{
+Other advanced capsule builders: 
+\code{\link{build_capsule}()},
+\code{\link{build_linear_capsule}()},
+\code{\link{make_edges}()},
+\code{\link{make_layout}()},
+\code{\link{make_sections}()},
+\code{\link{validate_capsule}()}
+}
+\concept{advanced capsule builders}

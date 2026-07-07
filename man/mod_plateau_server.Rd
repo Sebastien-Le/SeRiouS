@@ -19,3 +19,4 @@ A Shiny module server.
 \description{
 Plateau module server
 }
+\keyword{internal}

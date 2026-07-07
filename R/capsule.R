@@ -54,6 +54,8 @@ default_answer_validator <- function(answer, expected) {
 #' with elements `x` and `y`.
 #'
 #' @return An object of class `"serious_step"`.
+#'
+#' @family advanced capsule builders
 #' @export
 make_step <- function(id,
                       title,

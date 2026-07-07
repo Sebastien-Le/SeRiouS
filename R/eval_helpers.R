@@ -4,6 +4,8 @@
 #' @param parent Parent environment.
 #'
 #' @return An environment containing the initial capsule data.
+#'
+#' @keywords internal
 #' @export
 make_tutorial_env <- function(capsule, parent = globalenv()) {
   if (!inherits(capsule, "learning_capsule")) {
@@ -27,6 +29,8 @@ make_tutorial_env <- function(capsule, parent = globalenv()) {
 #' @param env Environment in which the code is evaluated.
 #'
 #' @return A character string containing captured output or an error message.
+#'
+#' @keywords internal
 #' @export
 eval_code_capture <- function(code, env) {
   if (is.null(code) || !nzchar(code)) {

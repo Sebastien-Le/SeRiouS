@@ -12,3 +12,16 @@ A data frame with available capsule metadata.
 \description{
 List available SeRiouS capsules
 }
+\seealso{
+\code{\link[=run_capsule]{run_capsule()}}, \code{\link[=get_capsule]{get_capsule()}},
+\code{\link[=create_capsule_skeleton]{create_capsule_skeleton()}}, \code{\link[=check_capsule_dir]{check_capsule_dir()}},
+\code{\link[=load_capsule_dir]{load_capsule_dir()}}
+
+Other main user functions: 
+\code{\link{check_capsule_dir}()},
+\code{\link{create_capsule_skeleton}()},
+\code{\link{get_capsule}()},
+\code{\link{load_capsule_dir}()},
+\code{\link{run_capsule}()}
+}
+\concept{main user functions}

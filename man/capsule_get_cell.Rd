@@ -17,3 +17,14 @@ A list of class \code{"serious_cell"}.
 \description{
 Get a cell from a capsule folder
 }
+\seealso{
+Other cell-based capsule API: 
+\code{\link{capsule_add_cell}()},
+\code{\link{capsule_cells}()},
+\code{\link{capsule_connect_cells}()},
+\code{\link{capsule_disconnect_cells}()},
+\code{\link{capsule_move_cell}()},
+\code{\link{capsule_set_cell_unlock}()},
+\code{\link{capsule_update_cell}()}
+}
+\concept{cell-based capsule API}

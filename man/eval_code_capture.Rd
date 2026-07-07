@@ -17,3 +17,4 @@ A character string containing captured output or an error message.
 \description{
 Evaluate R code and capture console output
 }
+\keyword{internal}

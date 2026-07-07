@@ -3,6 +3,8 @@
 #' @param id Module id.
 #'
 #' @return Shiny UI.
+#'
+#' @keywords internal
 #' @export
 mod_step_viewer_ui <- function(id) {
   ns <- shiny::NS(id)
@@ -58,6 +60,8 @@ mod_step_viewer_ui <- function(id) {
 #' @param state Shared reactive state.
 #'
 #' @return A Shiny module server.
+#'
+#' @keywords internal
 #' @export
 mod_step_viewer_server <- function(id, capsule, state) {
   shiny::moduleServer(id, function(input, output, session) {

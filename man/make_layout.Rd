@@ -19,3 +19,13 @@ A data frame with columns \code{id}, \code{x}, and \code{y}.
 \description{
 Create a manual capsule layout
 }
+\seealso{
+Other advanced capsule builders: 
+\code{\link{build_capsule}()},
+\code{\link{build_linear_capsule}()},
+\code{\link{make_edges}()},
+\code{\link{make_sections}()},
+\code{\link{make_step}()},
+\code{\link{validate_capsule}()}
+}
+\concept{advanced capsule builders}

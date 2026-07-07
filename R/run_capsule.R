@@ -9,6 +9,12 @@
 #' @param ... Additional arguments passed to the underlying runner.
 #'
 #' @return Launches a Shiny application.
+#'
+#' @seealso [available_capsules()], [get_capsule()],
+#'   [create_capsule_skeleton()], [check_capsule_dir()],
+#'   [load_capsule_dir()]
+#'
+#' @family main user functions
 #' @export
 #'
 #' @examples

@@ -28,3 +28,13 @@ Invisibly returns \code{TRUE} if the capsule is valid.
 \description{
 Validate a SeRiouS learning capsule
 }
+\seealso{
+Other advanced capsule builders: 
+\code{\link{build_capsule}()},
+\code{\link{build_linear_capsule}()},
+\code{\link{make_edges}()},
+\code{\link{make_layout}()},
+\code{\link{make_sections}()},
+\code{\link{make_step}()}
+}
+\concept{advanced capsule builders}

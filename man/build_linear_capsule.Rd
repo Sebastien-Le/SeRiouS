@@ -59,3 +59,13 @@ A \code{"learning_capsule"} object.
 \description{
 Build a linear learning capsule
 }
+\seealso{
+Other advanced capsule builders: 
+\code{\link{build_capsule}()},
+\code{\link{make_edges}()},
+\code{\link{make_layout}()},
+\code{\link{make_sections}()},
+\code{\link{make_step}()},
+\code{\link{validate_capsule}()}
+}
+\concept{advanced capsule builders}

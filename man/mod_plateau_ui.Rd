@@ -15,3 +15,4 @@ Shiny UI.
 \description{
 Plateau module UI
 }
+\keyword{internal}

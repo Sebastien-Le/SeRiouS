@@ -15,3 +15,16 @@ A \code{"learning_capsule"} object.
 \description{
 Get a registered SeRiouS capsule
 }
+\seealso{
+\code{\link[=available_capsules]{available_capsules()}}, \code{\link[=run_capsule]{run_capsule()}},
+\code{\link[=create_capsule_skeleton]{create_capsule_skeleton()}}, \code{\link[=check_capsule_dir]{check_capsule_dir()}},
+\code{\link[=load_capsule_dir]{load_capsule_dir()}}
+
+Other main user functions: 
+\code{\link{available_capsules}()},
+\code{\link{check_capsule_dir}()},
+\code{\link{create_capsule_skeleton}()},
+\code{\link{load_capsule_dir}()},
+\code{\link{run_capsule}()}
+}
+\concept{main user functions}

@@ -15,3 +15,12 @@ A \code{"learning_capsule"} object.
 \description{
 Load a SeRiouS capsule from a folder
 }
+\seealso{
+Other main user functions: 
+\code{\link{available_capsules}()},
+\code{\link{check_capsule_dir}()},
+\code{\link{create_capsule_skeleton}()},
+\code{\link{get_capsule}()},
+\code{\link{run_capsule}()}
+}
+\concept{main user functions}

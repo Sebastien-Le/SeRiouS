@@ -15,3 +15,4 @@ Shiny UI.
 \description{
 Step viewer module UI
 }
+\keyword{internal}

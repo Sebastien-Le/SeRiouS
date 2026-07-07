@@ -19,3 +19,14 @@ Invisibly returns the updated source cell.
 \description{
 Connect two cells
 }
+\seealso{
+Other cell-based capsule API: 
+\code{\link{capsule_add_cell}()},
+\code{\link{capsule_cells}()},
+\code{\link{capsule_disconnect_cells}()},
+\code{\link{capsule_get_cell}()},
+\code{\link{capsule_move_cell}()},
+\code{\link{capsule_set_cell_unlock}()},
+\code{\link{capsule_update_cell}()}
+}
+\concept{cell-based capsule API}

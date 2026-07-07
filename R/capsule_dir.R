@@ -5,6 +5,7 @@
 #' @param overwrite Logical. If `TRUE`, existing template files may be overwritten.
 #'
 #' @return Invisibly returns the normalized path.
+#' @family main user functions
 #' @export
 create_capsule_skeleton <- function(path,
                                     title = "My SeRiouS capsule",
@@ -300,6 +301,7 @@ create_capsule_skeleton <- function(path,
 #' @param path Path to a capsule folder.
 #'
 #' @return A `"learning_capsule"` object.
+#' @family main user functions
 #' @export
 load_capsule_dir <- function(path) {
   if (!is.character(path) || length(path) != 1) {
@@ -383,6 +385,7 @@ run_capsule_dir <- function(path) {
 #' @param verbose Logical. If `TRUE`, prints diagnostic messages.
 #'
 #' @return Invisibly returns `TRUE` if the capsule folder is valid.
+#' @family main user functions
 #' @export
 check_capsule_dir <- function(path, verbose = TRUE) {
   if (!is.character(path) || length(path) != 1) {

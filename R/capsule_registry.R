@@ -131,6 +131,12 @@ capsule_registry <- function() {
 #' List available SeRiouS capsules
 #'
 #' @return A data frame with available capsule metadata.
+#'
+#' @seealso [run_capsule()], [get_capsule()],
+#'   [create_capsule_skeleton()], [check_capsule_dir()],
+#'   [load_capsule_dir()]
+#'
+#' @family main user functions
 #' @export
 available_capsules <- function() {
   registry <- capsule_registry()
@@ -151,6 +157,12 @@ available_capsules <- function() {
 #' @param id Capsule id.
 #'
 #' @return A `"learning_capsule"` object.
+#'
+#' @seealso [available_capsules()], [run_capsule()],
+#'   [create_capsule_skeleton()], [check_capsule_dir()],
+#'   [load_capsule_dir()]
+#'
+#' @family main user functions
 #' @export
 get_capsule <- function(id) {
   if (!is.character(id) || length(id) != 1 || !nzchar(id)) {
