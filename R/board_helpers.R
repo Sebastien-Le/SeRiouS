@@ -19,9 +19,28 @@ serious_board_get_step <- function(capsule, id) {
   capsule$steps[[idx]]
 }
 
+serious_board_normalize_ids <- function(x) {
+  if (is.null(x)) {
+    return(character())
+  }
+
+  if (is.list(x)) {
+    x <- unlist(x, use.names = FALSE)
+  }
+
+  x <- as.character(x)
+  x <- x[!is.na(x) & nzchar(x)]
+
+  unique(x)
+}
+
 serious_board_step_status <- function(step_id,
                                       unlocked_steps,
                                       visited_steps) {
+  unlocked_steps <- serious_board_normalize_ids(unlocked_steps)
+  visited_steps <- serious_board_normalize_ids(visited_steps)
+  step_id <- as.character(step_id)
+
   if (step_id %in% visited_steps) {
     "visited"
   } else if (step_id %in% unlocked_steps) {
@@ -58,6 +77,16 @@ serious_board_status_border_color <- function(status) {
     unlocked = "#2E7D32",
     locked = "#C62828",
     "#424242"
+  )
+}
+
+serious_board_status_background_color <- function(status, section_background) {
+  switch(
+    status,
+    locked = "#FFCDD2",
+    unlocked = section_background,
+    visited = section_background,
+    section_background
   )
 }
 
@@ -111,6 +140,57 @@ serious_board_section_color <- function(section_id, sections = NULL) {
   "#ECEFF1"
 }
 
+serious_board_section_label <- function(section_id, sections = NULL) {
+  if (is.null(section_id) ||
+      length(section_id) != 1 ||
+      is.na(section_id) ||
+      !nzchar(section_id)) {
+    return("Autre")
+  }
+
+  if (is.data.frame(sections) && "id" %in% names(sections)) {
+    idx <- match(section_id, sections$id)
+
+    if (!is.na(idx)) {
+      label_cols <- intersect(
+        c("label", "title", "name"),
+        names(sections)
+      )
+
+      if (length(label_cols) > 0) {
+        label <- sections[[label_cols[[1]]]][[idx]]
+
+        if (!is.null(label) && !is.na(label) && nzchar(label)) {
+          return(as.character(label))
+        }
+      }
+    }
+  }
+
+  default_labels <- c(
+    donnees = "Données",
+    stat = "Statistiques",
+    r_sorties = "Sorties R",
+    entrainer = "EnTraineR",
+    r_auto = "R automatique",
+    factominer = "FactoMineR",
+    nailer = "NaileR",
+    latent = "Analyse latente",
+    texte = "Texte",
+
+    data = "Data",
+    summary = "Summary",
+    visual = "Visualisation",
+    conclusion = "Conclusion"
+  )
+
+  if (section_id %in% names(default_labels)) {
+    return(unname(default_labels[[section_id]]))
+  }
+
+  section_id
+}
+
 serious_board_get_position <- function(capsule, step, id, i) {
   if (!is.null(step$x) && !is.null(step$y)) {
     return(list(x = step$x, y = step$y))
@@ -150,8 +230,15 @@ serious_board_make_nodes <- function(capsule,
                                      selected_step = NULL) {
   ids <- serious_board_step_ids(capsule)
 
+  unlocked_steps <- serious_board_normalize_ids(unlocked_steps)
+  visited_steps <- serious_board_normalize_ids(visited_steps)
+
+  if (!is.null(selected_step)) {
+    selected_step <- as.character(selected_step[[1]])
+  }
+
   nodes <- lapply(seq_along(ids), function(i) {
-    id <- ids[[i]]
+    id <- as.character(ids[[i]])
     step <- serious_board_get_step(capsule, id)
 
     status <- serious_board_step_status(
@@ -169,9 +256,14 @@ serious_board_make_nodes <- function(capsule,
       i = i
     )
 
-    background <- serious_board_section_color(
+    section_background <- serious_board_section_color(
       section_id = section_id,
       sections = capsule$sections
+    )
+
+    background <- serious_board_status_background_color(
+      status = status,
+      section_background = section_background
     )
 
     border <- serious_board_status_border_color(status)
@@ -195,6 +287,9 @@ serious_board_make_nodes <- function(capsule,
         "\n",
         step$objective %||% step$title %||% id
       ),
+      section_id = section_id %||% NA_character_,
+      status = status,
+
       x = as.numeric(pos$x),
       y = as.numeric(pos$y),
 
@@ -272,6 +367,58 @@ serious_board_make_edges <- function(capsule) {
   edges
 }
 
+serious_board_legend_nodes <- function(sections = NULL,
+                                       section_ids = NULL) {
+  if (!is.null(section_ids)) {
+    section_ids <- serious_board_normalize_ids(section_ids)
+  } else if (is.data.frame(sections) && "id" %in% names(sections)) {
+    section_ids <- serious_board_normalize_ids(sections$id)
+  } else {
+    section_ids <- names(serious_board_default_section_colors())
+  }
+
+  section_ids <- section_ids[!is.na(section_ids) & nzchar(section_ids)]
+  section_ids <- unique(section_ids)
+
+  if (length(section_ids) == 0) {
+    return(NULL)
+  }
+
+  data.frame(
+    label = vapply(
+      section_ids,
+      serious_board_section_label,
+      character(1),
+      sections = sections
+    ),
+    shape = "box",
+    color = vapply(
+      section_ids,
+      serious_board_section_color,
+      character(1),
+      sections = sections
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+serious_board_status_legend_nodes <- function() {
+  data.frame(
+    label = c(
+      "\U0001F512 verrouillé",
+      "\U0001F513 débloqué",
+      "\u2713 visité"
+    ),
+    shape = "box",
+    color = c(
+      "#FFCDD2",
+      "#E8F5E9",
+      "#DDEEFF"
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
 serious_board_widget <- function(nodes,
                                  edges,
                                  height = "420px") {
@@ -318,4 +465,42 @@ serious_board_widget <- function(nodes,
       highlightNearest = FALSE,
       nodesIdSelection = FALSE
     )
+}
+
+serious_board_legend_ui <- function(sections = NULL) {
+  if (is.data.frame(sections) &&
+      "id" %in% names(sections)) {
+    section_ids <- as.character(sections$id)
+  } else {
+    section_ids <- names(serious_board_default_section_colors())
+  }
+
+  section_ids <- section_ids[!is.na(section_ids) & nzchar(section_ids)]
+  section_ids <- unique(section_ids)
+
+  shiny::tagList(
+    lapply(section_ids, function(section_id) {
+      color <- serious_board_section_color(
+        section_id = section_id,
+        sections = sections
+      )
+
+      label <- serious_board_section_label(
+        section_id = section_id,
+        sections = sections
+      )
+
+      shiny::div(
+        class = "legend-item",
+        shiny::span(
+          class = "legend-swatch",
+          style = paste0(
+            "background-color:", color,
+            "; border-color:#666666;"
+          )
+        ),
+        label
+      )
+    })
+  )
 }

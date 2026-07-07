@@ -8,6 +8,36 @@ mod_plateau_ui <- function(id) {
   ns <- shiny::NS(id)
 
   shiny::tagList(
+    shiny::tags$style(shiny::HTML("
+      .serious-board-legend {
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        background: #ffffff;
+        border: 1px solid #dde3ea;
+        border-radius: 12px;
+      }
+
+      .legend-item {
+        display: inline-block;
+        margin-right: 14px;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .legend-swatch {
+        display: inline-block;
+        width: 18px;
+        height: 12px;
+        border: 1px solid #555;
+        margin-right: 5px;
+        vertical-align: middle;
+        border-radius: 3px;
+      }
+    ")),
+    shiny::div(
+      class = "serious-board-legend",
+      shiny::uiOutput(ns("legend"))
+    ),
     visNetwork::visNetworkOutput(ns("plateau"), height = "420px")
   )
 }
@@ -23,12 +53,16 @@ mod_plateau_ui <- function(id) {
 mod_plateau_server <- function(id, capsule, state) {
   shiny::moduleServer(id, function(input, output, session) {
 
+    output$legend <- shiny::renderUI({
+      serious_board_legend_ui(capsule$sections)
+    })
+
     output$plateau <- visNetwork::renderVisNetwork({
       nodes <- serious_board_make_nodes(
         capsule = capsule,
-        unlocked_steps = shiny::isolate(state$unlocked_steps),
-        visited_steps = shiny::isolate(state$visited_steps),
-        selected_step = shiny::isolate(state$selected_step)
+        unlocked_steps = state$unlocked_steps,
+        visited_steps = state$visited_steps,
+        selected_step = state$selected_step
       )
 
       edges <- serious_board_make_edges(capsule)
@@ -48,29 +82,6 @@ mod_plateau_server <- function(id, capsule, state) {
             session$ns("selected_node")
           )
         )
-    })
-
-    shiny::observe({
-      state$unlocked_steps
-      state$visited_steps
-      state$selected_step
-
-      nodes <- serious_board_make_nodes(
-        capsule = capsule,
-        unlocked_steps = state$unlocked_steps,
-        visited_steps = state$visited_steps,
-        selected_step = state$selected_step
-      )
-
-      proxy <- visNetwork::visNetworkProxy(
-        "plateau",
-        session = session
-      )
-
-      visNetwork::visUpdateNodes(
-        proxy,
-        nodes = nodes
-      )
     })
 
     shiny::observeEvent(input$selected_node, {
