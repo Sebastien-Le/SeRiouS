@@ -128,3 +128,10 @@ test_that("legacy capsule.R skeleton is still supported when present", {
   expect_equal(cap$id, "legacy_test")
   expect_equal(unname(capsule_step_ids(cap)), "intro")
 })
+
+
+test_that("empty YAML list fields are converted to character vectors", {
+  expect_equal(serious_as_character_vector(list()), character())
+  expect_equal(serious_as_character_vector(NULL), character())
+  expect_equal(serious_as_character_vector(list("a", "b")), c("a", "b"))
+})
