@@ -323,7 +323,7 @@ write_capsule_app <- function(capsule,
         "",
         "capsule <- readRDS(\"capsule.rds\")",
         "",
-        "SeRiouS::run_learning_capsule(capsule)"
+        "SeRiouS::run_capsule(capsule)"
       ),
       app_file
     )

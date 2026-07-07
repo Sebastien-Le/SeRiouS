@@ -24,57 +24,7 @@ run_capsule <- function(x, ...) {
     )
   }
 
-  if (inherits(x, "learning_capsule")) {
-    return(run_learning_capsule(x, ...))
-  }
+  capsule <- serious_as_learning_capsule(x, arg = "x")
 
-  if (!is.character(x) || length(x) != 1 || !nzchar(x)) {
-    stop(
-      "'x' must be a capsule directory, a built-in capsule name, ",
-      "or a learning_capsule object.",
-      call. = FALSE
-    )
-  }
-
-  # Case 1: x is a capsule directory
-  if (dir.exists(x)) {
-    return(run_capsule_dir(x, ...))
-  }
-
-  # Case 2: x is the name of a built-in capsule
-  builtins <- available_capsules()
-
-  builtin_ids <- if (is.data.frame(builtins) && "id" %in% names(builtins)) {
-    as.character(builtins$id)
-  } else {
-    as.character(builtins)
-  }
-
-  if (x %in% builtin_ids) {
-    capsule <- get_capsule(x)
-
-    if (is.function(capsule)) {
-      capsule <- capsule()
-    }
-
-    if (!inherits(capsule, "learning_capsule")) {
-      stop(
-        "Built-in capsule '", x, "' did not return a learning_capsule object.",
-        call. = FALSE
-      )
-    }
-
-    return(run_learning_capsule(capsule, ...))
-  }
-
-  stop(
-    "Unknown capsule: ", x, "\n",
-    "Available built-in capsules are: ",
-    paste(builtin_ids, collapse = ", "), "\n",
-    "Provide either:\n",
-    "- a valid capsule directory,\n",
-    "- a built-in capsule name, or\n",
-    "- a learning_capsule object.",
-    call. = FALSE
-  )
+  run_learning_capsule(capsule, ...)
 }
