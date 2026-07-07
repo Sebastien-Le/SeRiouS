@@ -1,0 +1,25 @@
+id: plot
+title: Create a plot
+section: visual
+x: 500.0
+'y': 0.0
+objective: Plot sepal length against petal length.
+content: |-
+  This cell produces a simple exploratory graph.
+
+  The graph is shown in the plot output area.
+code: |-
+  plot(
+    iris$Sepal.Length,
+    iris$Petal.Length,
+    pch = 16,
+    xlab = 'Sepal.Length',
+    ylab = 'Petal.Length',
+    main = 'Iris: sepal length and petal length'
+  )
+outputs:
+- console
+- plot
+question: Which base R function creates this graph?
+expected_answer: plot
+next_cells: conclusion

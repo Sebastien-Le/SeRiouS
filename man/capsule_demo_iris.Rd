@@ -10,6 +10,5 @@ capsule_demo_iris()
 A \code{"learning_capsule"} object.
 }
 \description{
-This capsule is a minimal example showing how to create a linear
-SeRiouS learning capsule with console output, a plot and questions.
+Demo iris capsule
 }

@@ -1,0 +1,32 @@
+id: demo_iris
+title: "Demo iris"
+subtitle: "A minimal SeRiouS capsule"
+method: "Introduction R"
+description: "A minimal SeRiouS learning capsule based on the iris dataset."
+language: en
+type: serious_capsule
+version: 0.2.0
+start_cell: intro
+
+packages:
+  - datasets
+  - graphics
+  - stats
+
+sections:
+  - id: data
+    label: "Data"
+    color: "#E3F2FD"
+    border: "#1565C0"
+  - id: summary
+    label: "Summary"
+    color: "#E8F5E9"
+    border: "#2E7D32"
+  - id: visual
+    label: "Visualisation"
+    color: "#FFF3E0"
+    border: "#EF6C00"
+  - id: conclusion
+    label: "Conclusion"
+    color: "#F3E5F5"
+    border: "#6A1B9A"

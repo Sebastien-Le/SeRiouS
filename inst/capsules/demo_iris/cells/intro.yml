@@ -1,0 +1,15 @@
+id: intro
+title: Discover the data
+section: data
+x: 0.0
+'y': 0.0
+objective: Display the first rows of the iris dataset.
+content: |-
+  This first cell introduces the dataset used in the capsule.
+
+  Run the code and answer the unlock question to continue.
+code: head(iris)
+outputs: console
+question: Which dataset is used in this capsule?
+expected_answer: iris
+next_cells: summary

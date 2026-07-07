@@ -1,0 +1,15 @@
+id: conclusion
+title: Conclude
+section: conclusion
+x: 750.0
+'y': 0.0
+objective: Summarise what has been done in the capsule.
+content: |-
+  This final cell concludes the capsule.
+
+  You have inspected, summarised and visualised the iris dataset.
+code: cat('The iris dataset has been inspected, summarised and visualised.\n')
+outputs: console
+question: What was the dataset used in this capsule?
+expected_answer: iris
+next_cells: []

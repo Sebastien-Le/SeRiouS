@@ -1,0 +1,15 @@
+id: summary
+title: Summarise the data
+section: summary
+x: 250.0
+'y': 0.0
+objective: Produce a simple statistical summary of the iris dataset.
+content: |-
+  This cell asks you to compute a basic summary of the data.
+
+  The goal is to inspect the variables before producing a graph.
+code: summary(iris)
+outputs: console
+question: Which R function gives a simple summary of an object?
+expected_answer: summary
+next_cells: plot

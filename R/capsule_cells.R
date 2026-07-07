@@ -366,7 +366,6 @@ capsule_disconnect_cells <- function(path, from, to) {
   capsule_update_cell(path, from, next_cells = next_cells)
 }
 
-
 #' Print a SeRiouS cell
 #'
 #' @param x A `"serious_cell"` object.
@@ -381,7 +380,14 @@ print.serious_cell <- function(x, ...) {
   cat("  section: ", x$section %||% "", "\n", sep = "")
 
   if (!is.null(x$x) || !is.null(x$y)) {
-    cat("  position: x = ", x$x %||% NA, ", y = ", x$y %||% NA, "\n", sep = "")
+    cat(
+      "  position: x = ",
+      x$x %||% NA,
+      ", y = ",
+      x$y %||% NA,
+      "\n",
+      sep = ""
+    )
   }
 
   next_cells <- serious_as_character_vector(x$next_cells)
