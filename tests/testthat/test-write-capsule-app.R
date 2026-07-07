@@ -88,3 +88,32 @@ test_that("write_capsule_app refuses to overwrite a non-empty appdir", {
     "already exists and is not empty"
   )
 })
+
+test_that("write_capsule_app accepts capsule directories", {
+  capsule_dir <- tempfile("serious-write-source-")
+  appdir <- tempfile("serious-write-app-")
+
+  create_capsule_skeleton(capsule_dir)
+
+  write_capsule_app(
+    capsule = capsule_dir,
+    appdir = appdir,
+    overwrite = TRUE
+  )
+
+  expect_true(file.exists(file.path(appdir, "app.R")))
+  expect_true(file.exists(file.path(appdir, "capsule.rds")))
+})
+
+test_that("write_capsule_app accepts internal capsule names", {
+  appdir <- tempfile("serious-write-internal-")
+
+  write_capsule_app(
+    capsule = "demo_iris",
+    appdir = appdir,
+    overwrite = TRUE
+  )
+
+  expect_true(file.exists(file.path(appdir, "app.R")))
+  expect_true(file.exists(file.path(appdir, "capsule.rds")))
+})

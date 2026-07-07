@@ -197,16 +197,7 @@ write_capsule_app <- function(capsule,
     stop("'standalone' must be TRUE or FALSE.", call. = FALSE)
   }
 
-  if (is.character(capsule) && length(capsule) == 1) {
-    capsule <- get_capsule(capsule)
-  }
-
-  if (!inherits(capsule, "learning_capsule")) {
-    stop(
-      "'capsule' must be a learning_capsule object or a registered capsule id.",
-      call. = FALSE
-    )
-  }
+  capsule <- serious_as_learning_capsule(capsule, arg = "capsule")
 
   validate_capsule(
     capsule,
