@@ -35,6 +35,7 @@ Other main user functions:
 \code{\link{check_capsule_dir}()},
 \code{\link{create_capsule_skeleton}()},
 \code{\link{get_capsule}()},
-\code{\link{load_capsule_dir}()}
+\code{\link{load_capsule_dir}()},
+\code{\link{write_capsule_dir}()}
 }
 \concept{main user functions}

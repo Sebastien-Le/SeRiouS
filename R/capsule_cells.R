@@ -48,8 +48,18 @@ serious_as_character_vector <- function(x) {
     return(character())
   }
 
+  if (is.list(x)) {
+    x <- unlist(x, use.names = FALSE)
+  }
+
+  if (length(x) == 0) {
+    return(character())
+  }
+
   x <- as.character(x)
-  x[!is.na(x) & nzchar(x)]
+  x <- x[!is.na(x) & nzchar(x)]
+
+  unname(x)
 }
 
 serious_read_cell <- function(file) {
@@ -610,6 +620,15 @@ serious_order_cells <- function(cells, start_id) {
 serious_cell_to_step <- function(cell) {
   main_text <- cell$text %||% cell$content %||% NULL
 
+  outputs <- serious_as_character_vector(cell$outputs)
+  if (length(outputs) == 0) {
+    outputs <- NULL
+  }
+
+  concepts <- serious_as_character_vector(cell$concepts)
+  next_steps <- serious_as_character_vector(cell$next_cells)
+  prerequisites <- serious_as_character_vector(cell$prerequisites)
+
   args <- list(
     id = cell$id,
     title = cell$title %||% cell$id,
@@ -617,13 +636,16 @@ serious_cell_to_step <- function(cell) {
     objective = cell$objective %||% NULL,
     text = main_text,
     code = cell$code %||% NULL,
-    outputs = cell$outputs %||% NULL,
+    code_display = cell$code_display %||% NULL,
+    outputs = outputs,
     expected_output = cell$expected_output %||% NULL,
-    concepts = cell$concepts %||% NULL,
+    concepts = concepts,
     question = cell$question %||% NULL,
     expected_answer = cell$expected_answer %||% NULL,
     pdf = cell$pdf %||% NULL,
-    pdf_on_run = cell$pdf_on_run %||% NULL
+    pdf_on_run = cell$pdf_on_run %||% NULL,
+    next_steps = next_steps,
+    prerequisites = prerequisites
   )
 
   args <- serious_drop_null(args)
@@ -639,13 +661,16 @@ serious_cell_to_step <- function(cell) {
   step$text <- main_text %||% step$text %||% NULL
   step$content <- cell$content %||% main_text %||% step$content %||% NULL
   step$objective <- cell$objective %||% step$objective %||% NULL
+  step$code_display <- cell$code_display %||% step$code_display %||% NULL
   step$expected_output <- cell$expected_output %||% step$expected_output %||% NULL
-  step$concepts <- cell$concepts %||% step$concepts %||% NULL
+  step$concepts <- concepts
+  step$outputs <- outputs %||% step$outputs %||% "console"
   step$x <- cell$x %||% step$x %||% NULL
   step$y <- cell$y %||% step$y %||% NULL
-  step$next_steps <- serious_as_character_vector(cell$next_cells)
   step$pdf <- cell$pdf %||% step$pdf %||% NULL
   step$pdf_on_run <- cell$pdf_on_run %||% step$pdf_on_run %||% NULL
+  step$next_steps <- next_steps
+  step$prerequisites <- prerequisites
 
   if (!is.null(cell$case_sensitive)) {
     step$case_sensitive <- cell$case_sensitive
