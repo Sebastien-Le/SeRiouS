@@ -22,3 +22,18 @@ test_that("get_capsule rejects unknown ids", {
     "Unknown capsule id"
   )
 })
+
+test_that("registered capsules can be listed and loaded", {
+  caps <- available_capsules()
+
+  expect_s3_class(caps, "data.frame")
+  expect_true(all(c("id", "title", "method", "description") %in% names(caps)))
+
+  expect_true("demo_iris" %in% caps$id)
+  expect_true("demo_pca" %in% caps$id)
+  expect_true("taidyverse" %in% caps$id)
+
+  expect_s3_class(get_capsule("demo_iris"), "learning_capsule")
+  expect_s3_class(get_capsule("demo_pca"), "learning_capsule")
+  expect_s3_class(get_capsule("taidyverse"), "learning_capsule")
+})

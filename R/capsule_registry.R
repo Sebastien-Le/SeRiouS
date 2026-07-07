@@ -1,22 +1,120 @@
+#' Find an internal capsule directory
+#'
+#' @param id Internal capsule id.
+#'
+#' @return A path, or an empty string if not found.
+serious_internal_capsule_dir <- function(id) {
+  capsule_dir <- system.file(
+    "capsules",
+    id,
+    package = "SeRiouS"
+  )
+
+  if (nzchar(capsule_dir)) {
+    return(capsule_dir)
+  }
+
+  # Useful during development with devtools::load_all()
+  dev_dir <- file.path("inst", "capsules", id)
+
+  if (dir.exists(dev_dir)) {
+    return(normalizePath(dev_dir, mustWork = TRUE))
+  }
+
+  ""
+}
+
+
+#' Create a constructor for an internal cell-based capsule
+#'
+#' @param id Internal capsule id.
+#'
+#' @return A function returning a `"learning_capsule"` object.
+serious_internal_capsule_constructor <- function(id) {
+  force(id)
+
+  function() {
+    capsule_dir <- serious_internal_capsule_dir(id)
+
+    if (!nzchar(capsule_dir)) {
+      stop(
+        "Internal capsule '", id, "' was not found in the installed package.",
+        call. = FALSE
+      )
+    }
+
+    load_capsule_dir(capsule_dir)
+  }
+}
+
+
+#' Read metadata for an internal cell-based capsule
+#'
+#' @param id Internal capsule id.
+#' @param fallback Fallback metadata list.
+#'
+#' @return A metadata list.
+serious_internal_capsule_metadata <- function(id, fallback) {
+  capsule_dir <- serious_internal_capsule_dir(id)
+
+  if (!nzchar(capsule_dir)) {
+    return(fallback)
+  }
+
+  yml_file <- file.path(capsule_dir, "serious.yml")
+
+  if (!file.exists(yml_file)) {
+    return(fallback)
+  }
+
+  metadata <- serious_read_capsule_metadata(capsule_dir)
+
+  list(
+    id = metadata$id %||% fallback$id,
+    title = metadata$title %||% fallback$title,
+    method = metadata$method %||% fallback$method,
+    description = metadata$description %||% fallback$description
+  )
+}
+
+
 #' Internal capsule registry
 #'
 #' @return A named list describing registered capsules.
 capsule_registry <- function() {
-  list(
-    demo_iris = list(
+  demo_iris <- serious_internal_capsule_metadata(
+    id = "demo_iris",
+    fallback = list(
       id = "demo_iris",
       title = "Demo iris",
       method = "Introduction R",
-      description = "A minimal SeRiouS learning capsule based on the iris dataset.",
-      constructor = capsule_demo_iris
-    ),
+      description = "A minimal SeRiouS learning capsule based on the iris dataset."
+    )
+  )
 
-    demo_pca = list(
+  demo_pca <- serious_internal_capsule_metadata(
+    id = "demo_pca",
+    fallback = list(
       id = "demo_pca",
       title = "Demo PCA",
       method = "Principal Component Analysis",
-      description = "A demonstration capsule for PCA with SeRiouS.",
-      constructor = capsule_demo_pca
+      description = "A demonstration capsule for PCA with SeRiouS."
+    )
+  )
+
+  list(
+    demo_iris = c(
+      demo_iris,
+      list(
+        constructor = serious_internal_capsule_constructor("demo_iris")
+      )
+    ),
+
+    demo_pca = c(
+      demo_pca,
+      list(
+        constructor = serious_internal_capsule_constructor("demo_pca")
+      )
     ),
 
     taidyverse = list(
@@ -28,6 +126,7 @@ capsule_registry <- function() {
     )
   )
 }
+
 
 #' List available SeRiouS capsules
 #'
@@ -54,8 +153,8 @@ available_capsules <- function() {
 #' @return A `"learning_capsule"` object.
 #' @export
 get_capsule <- function(id) {
-  if (!is.character(id) || length(id) != 1) {
-    stop("'id' must be a single character string.", call. = FALSE)
+  if (!is.character(id) || length(id) != 1 || !nzchar(id)) {
+    stop("'id' must be a single non-empty character string.", call. = FALSE)
   }
 
   registry <- capsule_registry()
@@ -69,5 +168,23 @@ get_capsule <- function(id) {
     )
   }
 
-  registry[[id]]$constructor()
+  constructor <- registry[[id]]$constructor
+
+  if (!is.function(constructor)) {
+    stop(
+      "Registered capsule '", id, "' does not have a valid constructor.",
+      call. = FALSE
+    )
+  }
+
+  capsule <- constructor()
+
+  if (!inherits(capsule, "learning_capsule")) {
+    stop(
+      "Registered capsule '", id, "' did not return a learning_capsule object.",
+      call. = FALSE
+    )
+  }
+
+  capsule
 }
