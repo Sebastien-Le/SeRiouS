@@ -111,6 +111,60 @@ serious_board_section_color <- function(section_id, sections = NULL) {
   "#ECEFF1"
 }
 
+serious_board_section_label <- function(section_id, sections = NULL) {
+  if (is.null(section_id) ||
+      length(section_id) != 1 ||
+      is.na(section_id) ||
+      !nzchar(section_id)) {
+    return("Other")
+  }
+
+  if (is.data.frame(sections) && "id" %in% names(sections)) {
+    idx <- match(section_id, sections$id)
+
+    if (!is.na(idx)) {
+      label_cols <- intersect(
+        c("label", "title", "name"),
+        names(sections)
+      )
+
+      if (length(label_cols) > 0) {
+        label <- sections[[label_cols[[1]]]][[idx]]
+
+        if (!is.null(label) && !is.na(label) && nzchar(label)) {
+          return(as.character(label))
+        }
+      }
+    }
+  }
+
+  default_labels <- c(
+    donnees = "Data",
+    stat = "Statistics",
+    r_sorties = "R outputs",
+    entrainer = "EnTraineR",
+    r_auto = "Automatic R",
+    factominer = "FactoMineR",
+    nailer = "NaileR",
+    latent = "Latent analysis",
+    texte = "Text",
+
+    data = "Data",
+    summary = "Summary",
+    visual = "Visualisation",
+    conclusion = "Conclusion",
+    intro = "Introduction",
+    analysis = "Analysis",
+    interpretation = "Interpretation"
+  )
+
+  if (section_id %in% names(default_labels)) {
+    return(unname(default_labels[[section_id]]))
+  }
+
+  section_id
+}
+
 serious_board_get_position <- function(capsule, step, id, i) {
   if (!is.null(step$x) && !is.null(step$y)) {
     return(list(x = step$x, y = step$y))
@@ -319,3 +373,43 @@ serious_board_widget <- function(nodes,
       nodesIdSelection = FALSE
     )
 }
+
+serious_board_legend_ui <- function(sections = NULL) {
+  if (is.data.frame(sections) &&
+      "id" %in% names(sections)) {
+    section_ids <- as.character(sections$id)
+  } else {
+    section_ids <- names(serious_board_default_section_colors())
+  }
+
+  section_ids <- section_ids[!is.na(section_ids) & nzchar(section_ids)]
+  section_ids <- unique(section_ids)
+
+  shiny::tagList(
+    lapply(section_ids, function(section_id) {
+      color <- serious_board_section_color(
+        section_id = section_id,
+        sections = sections
+      )
+
+      label <- serious_board_section_label(
+        section_id = section_id,
+        sections = sections
+      )
+
+      shiny::div(
+        class = "legend-item",
+        shiny::span(
+          class = "legend-swatch",
+          style = paste0(
+            "background-color:", color,
+            "; border-color:#666666;"
+          )
+        ),
+        label
+      )
+    })
+  )
+}
+
+

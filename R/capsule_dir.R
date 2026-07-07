@@ -35,104 +35,177 @@ create_capsule_skeleton <- function(path,
 
   dir.create(path, recursive = TRUE, showWarnings = FALSE)
 
-  resource_dirs <- c("data", "pdf", "img", "www")
+  resource_dirs <- c("cells", "data", "pdf", "img", "www")
   for (dir in resource_dirs) {
-    dir.create(file.path(path, dir), showWarnings = FALSE)
+    dir.create(file.path(path, dir), recursive = TRUE, showWarnings = FALSE)
   }
 
-  capsule_file <- file.path(path, "capsule.R")
   readme_file <- file.path(path, "README.md")
   yml_file <- file.path(path, "serious.yml")
+  css_file <- file.path(path, "www", "custom.css")
 
-  if (!file.exists(capsule_file) || isTRUE(overwrite)) {
+  if (!file.exists(yml_file) || isTRUE(overwrite)) {
     writeLines(
       c(
-        "# SeRiouS capsule file",
-        "# This file must define create_capsule().",
-        "# create_capsule() must return a learning_capsule object.",
+        "id: my_capsule",
+        paste0("title: \"", title, "\""),
+        "subtitle: \"A shareable SeRiouS capsule folder\"",
+        "method: \"Introduction R\"",
+        "description: \"This capsule demonstrates the basic SeRiouS workflow.\"",
+        "language: en",
+        "type: serious_capsule",
+        "version: 0.2.0",
+        "start_cell: intro",
         "",
-        "create_capsule <- function() {",
+        "packages:",
+        "  - datasets",
+        "  - graphics",
+        "  - stats",
         "",
-        "  sections <- SeRiouS::make_sections(",
-        "    id = c(\"data\", \"summary\", \"visual\", \"conclusion\"),",
-        "    label = c(\"Data\", \"Summary\", \"Visualisation\", \"Conclusion\"),",
-        "    color = c(\"#E3F2FD\", \"#E8F5E9\", \"#FFF3E0\", \"#F3E5F5\"),",
-        "    border = c(\"#1565C0\", \"#2E7D32\", \"#EF6C00\", \"#6A1B9A\")",
-        "  )",
-        "",
-        "  steps <- list(",
-        "    SeRiouS::make_step(",
-        "      id = \"intro\",",
-        "      title = \"Discover the data\",",
-        "      section = \"data\",",
-        "      objective = \"Display the first rows of the iris dataset.\",",
-        "      code = \"head(iris)\",",
-        "      question = \"Which dataset is used in this capsule?\",",
-        "      expected_answer = \"iris\"",
-        "    ),",
-        "",
-        "    SeRiouS::make_step(",
-        "      id = \"summary\",",
-        "      title = \"Summarise the data\",",
-        "      section = \"summary\",",
-        "      objective = \"Produce a simple statistical summary of the iris dataset.\",",
-        "      code = \"summary(iris)\",",
-        "      question = \"Which R function gives a simple summary of an object?\",",
-        "      expected_answer = \"summary\"",
-        "    ),",
-        "",
-        "    SeRiouS::make_step(",
-        "      id = \"plot\",",
-        "      title = \"Create a plot\",",
-        "      section = \"visual\",",
-        "      objective = \"Plot sepal length against petal length.\",",
-        "      outputs = c(\"console\", \"plot\"),",
-        "      code = paste(",
-        "        \"plot(\",",
-        "        \"  iris$Sepal.Length,\",",
-        "        \"  iris$Petal.Length,\",",
-        "        \"  pch = 16,\",",
-        "        \"  xlab = 'Sepal.Length',\",",
-        "        \"  ylab = 'Petal.Length',\",",
-        "        \"  main = 'Iris: sepal length and petal length'\",",
-        "        \")\",",
-        "        sep = \"\\n\"",
-        "      ),",
-        "      question = \"Which base R function creates this graph?\",",
-        "      expected_answer = \"plot\"",
-        "    ),",
-        "",
-        "    SeRiouS::make_step(",
-        "      id = \"conclusion\",",
-        "      title = \"Conclude\",",
-        "      section = \"conclusion\",",
-        "      objective = \"Summarise what has been done in the capsule.\",",
-        "      code = \"cat('The iris dataset has been inspected, summarised and visualised.\\\\n')\",",
-        "      question = \"What was the dataset used in this capsule?\",",
-        "      expected_answer = \"iris\"",
-        "    )",
-        "  )",
-        "",
-        "  SeRiouS::build_linear_capsule(",
-        "    id = \"my_capsule\",",
-        paste0("    title = \"", title, "\","),
-        "    subtitle = \"A shareable SeRiouS capsule folder\",",
-        "    method = \"Introduction R\",",
-        "    description = \"This capsule demonstrates the basic SeRiouS workflow.\",",
-        "    steps = steps,",
-        "    sections = sections,",
-        "    data = list(iris = iris),",
-        "    packages = c(\"datasets\", \"graphics\", \"stats\"),",
-        "    ncol = 4,",
-        "    snake = TRUE,",
-        "    start_step = \"intro\"",
-        "  )",
-        "}",
-        ""
+        "sections:",
+        "  - id: data",
+        "    label: \"Data\"",
+        "    color: \"#E3F2FD\"",
+        "    border: \"#1565C0\"",
+        "  - id: summary",
+        "    label: \"Summary\"",
+        "    color: \"#E8F5E9\"",
+        "    border: \"#2E7D32\"",
+        "  - id: visual",
+        "    label: \"Visualisation\"",
+        "    color: \"#FFF3E0\"",
+        "    border: \"#EF6C00\"",
+        "  - id: conclusion",
+        "    label: \"Conclusion\"",
+        "    color: \"#F3E5F5\"",
+        "    border: \"#6A1B9A\""
       ),
-      capsule_file
+      yml_file
     )
   }
+
+  if (!file.exists(css_file) || isTRUE(overwrite)) {
+    writeLines(
+      c(
+        "/* Optional custom CSS for this SeRiouS capsule. */",
+        "",
+        ".serious-board-legend {",
+        "  margin-bottom: 10px;",
+        "}",
+        "",
+        ".legend-item {",
+        "  display: inline-block;",
+        "  margin-right: 14px;",
+        "  margin-bottom: 6px;",
+        "}",
+        "",
+        ".legend-swatch {",
+        "  display: inline-block;",
+        "  width: 18px;",
+        "  height: 12px;",
+        "  border: 1px solid #555;",
+        "  margin-right: 5px;",
+        "  vertical-align: middle;",
+        "  border-radius: 3px;",
+        "}"
+      ),
+      css_file
+    )
+  }
+
+  capsule_add_cell(
+    path,
+    id = "intro",
+    title = "Discover the data",
+    section = "data",
+    x = 0,
+    y = 0,
+    objective = "Display the first rows of the iris dataset.",
+    content = paste(
+      "This first cell introduces the dataset used in the capsule.",
+      "Run the code and answer the unlock question to continue.",
+      sep = "\n\n"
+    ),
+    code = "head(iris)",
+    outputs = "console",
+    question = "Which dataset is used in this capsule?",
+    expected_answer = "iris",
+    next_cells = "summary",
+    overwrite = overwrite
+  )
+
+  capsule_add_cell(
+    path,
+    id = "summary",
+    title = "Summarise the data",
+    section = "summary",
+    x = 250,
+    y = 0,
+    objective = "Produce a simple statistical summary of the iris dataset.",
+    content = paste(
+      "This cell asks you to compute a basic summary of the data.",
+      "The goal is to inspect the variables before producing a graph.",
+      sep = "\n\n"
+    ),
+    code = "summary(iris)",
+    outputs = "console",
+    question = "Which R function gives a simple summary of an object?",
+    expected_answer = "summary",
+    next_cells = "plot",
+    overwrite = overwrite
+  )
+
+  capsule_add_cell(
+    path,
+    id = "plot",
+    title = "Create a plot",
+    section = "visual",
+    x = 500,
+    y = 0,
+    objective = "Plot sepal length against petal length.",
+    content = paste(
+      "This cell produces a simple exploratory graph.",
+      "The graph is shown in the plot output area.",
+      sep = "\n\n"
+    ),
+    code = paste(
+      "plot(",
+      "  iris$Sepal.Length,",
+      "  iris$Petal.Length,",
+      "  pch = 16,",
+      "  xlab = 'Sepal.Length',",
+      "  ylab = 'Petal.Length',",
+      "  main = 'Iris: sepal length and petal length'",
+      ")",
+      sep = "\n"
+    ),
+    outputs = c("console", "plot"),
+    question = "Which base R function creates this graph?",
+    expected_answer = "plot",
+    next_cells = "conclusion",
+    overwrite = overwrite
+  )
+
+  capsule_add_cell(
+    path,
+    id = "conclusion",
+    title = "Conclude",
+    section = "conclusion",
+    x = 750,
+    y = 0,
+    objective = "Summarise what has been done in the capsule.",
+    content = paste(
+      "This final cell concludes the capsule.",
+      "You have inspected, summarised and visualised the iris dataset.",
+      sep = "\n\n"
+    ),
+    code = "cat('The iris dataset has been inspected, summarised and visualised.\\n')",
+    outputs = "console",
+    question = "What was the dataset used in this capsule?",
+    expected_answer = "iris",
+    next_cells = character(),
+    overwrite = overwrite
+  )
 
   if (!file.exists(readme_file) || isTRUE(overwrite)) {
     writeLines(
@@ -143,12 +216,12 @@ create_capsule_skeleton <- function(path,
         "",
         "## What is inside?",
         "",
-        "- `capsule.R`: main file. It defines `create_capsule()`.",
-        "- `serious.yml`: basic metadata.",
+        "- `serious.yml`: capsule metadata, sections, legend and global settings.",
+        "- `cells/`: one YAML file per board cell.",
         "- `data/`: optional datasets.",
         "- `pdf/`: optional PDF resources.",
         "- `img/`: optional images.",
-        "- `www/`: optional web resources.",
+        "- `www/`: optional web resources and custom CSS.",
         "",
         "## How to run this capsule",
         "",
@@ -166,25 +239,38 @@ create_capsule_skeleton <- function(path,
         paste0("run_capsule_dir(\"", basename(normalizePath(path, mustWork = FALSE)), "\")"),
         "```",
         "",
-        "## How to edit this capsule",
-        "",
-        "Open `capsule.R` and modify the `create_capsule()` function.",
-        "",
-        "A capsule is usually built from:",
+        "## How to inspect the cells",
         "",
         "```r",
-        "sections <- SeRiouS::make_sections(...)",
-        "steps <- list(",
-        "  SeRiouS::make_step(...),",
-        "  SeRiouS::make_step(...)",
+        "library(SeRiouS)",
+        "capsule_cells(\".\")",
+        "capsule_get_cell(\".\", \"intro\")",
+        "```",
+        "",
+        "## How to edit this capsule",
+        "",
+        "You can edit the YAML files in `cells/` directly, or use helper functions:",
+        "",
+        "```r",
+        "library(SeRiouS)",
+        "",
+        "capsule_add_cell(",
+        "  \".\",",
+        "  id = \"new_cell\",",
+        "  title = \"A new cell\",",
+        "  section = \"summary\",",
+        "  x = 1000,",
+        "  y = 0,",
+        "  content = \"Write your pedagogical content here.\",",
+        "  code = \"1 + 1\",",
+        "  question = \"What is 1 + 1?\",",
+        "  expected_answer = \"2\"",
         ")",
         "",
-        "SeRiouS::build_linear_capsule(",
-        "  id = \"my_capsule\",",
-        "  title = \"My capsule\",",
-        "  method = \"My method\",",
-        "  steps = steps,",
-        "  sections = sections",
+        "capsule_connect_cells(",
+        "  \".\",",
+        "  from = \"conclusion\",",
+        "  to = \"new_cell\"",
         ")",
         "```",
         "",
@@ -199,25 +285,10 @@ create_capsule_skeleton <- function(path,
         "",
         "## Important convention",
         "",
-        "`capsule.R` must define a function named `create_capsule()`.",
-        "",
-        "This function must return an object of class `learning_capsule`."
+        "A SeRiouS capsule is composed of cells connected by links.",
+        "Each cell is stored as a YAML file in `cells/`."
       ),
       readme_file
-    )
-  }
-
-  if (!file.exists(yml_file) || isTRUE(overwrite)) {
-    writeLines(
-      c(
-        paste0("title: \"", title, "\""),
-        "type: serious_capsule",
-        "version: 0.1.0",
-        "entrypoint: capsule.R",
-        "main_function: create_capsule",
-        "author: unknown"
-      ),
-      yml_file
     )
   }
 
