@@ -17,3 +17,4 @@
 ^_problems$
 ^vignettes/.*\.html$
 ^cran-comments\.md$
+^data-raw$
