@@ -1,0 +1,19 @@
+id: run_pca
+title: Run PCA
+section: statistics
+x: 500.0
+'y': 0.0
+objective: Run a Principal Component Analysis using FactoMineR.
+text: We now run PCA on the active quantitative variables. The eigenvalue table helps
+  us understand how much inertia is carried by each dimension.
+code: |-
+  res_pca <- FactoMineR::PCA(active_data, graph = FALSE)
+  res_pca$eig
+expected_output: The eigenvalue table of the PCA.
+concepts:
+- PCA
+- eigenvalues
+- inertia
+question: Which table is used to study the inertia carried by PCA dimensions?
+expected_answer: eigenvalues
+next_cells: scree_plot

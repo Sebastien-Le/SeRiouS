@@ -1,0 +1,33 @@
+id: demo_pca
+title: "Learning PCA with FactoMineR"
+subtitle: "From raw data to interpretation"
+method: "PCA"
+description: "A demonstration capsule introducing Principal Component Analysis with the decathlon dataset from FactoMineR."
+language: en
+type: serious_capsule
+version: 0.2.0
+start_cell: data_intro
+
+packages:
+  - FactoMineR
+  - graphics
+  - stats
+  - utils
+
+sections:
+  - id: data
+    label: "Data"
+    color: "#E3F2FD"
+    border: "#1565C0"
+  - id: statistics
+    label: "Statistics"
+    color: "#E8F5E9"
+    border: "#2E7D32"
+  - id: visualisation
+    label: "Visualisation"
+    color: "#FFF3E0"
+    border: "#EF6C00"
+  - id: interpretation
+    label: "Interpretation"
+    color: "#F3E5F5"
+    border: "#6A1B9A"

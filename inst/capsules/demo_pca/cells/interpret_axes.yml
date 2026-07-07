@@ -1,0 +1,20 @@
+id: interpret_axes
+title: Interpret the axes
+section: interpretation
+x: 1250.0
+'y': 0.0
+objective: Use contributions and coordinates to interpret the main PCA dimensions.
+text: Coordinates describe the position of variables on the dimensions. Contributions
+  help identify which variables are important for building each dimension.
+code: |-
+  res_pca$var$contrib[, 1:2]
+  res_pca$var$coord[, 1:2]
+expected_output: Variable contributions and coordinates on the first two dimensions.
+concepts:
+- contribution
+- coordinates
+- axis interpretation
+question: Which indicator measures how much a variable contributes to the construction
+  of an axis?
+expected_answer: contribution
+next_cells: []

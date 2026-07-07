@@ -149,7 +149,6 @@ capsule_get_cell <- function(path, id) {
   serious_read_cell(file)
 }
 
-
 #' Add a cell to a capsule folder
 #'
 #' @param path Path to a capsule folder.
@@ -158,9 +157,13 @@ capsule_get_cell <- function(path, id) {
 #' @param section Section id used for board color and legend.
 #' @param x,y Numeric coordinates on the board.
 #' @param objective Optional pedagogical objective.
-#' @param content Optional pedagogical content.
+#' @param text Optional pedagogical text.
+#' @param content Optional pedagogical content. If `text` is missing, this can
+#'   be used as the main pedagogical text.
 #' @param code Optional R code.
 #' @param outputs Character vector of expected output zones.
+#' @param expected_output Optional human-readable description of expected output.
+#' @param concepts Optional character vector of pedagogical concepts.
 #' @param question Optional unlock question.
 #' @param expected_answer Optional expected answer.
 #' @param next_cells Character vector of next cell ids.
@@ -175,9 +178,12 @@ capsule_add_cell <- function(path,
                              x = NULL,
                              y = NULL,
                              objective = NULL,
+                             text = NULL,
                              content = NULL,
                              code = NULL,
                              outputs = NULL,
+                             expected_output = NULL,
+                             concepts = NULL,
                              question = NULL,
                              expected_answer = NULL,
                              next_cells = character(),
@@ -210,9 +216,12 @@ capsule_add_cell <- function(path,
     x = x,
     y = y,
     objective = objective,
+    text = text,
     content = content,
     code = code,
     outputs = outputs,
+    expected_output = expected_output,
+    concepts = concepts,
     question = question,
     expected_answer = expected_answer,
     next_cells = serious_as_character_vector(next_cells)
@@ -222,7 +231,6 @@ capsule_add_cell <- function(path,
 
   serious_write_cell(cell, file)
 }
-
 
 #' Update a cell in a capsule folder
 #'
@@ -584,13 +592,18 @@ serious_order_cells <- function(cells, start_id) {
 }
 
 serious_cell_to_step <- function(cell) {
+  main_text <- cell$text %||% cell$content %||% NULL
+
   args <- list(
     id = cell$id,
     title = cell$title %||% cell$id,
     section = cell$section %||% NULL,
-    objective = cell$objective %||% cell$content %||% NULL,
+    objective = cell$objective %||% NULL,
+    text = main_text,
     code = cell$code %||% NULL,
     outputs = cell$outputs %||% NULL,
+    expected_output = cell$expected_output %||% NULL,
+    concepts = cell$concepts %||% NULL,
     question = cell$question %||% NULL,
     expected_answer = cell$expected_answer %||% NULL
   )
@@ -605,7 +618,11 @@ serious_cell_to_step <- function(cell) {
   # Keep cell-specific fields even if make_step() does not know them.
   step$section <- cell$section %||% step$section %||% NULL
   step$partie <- cell$section %||% step$partie %||% NULL
-  step$content <- cell$content %||% step$content %||% NULL
+  step$text <- main_text %||% step$text %||% NULL
+  step$content <- cell$content %||% main_text %||% step$content %||% NULL
+  step$objective <- cell$objective %||% step$objective %||% NULL
+  step$expected_output <- cell$expected_output %||% step$expected_output %||% NULL
+  step$concepts <- cell$concepts %||% step$concepts %||% NULL
   step$x <- cell$x %||% step$x %||% NULL
   step$y <- cell$y %||% step$y %||% NULL
   step$next_steps <- serious_as_character_vector(cell$next_cells)

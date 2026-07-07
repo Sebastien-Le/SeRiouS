@@ -12,9 +12,12 @@ capsule_add_cell(
   x = NULL,
   y = NULL,
   objective = NULL,
+  text = NULL,
   content = NULL,
   code = NULL,
   outputs = NULL,
+  expected_output = NULL,
+  concepts = NULL,
   question = NULL,
   expected_answer = NULL,
   next_cells = character(),
@@ -34,11 +37,18 @@ capsule_add_cell(
 
 \item{objective}{Optional pedagogical objective.}
 
-\item{content}{Optional pedagogical content.}
+\item{text}{Optional pedagogical text.}
+
+\item{content}{Optional pedagogical content. If \code{text} is missing, this can
+be used as the main pedagogical text.}
 
 \item{code}{Optional R code.}
 
 \item{outputs}{Character vector of expected output zones.}
+
+\item{expected_output}{Optional human-readable description of expected output.}
+
+\item{concepts}{Optional character vector of pedagogical concepts.}
 
 \item{question}{Optional unlock question.}
 

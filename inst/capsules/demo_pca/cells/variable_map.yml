@@ -1,0 +1,36 @@
+id: variable_map
+title: Plot variables
+section: visualisation
+x: 1000.0
+'y': 0.0
+objective: Visualise variables on the first PCA plane.
+text: The variable map shows how variables are associated with the first PCA dimensions.
+  Variables pointing in similar directions are positively associated.
+code: |-
+  var_coord <- res_pca$var$coord[, 1:2]
+  var_coord
+  plot(
+    var_coord[, 1],
+    var_coord[, 2],
+    xlim = c(-1, 1),
+    ylim = c(-1, 1),
+    xlab = "Dim 1",
+    ylab = "Dim 2",
+    main = "PCA variable map",
+    asp = 1
+  )
+  abline(h = 0, v = 0, lty = 2)
+  symbols(0, 0, circles = 1, inches = FALSE, add = TRUE)
+  arrows(0, 0, var_coord[, 1], var_coord[, 2], length = 0.08)
+  text(var_coord[, 1], var_coord[, 2], labels = rownames(var_coord), pos = 3)
+outputs:
+- console
+- plot
+expected_output: A variable map for the first two PCA dimensions.
+concepts:
+- variable map
+- coordinates
+- correlation circle
+question: What do we usually call the PCA graph showing variables on the first dimensions?
+expected_answer: variable map
+next_cells: interpret_axes

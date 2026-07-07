@@ -1,0 +1,19 @@
+id: active_variables
+title: Choose active variables
+section: data
+x: 250.0
+'y': 0.0
+objective: Identify the active quantitative variables used for PCA.
+text: PCA is applied to quantitative variables. In this example, the first ten columns
+  of the decathlon dataset are used as active variables.
+code: |-
+  active_data <- decathlon[, 1:10]
+  names(active_data)
+  summary(active_data)
+expected_output: The names and summaries of the active quantitative variables.
+concepts:
+- active variables
+- quantitative variables
+question: Are the active variables used in PCA quantitative or qualitative?
+expected_answer: quantitative
+next_cells: run_pca

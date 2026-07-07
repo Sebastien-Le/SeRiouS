@@ -1,0 +1,29 @@
+id: scree_plot
+title: Plot eigenvalues
+section: visualisation
+x: 750.0
+'y': 0.0
+objective: Visualise the percentage of inertia explained by each PCA dimension.
+text: The eigenvalue plot helps decide how many dimensions are useful. A dimension
+  with a high percentage of inertia summarises an important part of the data structure.
+code: |-
+  eig <- res_pca$eig
+  eig
+  barplot(
+    eig[, 2],
+    names.arg = seq_len(nrow(eig)),
+    xlab = "PCA dimension",
+    ylab = "Percentage of inertia",
+    main = "PCA eigenvalues"
+  )
+outputs:
+- console
+- plot
+expected_output: A barplot of the percentage of inertia explained by each dimension.
+concepts:
+- eigenvalue plot
+- inertia
+- dimension selection
+question: What word is used in PCA for the variance explained by dimensions?
+expected_answer: inertia
+next_cells: variable_map

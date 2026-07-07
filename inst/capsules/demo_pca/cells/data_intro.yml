@@ -1,0 +1,19 @@
+id: data_intro
+title: Discover the data
+section: data
+x: 0.0
+'y': 0.0
+objective: Inspect the structure of the decathlon dataset before running PCA.
+text: We start with the decathlon dataset from FactoMineR. The goal is to inspect
+  the variables before running PCA.
+code: |-
+  utils::data("decathlon", package = "FactoMineR")
+  head(decathlon)
+  str(decathlon)
+expected_output: A first view of the decathlon dataset.
+concepts:
+- dataset
+- quantitative variables
+question: Which dataset is used in this capsule?
+expected_answer: decathlon
+next_cells: active_variables
