@@ -1,0 +1,141 @@
+id: first_exploration
+title: First exploration
+section: data
+x: 260.0
+'y': 0.0
+objective: Inspect quantitative and qualitative variables before modelling.
+text: Before fitting models, we inspect the data. The goal is to identify numeric
+  variables, factor variables, and the textual column. This step also produces simple
+  exploratory plots.
+code: |2
+
+  if (!exists('questionnaire')) {
+    stop('The object questionnaire is missing. Run the first cell first.', call. = FALSE)
+  }
+
+  quantitative_variables <- setdiff(
+    names(questionnaire)[vapply(questionnaire, is.numeric, logical(1))],
+    'id'
+  )
+
+  quantitative_summary <- data.frame(
+    variable = quantitative_variables,
+    min = vapply(questionnaire[quantitative_variables], min, numeric(1), na.rm = TRUE),
+    q1 = vapply(questionnaire[quantitative_variables], function(x) quantile(x, 0.25, na.rm = TRUE), numeric(1)),
+    median = vapply(questionnaire[quantitative_variables], median, numeric(1), na.rm = TRUE),
+    mean = vapply(questionnaire[quantitative_variables], mean, numeric(1), na.rm = TRUE),
+    q3 = vapply(questionnaire[quantitative_variables], function(x) quantile(x, 0.75, na.rm = TRUE), numeric(1)),
+    max = vapply(questionnaire[quantitative_variables], max, numeric(1), na.rm = TRUE),
+    row.names = NULL
+  )
+
+  quantitative_summary[, -1] <- round(quantitative_summary[, -1], 2)
+
+  qualitative_variables_exploration <- names(questionnaire)[
+    vapply(questionnaire, is.factor, logical(1))
+  ]
+
+  qualitative_summary <- do.call(
+    rbind,
+    lapply(qualitative_variables_exploration, function(v) {
+      tab <- table(questionnaire[[v]], useNA = 'ifany')
+      data.frame(
+        variable = v,
+        level = names(tab),
+        n = as.integer(tab),
+        row.names = NULL
+      )
+    })
+  )
+
+  cat('\nQuantitative variables:\n')
+  print(quantitative_variables)
+
+  cat('\nQuantitative summary:\n')
+  print(quantitative_summary, row.names = FALSE)
+
+  cat('\nQualitative variables:\n')
+  print(qualitative_variables_exploration)
+
+  cat('\nQualitative summary:\n')
+  print(qualitative_summary, row.names = FALSE)
+
+  cat('\nText column: commentaire\n')
+  cat('Number of comments:', length(questionnaire$commentaire), '\n')
+  cat('Number of unique comments:', length(unique(questionnaire$commentaire)), '\n')
+
+  op <- par(mfrow = c(1, 2))
+
+  hist(
+    questionnaire$intention_achat,
+    main = 'Purchase intention',
+    xlab = 'Score',
+    col = 'grey80',
+    border = 'white'
+  )
+
+  boxplot(
+    satisfaction ~ type_produit,
+    data = questionnaire,
+    main = 'Satisfaction by product type',
+    xlab = 'Product type',
+    ylab = 'Satisfaction',
+    col = 'grey85'
+  )
+
+  par(op)
+outputs:
+- console
+- plot
+expected_output: Quantitative and qualitative summaries, plus two exploratory plots.
+concepts:
+- exploration
+- summary statistics
+- graphics
+question: Which variable contains the free-text comments?
+expected_answer: commentaire
+next_cells: linear_model
+code_display: |2
+
+  quantitative_variables <- setdiff(
+    names(questionnaire)[vapply(questionnaire, is.numeric, logical(1))],
+    'id'
+  )
+
+  quantitative_variables
+
+  quantitative_summary <- data.frame(
+    variable = quantitative_variables,
+    mean = vapply(questionnaire[quantitative_variables], mean, numeric(1), na.rm = TRUE),
+    median = vapply(questionnaire[quantitative_variables], median, numeric(1), na.rm = TRUE),
+    row.names = NULL
+  )
+
+  quantitative_summary
+
+  qualitative_variables_exploration <- names(questionnaire)[
+    vapply(questionnaire, is.factor, logical(1))
+  ]
+
+  qualitative_variables_exploration
+
+  op <- par(mfrow = c(1, 2))
+
+  hist(
+    questionnaire$intention_achat,
+    main = 'Purchase intention',
+    xlab = 'Score',
+    col = 'grey80',
+    border = 'white'
+  )
+
+  boxplot(
+    satisfaction ~ type_produit,
+    data = questionnaire,
+    main = 'Satisfaction by product type',
+    xlab = 'Product type',
+    ylab = 'Satisfaction',
+    col = 'grey85'
+  )
+
+  par(op)

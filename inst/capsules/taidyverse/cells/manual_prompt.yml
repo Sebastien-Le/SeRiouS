@@ -1,0 +1,117 @@
+id: manual_prompt
+title: Building a prompt manually
+section: prompting
+x: 1300.0
+'y': 0.0
+objective: Build controlled prompts manually from captured statistical outputs.
+text: A prompt is not just raw statistical output. It combines context, results, instructions,
+  and boundaries. Here we build two prompts by hand using paste().
+code: |2
+
+  required_objects <- c('text_linearmodel', 'text_aovsum')
+
+  missing_objects <- required_objects[
+    !vapply(required_objects, exists, logical(1))
+  ]
+
+  if (length(missing_objects) > 0) {
+    stop(
+      'Missing objects: ',
+      paste(missing_objects, collapse = ', '),
+      '. Run the capture cell first.',
+      call. = FALSE
+    )
+  }
+
+  prompt_linearmodel <- paste(
+    '# Interpretation of a linear model',
+    '',
+    'Context: consumer questionnaire about a food product.',
+    'Response variable: intention_achat.',
+    'Predictors: satisfaction and prix_percu.',
+    '',
+    'FactoMineR::LinearModel output:',
+    text_linearmodel,
+    '',
+    'Instructions:',
+    '- interpret only the results provided;',
+    '- distinguish global effects from coefficients;',
+    '- do not infer causality;',
+    '- write a short pedagogical interpretation.',
+    sep = '\n'
+  )
+
+  prompt_aovsum <- paste(
+    '# Interpretation of an ANOVA with interaction',
+    '',
+    'Response variable: satisfaction.',
+    'Factors: type_produit and budget_contraint.',
+    '',
+    'FactoMineR::AovSum output:',
+    text_aovsum,
+    '',
+    'Instructions:',
+    '- identify significant effects;',
+    '- comment on the interaction carefully;',
+    '- do not invent post-hoc comparisons.',
+    sep = '\n'
+  )
+
+  cat('\nObject created: prompt_linearmodel\n')
+  cat(substr(prompt_linearmodel, 1, 1500))
+
+  cat('\n\nObject created: prompt_aovsum\n')
+  cat(substr(prompt_aovsum, 1, 1500))
+
+  cat('\n\nPrompt lengths:\n')
+  print(c(
+    prompt_linearmodel = nchar(prompt_linearmodel),
+    prompt_aovsum = nchar(prompt_aovsum)
+  ))
+outputs: console
+expected_output: 'Two manually built prompts: prompt_linearmodel and prompt_aovsum.'
+concepts:
+- prompt
+- paste
+- instructions
+question: Which R function is used here to assemble text lines?
+expected_answer: paste
+next_cells: generic_prompt
+code_display: |2
+
+  prompt_linearmodel <- paste(
+    '# Interpretation of a linear model',
+    '',
+    'Context: consumer questionnaire about a food product.',
+    'Response variable: intention_achat.',
+    'Predictors: satisfaction and prix_percu.',
+    '',
+    'FactoMineR::LinearModel output:',
+    text_linearmodel,
+    '',
+    'Instructions:',
+    '- interpret only the results provided;',
+    '- distinguish global effects from coefficients;',
+    '- do not infer causality;',
+    '- write a short pedagogical interpretation.',
+    sep = '\n'
+  )
+
+  prompt_aovsum <- paste(
+    '# Interpretation of an ANOVA with interaction',
+    '',
+    'Response variable: satisfaction.',
+    'Factors: type_produit and budget_contraint.',
+    '',
+    'FactoMineR::AovSum output:',
+    text_aovsum,
+    '',
+    'Instructions:',
+    '- identify significant effects;',
+    '- comment on the interaction carefully;',
+    '- do not invent post-hoc comparisons.',
+    sep = '\n'
+  )
+
+  substr(prompt_linearmodel, 1, 1500)
+  substr(prompt_aovsum, 1, 1500)

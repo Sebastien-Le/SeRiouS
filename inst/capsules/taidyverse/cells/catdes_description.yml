@@ -1,0 +1,95 @@
+id: catdes_description
+title: Describing groups
+section: statistics
+x: 520.0
+'y': 210.0
+objective: Use FactoMineR::catdes() to describe a qualitative variable or groups.
+text: catdes() describes a qualitative variable. It compares quantitative variables
+  across groups and crosses qualitative variables with those groups.
+code: |2
+
+  if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+    stop('FactoMineR is required. Install the FactoMineR package first.', call. = FALSE)
+  }
+
+  if (!exists('questionnaire_desc')) {
+    questionnaire_desc <- questionnaire[
+      ,
+      setdiff(names(questionnaire), 'commentaire')
+    ]
+  }
+
+  y_catdes <- 'profil_alim'
+  num_var_catdes <- which(names(questionnaire_desc) == y_catdes)
+
+  variables_quantitative_examples <- c(
+    'satisfaction',
+    'intention_achat',
+    'prix_percu',
+    'naturalite',
+    'ancrage_local'
+  )
+
+  means_by_profile <- aggregate(
+    questionnaire_desc[variables_quantitative_examples],
+    by = list(profile = questionnaire_desc[[y_catdes]]),
+    FUN = mean
+  )
+
+  means_by_profile[, -1] <- round(means_by_profile[, -1], 2)
+
+  profile_product_table <- table(
+    questionnaire_desc[[y_catdes]],
+    questionnaire_desc$type_produit
+  )
+
+  profile_product_chisq <- chisq.test(profile_product_table)
+
+  res_catdes <- FactoMineR::catdes(
+    questionnaire_desc,
+    num.var = num_var_catdes
+  )
+
+  cat('\nVariable described:', y_catdes, '\n')
+  cat('Position in questionnaire_desc:', num_var_catdes, '\n')
+
+  cat('\nGroup sizes:\n')
+  print(table(questionnaire_desc[[y_catdes]]))
+
+  cat('\nMeans by profile:\n')
+  print(means_by_profile, row.names = FALSE)
+
+  cat('\nProfile x product table:\n')
+  print(profile_product_table)
+
+  cat('\nChi-square test:\n')
+  print(profile_product_chisq)
+
+  cat('\nNames in res_catdes:\n')
+  print(names(res_catdes))
+
+  cat('\ncatdes() output:\n')
+  print(res_catdes)
+outputs: console
+expected_output: A FactoMineR catdes object describing profil_alim.
+concepts:
+- catdes
+- qualitative variable
+- groups
+question: Which FactoMineR function describes a qualitative variable or groups?
+expected_answer: catdes
+next_cells: prompt_condes_catdes
+code_display: |2
+
+  y_catdes <- 'profil_alim'
+  num_var_catdes <- which(names(questionnaire_desc) == y_catdes)
+
+  table(questionnaire_desc[[y_catdes]])
+
+  res_catdes <- FactoMineR::catdes(
+    questionnaire_desc,
+    num.var = num_var_catdes
+  )
+
+  names(res_catdes)
+  res_catdes

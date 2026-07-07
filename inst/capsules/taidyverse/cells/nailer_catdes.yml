@@ -1,0 +1,101 @@
+id: nailer_catdes
+title: Using nail_catdes()
+section: nailer
+x: 0.0
+'y': 420.0
+objective: Use NaileR::nail_catdes() on a qualitative variable when NaileR is available.
+text: We now compare the manual catdes prompt with nail_catdes(). If NaileR is not
+  installed, the cell keeps the manual prompt as a fallback.
+code: |2
+
+  required_objects <- c('questionnaire_desc', 'res_catdes', 'text_catdes')
+
+  missing_objects <- required_objects[
+    !vapply(required_objects, exists, logical(1))
+  ]
+
+  if (length(missing_objects) > 0) {
+    stop(
+      'Missing objects: ',
+      paste(missing_objects, collapse = ', '),
+      '. Run the previous cells first.',
+      call. = FALSE
+    )
+  }
+
+  nailer_available <- requireNamespace('NaileR', quietly = TRUE)
+
+  var_catdes_nailer <- 'profil_alim'
+  num_var_catdes_nailer <- which(names(questionnaire_desc) == var_catdes_nailer)
+
+  if (nailer_available && 'nail_catdes' %in% getNamespaceExports('NaileR')) {
+    res_nail_catdes <- tryCatch(
+      NaileR::nail_catdes(
+        questionnaire_desc,
+        num.var = num_var_catdes_nailer,
+        generate = FALSE
+      ),
+      error = function(e) paste('nail_catdes() error:', conditionMessage(e))
+    )
+  } else {
+    res_nail_catdes <- list(
+      status = 'NaileR is not installed or nail_catdes() is not available.',
+      fallback_prompt = prompt_catdes
+    )
+  }
+
+  cat('\nVariable described:', var_catdes_nailer, '\n')
+  cat('Position in questionnaire_desc:', num_var_catdes_nailer, '\n')
+
+  cat('\nClass of res_nail_catdes:\n')
+  print(class(res_nail_catdes))
+
+  if (is.list(res_nail_catdes)) {
+    cat('\nNames in res_nail_catdes:\n')
+    print(names(res_nail_catdes))
+  }
+
+  cat('\nComparison with manual work:\n')
+  comparison_catdes_nailer <- data.frame(
+    step = c('catdes()', 'capture.output()', 'manual prompt', 'nail_catdes()'),
+    role = c(
+      'describe a qualitative variable statistically',
+      'turn the output into text',
+      'organize an interpretive request',
+      'systematize the same logic'
+    ),
+    object = c('res_catdes', 'text_catdes', 'prompt_catdes', 'res_nail_catdes'),
+    stringsAsFactors = FALSE
+  )
+  print(comparison_catdes_nailer, row.names = FALSE)
+outputs: console
+expected_output: A NaileR catdes artefact or a safe fallback object.
+concepts:
+- nail_catdes
+- fallback
+- prompt
+question: Which NaileR function extends catdes() here?
+expected_answer: nail_catdes
+next_cells: pca_hcpc_classes
+code_display: |2
+
+  nailer_available <- requireNamespace('NaileR', quietly = TRUE)
+
+  var_catdes_nailer <- 'profil_alim'
+  num_var_catdes_nailer <- which(names(questionnaire_desc) == var_catdes_nailer)
+
+  if (nailer_available && 'nail_catdes' %in% getNamespaceExports('NaileR')) {
+    res_nail_catdes <- NaileR::nail_catdes(
+      questionnaire_desc,
+      num.var = num_var_catdes_nailer,
+      generate = FALSE
+    )
+  } else {
+    res_nail_catdes <- list(
+      status = 'NaileR unavailable',
+      fallback_prompt = prompt_catdes
+    )
+  }
+
+  class(res_nail_catdes)
+  names(res_nail_catdes)

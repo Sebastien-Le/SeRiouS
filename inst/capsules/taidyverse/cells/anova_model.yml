@@ -1,0 +1,76 @@
+id: anova_model
+title: Analysis of variance
+section: statistics
+x: 780.0
+'y': 0.0
+objective: Fit an ANOVA model with FactoMineR::AovSum().
+text: We now explain satisfaction using two qualitative factors and their interaction.
+  This creates another structured statistical output that will later be transformed
+  into text and prompts.
+code: |2
+
+  if (!exists('questionnaire')) {
+    stop('The object questionnaire is missing. Run the first cell first.', call. = FALSE)
+  }
+
+  if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+    stop('FactoMineR is required. Install the FactoMineR package first.', call. = FALSE)
+  }
+
+  formula_aov <- satisfaction ~ type_produit * budget_contraint
+
+  res_aovsum <- FactoMineR::AovSum(
+    formula_aov,
+    data = questionnaire
+  )
+
+  cat('\nANOVA formula:\n')
+  print(formula_aov)
+
+  cat('\nGlobal effects and interaction: res_aovsum$Ftest\n')
+  print(res_aovsum$Ftest)
+
+  cat('\nCoefficients and contrasts: res_aovsum$Ttest\n')
+  print(res_aovsum$Ttest)
+
+  interaction.plot(
+    x.factor = questionnaire$budget_contraint,
+    trace.factor = questionnaire$type_produit,
+    response = questionnaire$satisfaction,
+    xlab = 'Budget constraint',
+    ylab = 'Mean satisfaction',
+    trace.label = 'Product',
+    main = 'Product x budget interaction'
+  )
+outputs:
+- console
+- plot
+expected_output: A FactoMineR AovSum object named res_aovsum and its main outputs.
+concepts:
+- ANOVA
+- interaction
+- factor effects
+question: Which FactoMineR function is used for the analysis of variance?
+expected_answer: AovSum
+next_cells: capture_outputs
+code_display: |2
+
+  formula_aov <- satisfaction ~ type_produit * budget_contraint
+
+  res_aovsum <- FactoMineR::AovSum(
+    formula_aov,
+    data = questionnaire
+  )
+
+  res_aovsum$Ftest
+  res_aovsum$Ttest
+
+  interaction.plot(
+    x.factor = questionnaire$budget_contraint,
+    trace.factor = questionnaire$type_produit,
+    response = questionnaire$satisfaction,
+    xlab = 'Budget constraint',
+    ylab = 'Mean satisfaction',
+    trace.label = 'Product',
+    main = 'Product x budget interaction'
+  )

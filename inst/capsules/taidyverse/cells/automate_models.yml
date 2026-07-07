@@ -1,0 +1,109 @@
+id: automate_models
+title: Automating Y ~ X analyses
+section: r_outputs
+x: 1040.0
+'y': 210.0
+objective: Move from a single Y ~ X model to a set of models over several predictors.
+text: Before using FactoMineR descriptive functions, we reproduce the logic manually.
+  We fit several univariate LinearModel analyses by looping over candidate predictors.
+code: |2
+
+  if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+    stop('FactoMineR is required. Install the FactoMineR package first.', call. = FALSE)
+  }
+
+  y <- 'intention_achat'
+
+  variables_x <- c(
+    'prix_percu',
+    'plaisir',
+    'naturalite',
+    'confiance',
+    'ancrage_local',
+    'usage_numerique',
+    'sensibilite_env'
+  )
+
+  missing_variables <- setdiff(c(y, variables_x), names(questionnaire))
+
+  if (length(missing_variables) > 0) {
+    stop(
+      'Missing variables: ',
+      paste(missing_variables, collapse = ', '),
+      call. = FALSE
+    )
+  }
+
+  fit_one_model <- function(x) {
+    formula_text <- paste(y, '~', x)
+    formula <- as.formula(formula_text)
+
+    FactoMineR::LinearModel(
+      formula,
+      data = questionnaire,
+      selection = 'none'
+    )
+  }
+
+  univariate_models <- lapply(variables_x, fit_one_model)
+  names(univariate_models) <- variables_x
+
+  univariate_model_texts <- lapply(
+    univariate_models,
+    function(model) {
+      paste(capture.output(print(model)), collapse = '\n')
+    }
+  )
+
+  cat('\nResponse variable:', y, '\n')
+  cat('Predictors:\n')
+  print(variables_x)
+
+  cat('\nNumber of fitted models:', length(univariate_models), '\n')
+  cat('\nFirst model Ftest:\n')
+  print(univariate_models[[1]]$Ftest)
+
+  cat('\nSecond model Ftest:\n')
+  print(univariate_models[[2]]$Ftest)
+
+  cat('\nPreview of the first captured model output:\n')
+  cat(substr(univariate_model_texts[[1]], 1, 1200))
+outputs: console
+expected_output: A list of univariate models and their captured textual outputs.
+concepts:
+- automation
+- lapply
+- formula construction
+question: Which R function applies the same function to all elements of a vector or
+  list?
+expected_answer: lapply
+next_cells: condes_description
+code_display: |2
+
+  y <- 'intention_achat'
+
+  variables_x <- c(
+    'prix_percu',
+    'plaisir',
+    'naturalite',
+    'confiance',
+    'ancrage_local',
+    'usage_numerique',
+    'sensibilite_env'
+  )
+
+  fit_one_model <- function(x) {
+    formula <- as.formula(paste(y, '~', x))
+
+    FactoMineR::LinearModel(
+      formula,
+      data = questionnaire,
+      selection = 'none'
+    )
+  }
+
+  univariate_models <- lapply(variables_x, fit_one_model)
+  names(univariate_models) <- variables_x
+
+  names(univariate_models)
+  univariate_models[[1]]$Ftest

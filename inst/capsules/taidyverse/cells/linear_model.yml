@@ -1,0 +1,88 @@
+id: linear_model
+title: Linear modelling
+section: statistics
+x: 520.0
+'y': 0.0
+objective: Fit a linear model with FactoMineR::LinearModel().
+text: 'We first model a quantitative response: purchase intention. The predictors
+  are satisfaction and perceived price. The point is not to claim causality, but to
+  produce explicit statistical outputs.'
+code: |2
+
+  if (!exists('questionnaire')) {
+    stop('The object questionnaire is missing. Run the first cell first.', call. = FALSE)
+  }
+
+  if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+    stop('FactoMineR is required. Install the FactoMineR package first.', call. = FALSE)
+  }
+
+  formula_lm <- intention_achat ~ satisfaction + prix_percu
+
+  res_lm_fm <- FactoMineR::LinearModel(
+    formula_lm,
+    data = questionnaire,
+    selection = 'none'
+  )
+
+  cat('\nLinear model formula:\n')
+  print(formula_lm)
+
+  cat('\nGlobal tests: res_lm_fm$Ftest\n')
+  print(res_lm_fm$Ftest)
+
+  cat('\nModel coefficients: res_lm_fm$Ttest\n')
+  print(res_lm_fm$Ttest)
+
+  plot(
+    questionnaire$satisfaction,
+    questionnaire$intention_achat,
+    pch = 16,
+    col = 'grey40',
+    xlab = 'Satisfaction',
+    ylab = 'Purchase intention',
+    main = 'Purchase intention ~ satisfaction'
+  )
+
+  abline(
+    lm(intention_achat ~ satisfaction, data = questionnaire),
+    lwd = 2
+  )
+outputs:
+- console
+- plot
+expected_output: A FactoMineR LinearModel object named res_lm_fm and its main outputs.
+concepts:
+- linear model
+- F-test
+- T-test
+question: Which FactoMineR function is used for the linear model?
+expected_answer: LinearModel
+next_cells: anova_model
+code_display: |2
+
+  formula_lm <- intention_achat ~ satisfaction + prix_percu
+
+  res_lm_fm <- FactoMineR::LinearModel(
+    formula_lm,
+    data = questionnaire,
+    selection = 'none'
+  )
+
+  res_lm_fm$Ftest
+  res_lm_fm$Ttest
+
+  plot(
+    questionnaire$satisfaction,
+    questionnaire$intention_achat,
+    pch = 16,
+    col = 'grey40',
+    xlab = 'Satisfaction',
+    ylab = 'Purchase intention',
+    main = 'Purchase intention ~ satisfaction'
+  )
+
+  abline(
+    lm(intention_achat ~ satisfaction, data = questionnaire),
+    lwd = 2
+  )

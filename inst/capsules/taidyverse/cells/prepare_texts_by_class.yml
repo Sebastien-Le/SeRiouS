@@ -1,0 +1,117 @@
+id: prepare_texts_by_class
+title: Preparing texts by class
+section: text
+x: 780.0
+'y': 420.0
+objective: Associate the latent classes with free-text comments.
+text: The class variable gives a latent structure. The comment variable gives verbatims.
+  This cell builds a dataset that keeps both together.
+code: |2
+
+  if (!all(c('classe_hcpc', 'commentaire') %in% names(questionnaire))) {
+    stop(
+      'The variables classe_hcpc and commentaire must both be present. Run the previous cells first.',
+      call. = FALSE
+    )
+  }
+
+  textual_class_variables <- c(
+    'classe_hcpc',
+    'commentaire',
+    'satisfaction',
+    'intention_achat',
+    'prix_percu',
+    'plaisir',
+    'naturalite',
+    'confiance',
+    'ancrage_local',
+    'usage_numerique',
+    'sensibilite_env',
+    'attention_prix',
+    'contrainte_temps',
+    'cuisine_maison',
+    'lecture_labels',
+    'achat_local',
+    'ouverture_innovation',
+    'usage_appli_alim',
+    'preoccupation_sante',
+    'autonomie_alimentaire',
+    'confiance_labels',
+    'type_produit',
+    'budget_contraint',
+    'sexe',
+    'age_classe',
+    'lieu_achat',
+    'profil_alim'
+  )
+
+  textual_class_variables <- intersect(textual_class_variables, names(questionnaire))
+
+  class_text_dataset <- questionnaire[, textual_class_variables]
+
+  class_text_dataset$classe_hcpc <- factor(class_text_dataset$classe_hcpc)
+  class_text_dataset$commentaire <- as.character(class_text_dataset$commentaire)
+
+  verbatims_by_class <- split(
+    class_text_dataset$commentaire,
+    class_text_dataset$classe_hcpc
+  )
+
+  verbatims_by_class <- lapply(verbatims_by_class, unique)
+
+  cat('\nObject created: class_text_dataset\n')
+  cat('Rows:', nrow(class_text_dataset), '\n')
+  cat('Columns:', ncol(class_text_dataset), '\n')
+
+  cat('\nClass distribution:\n')
+  print(table(class_text_dataset$classe_hcpc))
+
+  cat('\nComment summary:\n')
+  cat('Total comments:', length(class_text_dataset$commentaire), '\n')
+  cat('Unique comments:', length(unique(class_text_dataset$commentaire)), '\n')
+
+  cat('\nExamples by class:\n')
+  for (cl in names(verbatims_by_class)) {
+    cat('\n--- Class ', cl, ' ---\n', sep = '')
+    cat(paste('-', head(verbatims_by_class[[cl]], 4), collapse = '\n'))
+    cat('\n')
+  }
+outputs: console
+expected_output: A dataset associating classes, comments and structured variables.
+concepts:
+- textual data
+- classes
+- verbatims
+question: Which constructed variable is used to group the comments?
+expected_answer: classe_hcpc
+next_cells: prepare_artefacts
+code_display: |2
+
+  textual_class_variables <- c(
+    'classe_hcpc',
+    'commentaire',
+    'satisfaction',
+    'intention_achat',
+    'prix_percu',
+    'type_produit',
+    'budget_contraint',
+    'profil_alim'
+  )
+
+  textual_class_variables <- intersect(textual_class_variables, names(questionnaire))
+
+  class_text_dataset <- questionnaire[, textual_class_variables]
+
+  class_text_dataset$classe_hcpc <- factor(class_text_dataset$classe_hcpc)
+  class_text_dataset$commentaire <- as.character(class_text_dataset$commentaire)
+
+  verbatims_by_class <- split(
+    class_text_dataset$commentaire,
+    class_text_dataset$classe_hcpc
+  )
+
+  verbatims_by_class <- lapply(verbatims_by_class, unique)
+
+  dim(class_text_dataset)
+  table(class_text_dataset$classe_hcpc)
+  lapply(verbatims_by_class, head, 4)

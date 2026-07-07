@@ -1,0 +1,91 @@
+id: condes_description
+title: Describing a quantitative variable
+section: statistics
+x: 780.0
+'y': 210.0
+objective: Use FactoMineR::condes() to describe a quantitative variable.
+text: condes() generalizes the idea of describing one quantitative variable using
+  all the others. It uses correlations with quantitative variables and comparisons
+  across qualitative variables.
+code: |2
+
+  if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+    stop('FactoMineR is required. Install the FactoMineR package first.', call. = FALSE)
+  }
+
+  questionnaire_desc <- questionnaire[
+    ,
+    setdiff(names(questionnaire), 'commentaire')
+  ]
+
+  y_condes <- 'intention_achat'
+  num_var_condes <- which(names(questionnaire_desc) == y_condes)
+
+  quantitative_predictors_condes <- setdiff(
+    names(questionnaire_desc)[vapply(questionnaire_desc, is.numeric, logical(1))],
+    c('id', y_condes)
+  )
+
+  correlations_y <- data.frame(
+    variable = quantitative_predictors_condes,
+    correlation = vapply(
+      quantitative_predictors_condes,
+      function(v) {
+        cor(
+          questionnaire_desc[[y_condes]],
+          questionnaire_desc[[v]],
+          use = 'pairwise.complete.obs'
+        )
+      },
+      numeric(1)
+    ),
+    row.names = NULL
+  )
+
+  correlations_y$abs_correlation <- abs(correlations_y$correlation)
+  correlations_y <- correlations_y[order(correlations_y$abs_correlation, decreasing = TRUE), ]
+  correlations_y$correlation <- round(correlations_y$correlation, 3)
+  correlations_y$abs_correlation <- round(correlations_y$abs_correlation, 3)
+
+  res_condes <- FactoMineR::condes(
+    questionnaire_desc,
+    num.var = num_var_condes
+  )
+
+  cat('\nVariable described:', y_condes, '\n')
+  cat('Position in questionnaire_desc:', num_var_condes, '\n')
+
+  cat('\nManual correlation overview:\n')
+  print(correlations_y, row.names = FALSE)
+
+  cat('\nNames in res_condes:\n')
+  print(names(res_condes))
+
+  cat('\ncondes() output:\n')
+  print(res_condes)
+outputs: console
+expected_output: A FactoMineR condes object describing intention_achat.
+concepts:
+- condes
+- quantitative variable
+- description
+question: Which FactoMineR function describes a quantitative variable?
+expected_answer: condes
+next_cells: catdes_description
+code_display: |2
+
+  questionnaire_desc <- questionnaire[
+    ,
+    setdiff(names(questionnaire), 'commentaire')
+  ]
+
+  y_condes <- 'intention_achat'
+  num_var_condes <- which(names(questionnaire_desc) == y_condes)
+
+  res_condes <- FactoMineR::condes(
+    questionnaire_desc,
+    num.var = num_var_condes
+  )
+
+  names(res_condes)
+  res_condes

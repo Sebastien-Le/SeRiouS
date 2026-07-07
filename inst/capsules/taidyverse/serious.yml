@@ -1,0 +1,54 @@
+id: taidyverse
+title: "SeRiouS: Playing with Data Seriously"
+subtitle: "Episode One: From statistical outputs to controlled prompts"
+method: "tAIdyverse"
+description: "A guided workflow from statistical outputs to controlled LLM-based interpretation."
+language: en
+type: serious_capsule
+version: 1.0.0
+start_cell: data_start
+
+packages:
+  - SeRiouS
+  - FactoMineR
+  - graphics
+  - stats
+  - utils
+
+sections:
+  - id: data
+    label: "Data"
+    color: "#E3F2FD"
+    border: "#1565C0"
+  - id: statistics
+    label: "Statistics"
+    color: "#E8F5E9"
+    border: "#2E7D32"
+  - id: r_outputs
+    label: "R outputs"
+    color: "#FFF9C4"
+    border: "#F9A825"
+  - id: prompting
+    label: "Prompting"
+    color: "#FCE4EC"
+    border: "#AD1457"
+  - id: entrainer
+    label: "EnTraineR"
+    color: "#FFE0B2"
+    border: "#EF6C00"
+  - id: nailer
+    label: "NaileR"
+    color: "#E1BEE7"
+    border: "#6A1B9A"
+  - id: latent
+    label: "Latent structures"
+    color: "#D1C4E9"
+    border: "#512DA8"
+  - id: text
+    label: "Textual data"
+    color: "#B2DFDB"
+    border: "#00796B"
+  - id: synthesis
+    label: "Synthesis"
+    color: "#CFD8DC"
+    border: "#455A64"

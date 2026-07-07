@@ -1,0 +1,95 @@
+id: capture_outputs
+title: Capturing statistical outputs
+section: r_outputs
+x: 1040.0
+'y': 0.0
+objective: Turn printed statistical outputs into R objects and text.
+text: Statistical outputs are often printed to the console. To use them in a controlled
+  prompt, we first extract the relevant sub-objects and capture full outputs as text.
+code: |2
+
+  required_objects <- c('res_lm_fm', 'res_aovsum')
+
+  missing_objects <- required_objects[
+    !vapply(required_objects, exists, logical(1))
+  ]
+
+  if (length(missing_objects) > 0) {
+    stop(
+      'Missing objects: ',
+      paste(missing_objects, collapse = ', '),
+      '. Run the previous cells first.',
+      call. = FALSE
+    )
+  }
+
+  cat('\nWhat does res_lm_fm contain?\n')
+  print(names(res_lm_fm))
+
+  cat('\nWhat does res_aovsum contain?\n')
+  print(names(res_aovsum))
+
+  lm_ftest <- res_lm_fm$Ftest
+  lm_ttest <- res_lm_fm$Ttest
+  lm_summary <- res_lm_fm$lmResult
+
+  aov_ftest <- res_aovsum$Ftest
+  aov_ttest <- res_aovsum$Ttest
+
+  text_linearmodel <- paste(
+    capture.output(print(res_lm_fm)),
+    collapse = '\n'
+  )
+
+  text_aovsum <- paste(
+    capture.output(print(res_aovsum)),
+    collapse = '\n'
+  )
+
+  cat('\nExtracted objects:\n')
+  cat('- lm_ftest\n')
+  cat('- lm_ttest\n')
+  cat('- lm_summary\n')
+  cat('- aov_ftest\n')
+  cat('- aov_ttest\n')
+  cat('- text_linearmodel\n')
+  cat('- text_aovsum\n')
+
+  cat('\nPreview of text_linearmodel:\n')
+  cat(substr(text_linearmodel, 1, 1200))
+
+  cat('\n\nPreview of text_aovsum:\n')
+  cat(substr(text_aovsum, 1, 1200))
+outputs: console
+expected_output: Extracted statistical tables and captured text outputs.
+concepts:
+- capture.output
+- structured output
+- R objects
+question: Which object contains the captured text output of AovSum?
+expected_answer: text_aovsum
+next_cells: manual_prompt
+code_display: |2
+
+  names(res_lm_fm)
+  names(res_aovsum)
+
+  lm_ftest <- res_lm_fm$Ftest
+  lm_ttest <- res_lm_fm$Ttest
+  lm_summary <- res_lm_fm$lmResult
+
+  aov_ftest <- res_aovsum$Ftest
+  aov_ttest <- res_aovsum$Ttest
+
+  text_linearmodel <- paste(
+    capture.output(print(res_lm_fm)),
+    collapse = '\n'
+  )
+
+  text_aovsum <- paste(
+    capture.output(print(res_aovsum)),
+    collapse = '\n'
+  )
+
+  substr(text_linearmodel, 1, 1200)
+  substr(text_aovsum, 1, 1200)

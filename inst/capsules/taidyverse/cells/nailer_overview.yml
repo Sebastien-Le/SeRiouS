@@ -1,0 +1,95 @@
+id: nailer_overview
+title: Introducing NaileR
+section: nailer
+x: 0.0
+'y': 210.0
+objective: Understand how NaileR extends the FactoMineR-to-prompt workflow.
+text: 'NaileR is positioned as a companion for producing prompts and artefacts from
+  richer FactoMineR outputs. It extends the workflow from explicit variables toward
+  latent classes and textual data. In this capsule, NaileR is optional: the code falls
+  back to inspectable prompt objects when it is not installed.'
+code: |2
+
+  nailer_available <- requireNamespace('NaileR', quietly = TRUE)
+
+  if (nailer_available) {
+    nailer_functions <- grep(
+      '^nail_',
+      getNamespaceExports('NaileR'),
+      value = TRUE
+    )
+  } else {
+    nailer_functions <- c(
+      'nail_condes',
+      'nail_catdes',
+      'nail_textual',
+      'nail_textual_prep',
+      'nail_group_profile_prep',
+      'nail_textual_contextualized'
+    )
+  }
+
+  nailer_workflow <- data.frame(
+    source = c(
+      'FactoMineR',
+      'R',
+      'Manual prompt',
+      'NaileR',
+      'Optional LLM'
+    ),
+    role = c(
+      'produce structured statistical outputs',
+      'inspect and transform objects',
+      'organize an interpretive request',
+      'systematize prompts and artefacts',
+      'generate an interpretation from a controlled prompt'
+    ),
+    example = c(
+      'catdes(), condes(), PCA(), HCPC()',
+      'names(), str(), capture.output(), paste()',
+      'prompt_catdes, prompt_condes',
+      'nail_catdes(), nail_textual_prep()',
+      'Ollama, Gemini or another engine'
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  cat('\nIs NaileR installed?', nailer_available, '\n')
+
+  cat('\nFunctions detected or expected:\n')
+  print(data.frame(function_name = nailer_functions), row.names = FALSE)
+
+  cat('\nNaileR workflow:\n')
+  print(nailer_workflow, row.names = FALSE)
+outputs: console
+expected_output: A structured overview of NaileR and its role.
+concepts:
+- NaileR
+- FactoMineR
+- artefacts
+question: Which package extends FactoMineR outputs toward prompts and interpretive
+  artefacts?
+expected_answer: NaileR
+next_cells: nailer_catdes
+code_display: |2
+
+  nailer_available <- requireNamespace('NaileR', quietly = TRUE)
+
+  if (nailer_available) {
+    nailer_functions <- grep(
+      '^nail_',
+      getNamespaceExports('NaileR'),
+      value = TRUE
+    )
+  } else {
+    nailer_functions <- c(
+      'nail_condes',
+      'nail_catdes',
+      'nail_textual_prep',
+      'nail_group_profile_prep',
+      'nail_textual_contextualized'
+    )
+  }
+
+  nailer_available
+  nailer_functions

@@ -1,0 +1,82 @@
+id: entrainer_overview
+title: Introducing EnTraineR
+section: entrainer
+x: 1560.0
+'y': 210.0
+objective: Understand the role of EnTraineR in the workflow.
+text: 'Manual prompt construction is useful for learning, but repetitive. EnTraineR
+  is positioned as a package that automates the passage from explicit statistical
+  outputs to controlled prompts. In this capsule, EnTraineR is optional: if it is
+  not installed, the workflow still explains what would happen.'
+code: |2
+
+  entrainer_available <- requireNamespace('EnTraineR', quietly = TRUE)
+
+  if (entrainer_available) {
+    entrainer_functions <- grep(
+      '^trainer_',
+      getNamespaceExports('EnTraineR'),
+      value = TRUE
+    )
+  } else {
+    entrainer_functions <- c(
+      'trainer_linear_model',
+      'trainer_LinearModel',
+      'trainer_aovsum',
+      'trainer_AovSum',
+      'trainer_cor',
+      'trainer_chisq_test'
+    )
+  }
+
+  entrainer_overview <- data.frame(
+    question = c(
+      'What does EnTraineR receive?',
+      'What does EnTraineR produce?',
+      'Why is generate = FALSE important?'
+    ),
+    answer = c(
+      'A statistical object or output.',
+      'A prompt, and optionally an LLM answer.',
+      'It lets the analyst inspect the prompt before any generation.'
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  cat('\nIs EnTraineR installed?', entrainer_available, '\n')
+
+  cat('\nFunctions detected or expected:\n')
+  print(data.frame(function_name = entrainer_functions), row.names = FALSE)
+
+  cat('\nEnTraineR overview:\n')
+  print(entrainer_overview, row.names = FALSE)
+outputs: console
+expected_output: A short overview of EnTraineR and its trainer_* functions.
+concepts:
+- EnTraineR
+- prompt automation
+- generate = FALSE
+question: Which package automates prompt construction from statistical outputs?
+expected_answer: EnTraineR
+next_cells: entrainer_prompt
+code_display: |2
+
+  entrainer_available <- requireNamespace('EnTraineR', quietly = TRUE)
+
+  if (entrainer_available) {
+    entrainer_functions <- grep(
+      '^trainer_',
+      getNamespaceExports('EnTraineR'),
+      value = TRUE
+    )
+  } else {
+    entrainer_functions <- c(
+      'trainer_linear_model',
+      'trainer_LinearModel',
+      'trainer_aovsum',
+      'trainer_AovSum'
+    )
+  }
+
+  entrainer_available
+  entrainer_functions

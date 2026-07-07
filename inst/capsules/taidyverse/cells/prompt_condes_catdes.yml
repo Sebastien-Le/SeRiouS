@@ -1,0 +1,119 @@
+id: prompt_condes_catdes
+title: Turning condes/catdes outputs into prompts
+section: prompting
+x: 260.0
+'y': 210.0
+objective: Capture condes() and catdes() outputs and turn them into controlled prompts.
+text: condes() and catdes() produce richer outputs than the earlier models. We inspect
+  them, capture them as text, and build structured prompts.
+code: |2
+
+  required_objects <- c('res_condes', 'res_catdes')
+
+  missing_objects <- required_objects[
+    !vapply(required_objects, exists, logical(1))
+  ]
+
+  if (length(missing_objects) > 0) {
+    stop(
+      'Missing objects: ',
+      paste(missing_objects, collapse = ', '),
+      '. Run condes and catdes first.',
+      call. = FALSE
+    )
+  }
+
+  text_condes <- paste(
+    capture.output(print(res_condes)),
+    collapse = '\n'
+  )
+
+  text_catdes <- paste(
+    capture.output(print(res_catdes)),
+    collapse = '\n'
+  )
+
+  build_description_prompt <- function(title,
+                                       described_variable,
+                                       variable_type,
+                                       statistical_output,
+                                       instructions) {
+    paste(
+      title,
+      '',
+      paste0('Described variable: ', described_variable, '.'),
+      paste0('Type of described variable: ', variable_type, '.'),
+      '',
+      'Statistical output:',
+      statistical_output,
+      '',
+      'Instructions:',
+      paste0('- ', instructions, collapse = '\n'),
+      sep = '\n'
+    )
+  }
+
+  instructions_condes <- c(
+    'identify the variables most associated with intention_achat',
+    'distinguish quantitative and qualitative evidence',
+    'avoid causal language',
+    'write a short structured synthesis'
+  )
+
+  instructions_catdes <- c(
+    'describe each food profile',
+    'separate quantitative evidence from qualitative modalities',
+    'avoid over-interpreting weak associations',
+    'write readable profile summaries'
+  )
+
+  prompt_condes <- build_description_prompt(
+    title = '# Interpretation of condes()',
+    described_variable = 'intention_achat',
+    variable_type = 'quantitative',
+    statistical_output = text_condes,
+    instructions = instructions_condes
+  )
+
+  prompt_catdes <- build_description_prompt(
+    title = '# Interpretation of catdes()',
+    described_variable = 'profil_alim',
+    variable_type = 'qualitative',
+    statistical_output = text_catdes,
+    instructions = instructions_catdes
+  )
+
+  cat('\nCaptured text lengths:\n')
+  print(c(
+    text_condes = nchar(text_condes),
+    text_catdes = nchar(text_catdes)
+  ))
+
+  cat('\nPreview of prompt_condes:\n')
+  cat(substr(prompt_condes, 1, 1500))
+
+  cat('\n\nPreview of prompt_catdes:\n')
+  cat(substr(prompt_catdes, 1, 1500))
+outputs: console
+expected_output: Captured condes/catdes texts and two controlled prompts.
+concepts:
+- condes
+- catdes
+- prompt
+question: Which object contains the captured text output of catdes?
+expected_answer: text_catdes
+next_cells: nailer_overview
+code_display: |2
+
+  text_condes <- paste(
+    capture.output(print(res_condes)),
+    collapse = '\n'
+  )
+
+  text_catdes <- paste(
+    capture.output(print(res_catdes)),
+    collapse = '\n'
+  )
+
+  substr(text_condes, 1, 1200)
+  substr(text_catdes, 1, 1200)

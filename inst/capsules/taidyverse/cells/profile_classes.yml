@@ -1,0 +1,102 @@
+id: profile_classes
+title: Profiling latent classes
+section: latent
+x: 520.0
+'y': 420.0
+objective: Describe the latent classes with catdes(), and optionally with nail_catdes().
+text: A constructed class should not be named too quickly. First, it must be described
+  statistically. We use catdes() to characterize the HCPC classes.
+code: |2
+
+  if (!'classe_hcpc' %in% names(questionnaire)) {
+    stop('The variable classe_hcpc is missing. Run the PCA + HCPC cell first.', call. = FALSE)
+  }
+
+  if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+    stop('FactoMineR is required. Install the FactoMineR package first.', call. = FALSE)
+  }
+
+  questionnaire_class_description <- questionnaire[
+    ,
+    setdiff(names(questionnaire), c('id', 'commentaire'))
+  ]
+
+  num_var_class <- which(names(questionnaire_class_description) == 'classe_hcpc')
+
+  res_catdes_classes <- FactoMineR::catdes(
+    questionnaire_class_description,
+    num.var = num_var_class
+  )
+
+  text_catdes_classes <- paste(
+    capture.output(print(res_catdes_classes)),
+    collapse = '\n'
+  )
+
+  if (requireNamespace('NaileR', quietly = TRUE) &&
+      'nail_catdes' %in% getNamespaceExports('NaileR')) {
+    res_nail_catdes_classes <- tryCatch(
+      NaileR::nail_catdes(
+        questionnaire_class_description,
+        num.var = num_var_class,
+        generate = FALSE,
+        interpretation_mode = 'latent'
+      ),
+      error = function(e) paste('nail_catdes() error:', conditionMessage(e))
+    )
+  } else {
+    res_nail_catdes_classes <- list(
+      status = 'NaileR unavailable',
+      fallback_text = text_catdes_classes
+    )
+  }
+
+  cat('\nClass distribution:\n')
+  print(table(questionnaire_class_description$classe_hcpc))
+
+  cat('\nNames in res_catdes_classes:\n')
+  print(names(res_catdes_classes))
+
+  cat('\nPreview of class description:\n')
+  cat(substr(text_catdes_classes, 1, 2500))
+
+  cat('\n\nClass of res_nail_catdes_classes:\n')
+  print(class(res_nail_catdes_classes))
+
+  if (is.list(res_nail_catdes_classes)) {
+    cat('\nNames in res_nail_catdes_classes:\n')
+    print(names(res_nail_catdes_classes))
+  }
+outputs: console
+expected_output: A statistical description of the latent classes.
+concepts:
+- latent class
+- catdes
+- class profile
+question: What is the name of the class variable added to the questionnaire?
+expected_answer: classe_hcpc
+next_cells: prepare_texts_by_class
+code_display: |2
+
+  questionnaire_class_description <- questionnaire[
+    ,
+    setdiff(names(questionnaire), c('id', 'commentaire'))
+  ]
+
+  num_var_class <- which(
+    names(questionnaire_class_description) == 'classe_hcpc'
+  )
+
+  res_catdes_classes <- FactoMineR::catdes(
+    questionnaire_class_description,
+    num.var = num_var_class
+  )
+
+  text_catdes_classes <- paste(
+    capture.output(print(res_catdes_classes)),
+    collapse = '\n'
+  )
+
+  table(questionnaire_class_description$classe_hcpc)
+  names(res_catdes_classes)
+  substr(text_catdes_classes, 1, 2500)

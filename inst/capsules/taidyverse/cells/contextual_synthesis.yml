@@ -1,0 +1,159 @@
+id: contextual_synthesis
+title: Contextualized synthesis
+section: synthesis
+x: 1300.0
+'y': 420.0
+objective: Combine textual and structured artefacts into an inspectable synthesis
+  prompt.
+text: 'The final step combines two sources: what the structured variables say about
+  the classes, and what the verbatims say. The goal is not to ask an LLM to interpret
+  raw data directly, but to pass through visible artefacts.'
+code: |2
+
+  if (!exists('textual_prep_classes')) {
+    stop('The object textual_prep_classes is missing. Run the previous cell first.', call. = FALSE)
+  }
+
+  if (!exists('group_profile_classes')) {
+    stop('The object group_profile_classes is missing. Run the previous cell first.', call. = FALSE)
+  }
+
+  if (requireNamespace('NaileR', quietly = TRUE) &&
+      'nail_textual_contextualized' %in% getNamespaceExports('NaileR') &&
+      is.list(textual_prep_classes) &&
+      is.list(group_profile_classes)) {
+
+    contextualized_classes <- tryCatch(
+      NaileR::nail_textual_contextualized(
+        group_profile_prep = group_profile_classes,
+        textual_prep = textual_prep_classes,
+        interpretation_mode = 'comparative',
+        model = 'llama3',
+        generate = FALSE
+      ),
+      error = function(e) paste('nail_textual_contextualized() error:', conditionMessage(e))
+    )
+
+  } else {
+
+    contextualized_classes <- list(
+      prompt = paste(
+        '# Contextualized interpretation of latent classes',
+        '',
+        'Use two sources of evidence:',
+        '',
+        '1. Structured class profiles:',
+        paste(capture.output(print(group_profile_classes)), collapse = '\n'),
+        '',
+        '2. Textual evidence by class:',
+        paste(capture.output(str(textual_prep_classes, max.level = 2)), collapse = '\n'),
+        '',
+        'Instructions:',
+        '- describe each class cautiously;',
+        '- separate structured evidence from textual evidence;',
+        '- avoid causal claims;',
+        '- propose short interpretable names for the classes only after summarizing evidence.',
+        sep = '\n'
+      ),
+      status = 'Manual contextualized prompt created because NaileR contextualization is unavailable.'
+    )
+  }
+
+  contextualization_flow <- data.frame(
+    source = c(
+      'Verbatims',
+      'Structured variables',
+      'Contextualized synthesis'
+    ),
+    object = c(
+      'textual_prep_classes',
+      'group_profile_classes',
+      'contextualized_classes'
+    ),
+    role = c(
+      'capture themes and formulations by class',
+      'describe classes using questionnaire variables',
+      'combine the two sources into an interpretation request'
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  extract_text_field <- function(object, possible_names) {
+    if (!is.list(object) || is.null(names(object))) {
+      return(paste(capture.output(print(object)), collapse = '\n'))
+    }
+
+    found <- intersect(possible_names, names(object))
+
+    if (length(found) > 0) {
+      return(paste(as.character(object[[found[1]]]), collapse = '\n'))
+    }
+
+    paste(capture.output(str(object, max.level = 2)), collapse = '\n')
+  }
+
+  contextualized_prompt_text <- extract_text_field(
+    contextualized_classes,
+    c('prompt', 'prompts', 'request', 'instruction', 'instructions')
+  )
+
+  contextualized_response_text <- extract_text_field(
+    contextualized_classes,
+    c('response', 'answer', 'result', 'interpretation', 'summary', 'text')
+  )
+
+  cat('\nContextualization flow:\n')
+  print(contextualization_flow, row.names = FALSE)
+
+  cat('\nClass of contextualized_classes:\n')
+  print(class(contextualized_classes))
+
+  if (is.list(contextualized_classes)) {
+    cat('\nNames in contextualized_classes:\n')
+    print(names(contextualized_classes))
+  }
+
+  cat('\nPrompt or prepared object:\n')
+  cat(substr(contextualized_prompt_text, 1, 2500))
+
+  cat('\n\nResponse or interpretation field if available:\n')
+  cat(substr(contextualized_response_text, 1, 2500))
+
+  cat('\n\nFinal pedagogical message:\n')
+  cat('The workflow is artefact-centered: statistical outputs, prompts and textual profiles remain inspectable before interpretation.\n')
+outputs: console
+expected_output: A contextualized synthesis object or a manual fallback prompt.
+concepts:
+- contextualization
+- artefact-centered workflow
+- synthesis
+question: Which NaileR function combines textual and structured artefacts?
+expected_answer: nail_textual_contextualized
+next_cells: []
+code_display: |2
+
+  if (requireNamespace('NaileR', quietly = TRUE) &&
+      'nail_textual_contextualized' %in% getNamespaceExports('NaileR')) {
+
+    contextualized_classes <- NaileR::nail_textual_contextualized(
+      group_profile_prep = group_profile_classes,
+      textual_prep = textual_prep_classes,
+      interpretation_mode = 'comparative',
+      model = 'llama3',
+      generate = FALSE
+    )
+
+  } else {
+
+    contextualized_classes <- list(
+      prompt = paste(
+        '# Contextualized interpretation of latent classes',
+        'Use structured profiles and textual evidence.',
+        'Describe each class cautiously.',
+        sep = '\n'
+      )
+    )
+  }
+
+  class(contextualized_classes)
+  names(contextualized_classes)

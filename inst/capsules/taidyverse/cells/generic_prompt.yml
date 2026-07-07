@@ -1,0 +1,113 @@
+id: generic_prompt
+title: Making the prompt generic
+section: prompting
+x: 1560.0
+'y': 0.0
+objective: Avoid hard-coding variable names by extracting information from R formulas.
+text: The previous prompts contained variable names written by hand. Here, we use
+  R formulas to extract the response variable and model terms automatically.
+code: |2
+
+  required_objects <- c('formula_lm', 'formula_aov', 'text_linearmodel', 'text_aovsum')
+
+  missing_objects <- required_objects[
+    !vapply(required_objects, exists, logical(1))
+  ]
+
+  if (length(missing_objects) > 0) {
+    stop(
+      'Missing objects: ',
+      paste(missing_objects, collapse = ', '),
+      '. Run the previous cells first.',
+      call. = FALSE
+    )
+  }
+
+  extract_formula_info <- function(formula) {
+    variables <- all.vars(formula)
+    model_terms <- attr(terms(formula), 'term.labels')
+
+    list(
+      formula = deparse(formula),
+      y = variables[1],
+      terms = model_terms,
+      variables = variables
+    )
+  }
+
+  info_lm <- extract_formula_info(formula_lm)
+  info_aov <- extract_formula_info(formula_aov)
+
+  prompt_linearmodel_generic <- paste(
+    '# Interpretation of a linear model',
+    '',
+    'Context: consumer questionnaire about a food product.',
+    paste0('Response variable: ', info_lm$y, '.'),
+    paste0('Predictors: ', paste(info_lm$terms, collapse = ', '), '.'),
+    '',
+    'FactoMineR::LinearModel output:',
+    text_linearmodel,
+    '',
+    'Instructions:',
+    '- interpret only the results provided;',
+    '- distinguish global effects from coefficients;',
+    '- do not infer causality;',
+    '- write a short pedagogical interpretation.',
+    sep = '\n'
+  )
+
+  prompt_aovsum_generic <- paste(
+    '# Interpretation of an ANOVA',
+    '',
+    paste0('Response variable: ', info_aov$y, '.'),
+    paste0('Model terms: ', paste(info_aov$terms, collapse = ', '), '.'),
+    '',
+    'FactoMineR::AovSum output:',
+    text_aovsum,
+    '',
+    'Instructions:',
+    '- identify significant effects;',
+    '- comment on interactions carefully;',
+    '- do not invent post-hoc comparisons.',
+    sep = '\n'
+  )
+
+  cat('\nFormula information for LinearModel:\n')
+  print(info_lm)
+
+  cat('\nFormula information for AovSum:\n')
+  print(info_aov)
+
+  cat('\nPreview of generic LinearModel prompt:\n')
+  cat(substr(prompt_linearmodel_generic, 1, 1200))
+
+  cat('\n\nPreview of generic AovSum prompt:\n')
+  cat(substr(prompt_aovsum_generic, 1, 1200))
+outputs: console
+expected_output: Generic prompts based on information extracted from R formulas.
+concepts:
+- formula
+- terms
+- generic prompt
+question: Which object contains the formula used by LinearModel?
+expected_answer: formula_lm
+next_cells: entrainer_overview
+code_display: |2
+
+  extract_formula_info <- function(formula) {
+    variables <- all.vars(formula)
+    model_terms <- attr(terms(formula), 'term.labels')
+
+    list(
+      formula = deparse(formula),
+      y = variables[1],
+      terms = model_terms,
+      variables = variables
+    )
+  }
+
+  info_lm <- extract_formula_info(formula_lm)
+  info_aov <- extract_formula_info(formula_aov)
+
+  info_lm
+  info_aov

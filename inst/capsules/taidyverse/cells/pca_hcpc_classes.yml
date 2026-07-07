@@ -1,0 +1,135 @@
+id: pca_hcpc_classes
+title: Building latent classes
+section: latent
+x: 260.0
+'y': 420.0
+objective: Construct latent classes from active quantitative variables using PCA and
+  HCPC.
+text: 'We now leave explicit questionnaire variables and build a new class variable.
+  This variable is latent in the sense that it is produced by the analysis: first
+  PCA, then HCPC.'
+code: |2
+
+  if (!requireNamespace('FactoMineR', quietly = TRUE)) {
+    stop('FactoMineR is required. Install the FactoMineR package first.', call. = FALSE)
+  }
+
+  typology_variables <- c(
+    'attention_prix',
+    'contrainte_temps',
+    'cuisine_maison',
+    'lecture_labels',
+    'achat_local',
+    'ouverture_innovation',
+    'usage_appli_alim',
+    'preoccupation_sante',
+    'autonomie_alimentaire',
+    'confiance_labels'
+  )
+
+  missing_typology_variables <- setdiff(typology_variables, names(questionnaire))
+
+  if (length(missing_typology_variables) > 0) {
+    stop(
+      'Missing typology variables: ',
+      paste(missing_typology_variables, collapse = ', '),
+      call. = FALSE
+    )
+  }
+
+  typology_data <- questionnaire[, typology_variables]
+
+  non_numeric_typology <- names(typology_data)[
+    !vapply(typology_data, is.numeric, logical(1))
+  ]
+
+  if (length(non_numeric_typology) > 0) {
+    stop(
+      'The following typology variables are not numeric: ',
+      paste(non_numeric_typology, collapse = ', '),
+      call. = FALSE
+    )
+  }
+
+  res_pca <- FactoMineR::PCA(
+    typology_data,
+    scale.unit = TRUE,
+    graph = FALSE
+  )
+
+  set.seed(123)
+
+  res_hcpc <- FactoMineR::HCPC(
+    res_pca,
+    nb.clust = 3,
+    graph = FALSE
+  )
+
+  questionnaire$classe_hcpc <- factor(res_hcpc$data.clust$clust)
+
+  cat('\nActive typology variables:\n')
+  print(typology_variables)
+
+  cat('\nPCA eigenvalues:\n')
+  print(res_pca$eig)
+
+  cat('\nHCPC class distribution:\n')
+  print(table(questionnaire$classe_hcpc))
+
+  FactoMineR::plot.HCPC(
+    res_hcpc,
+    choice = 'map',
+    draw.tree = FALSE
+  )
+outputs:
+- console
+- plot
+expected_output: A PCA object, an HCPC object, and a new class variable named classe_hcpc.
+concepts:
+- PCA
+- HCPC
+- latent class
+question: Which FactoMineR function builds a classification from a PCA object?
+expected_answer: HCPC
+next_cells: profile_classes
+code_display: |2
+
+  typology_variables <- c(
+    'attention_prix',
+    'contrainte_temps',
+    'cuisine_maison',
+    'lecture_labels',
+    'achat_local',
+    'ouverture_innovation',
+    'usage_appli_alim',
+    'preoccupation_sante',
+    'autonomie_alimentaire',
+    'confiance_labels'
+  )
+
+  typology_data <- questionnaire[, typology_variables]
+
+  res_pca <- FactoMineR::PCA(
+    typology_data,
+    scale.unit = TRUE,
+    graph = FALSE
+  )
+
+  set.seed(123)
+
+  res_hcpc <- FactoMineR::HCPC(
+    res_pca,
+    nb.clust = 3,
+    graph = FALSE
+  )
+
+  questionnaire$classe_hcpc <- factor(res_hcpc$data.clust$clust)
+
+  res_pca$eig
+  table(questionnaire$classe_hcpc)
+
+  FactoMineR::plot.HCPC(
+    res_hcpc,
+    choice = 'map',
+    draw.tree = FALSE
+  )

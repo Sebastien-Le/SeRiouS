@@ -1,0 +1,154 @@
+id: prepare_artefacts
+title: Preparing textual and structured artefacts
+section: text
+x: 1040.0
+'y': 420.0
+objective: Prepare complementary artefacts for class interpretation.
+text: 'A class can be interpreted from two complementary sources: textual comments
+  and structured questionnaire variables. NaileR can prepare these artefacts when
+  available; otherwise, this cell creates simple inspectable summaries.'
+code: |2
+
+  if (!exists('class_text_dataset')) {
+    stop('The object class_text_dataset is missing. Run the previous cell first.', call. = FALSE)
+  }
+
+  if (requireNamespace('NaileR', quietly = TRUE)) {
+    num_var_classes <- which(names(class_text_dataset) == 'classe_hcpc')
+    num_text_classes <- which(names(class_text_dataset) == 'commentaire')
+
+    textual_prep_classes <- tryCatch(
+      NaileR::nail_textual_prep(
+        dataset = class_text_dataset,
+        num.var = num_var_classes,
+        num.text = num_text_classes,
+        model = 'llama3',
+        generate = FALSE
+      ),
+      error = function(e) paste('nail_textual_prep() error:', conditionMessage(e))
+    )
+
+    class_profile_dataset <- class_text_dataset[
+      ,
+      setdiff(names(class_text_dataset), 'commentaire')
+    ]
+
+    num_var_profile_classes <- which(names(class_profile_dataset) == 'classe_hcpc')
+
+    group_profile_classes <- tryCatch(
+      NaileR::nail_group_profile_prep(
+        dataset = class_profile_dataset,
+        num.var = num_var_profile_classes,
+        model = 'llama3',
+        generate = FALSE
+      ),
+      error = function(e) paste('nail_group_profile_prep() error:', conditionMessage(e))
+    )
+
+  } else {
+    textual_prep_classes <- lapply(
+      split(class_text_dataset$commentaire, class_text_dataset$classe_hcpc),
+      function(x) {
+        list(
+          n_comments = length(x),
+          n_unique_comments = length(unique(x)),
+          examples = head(unique(x), 8)
+        )
+      }
+    )
+
+    numeric_variables_for_profile <- names(class_text_dataset)[
+      vapply(class_text_dataset, is.numeric, logical(1))
+    ]
+
+    group_profile_classes <- aggregate(
+      class_text_dataset[numeric_variables_for_profile],
+      by = list(class = class_text_dataset$classe_hcpc),
+      FUN = mean
+    )
+
+    group_profile_classes[, -1] <- round(group_profile_classes[, -1], 2)
+  }
+
+  artefact_comparison <- data.frame(
+    artefact = c('textual_prep_classes', 'group_profile_classes'),
+    material = c('free-text comments', 'structured questionnaire variables'),
+    role = c(
+      'summarize themes and formulations by class',
+      'summarize quantitative and qualitative profiles by class'
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  cat('\nArtefact comparison:\n')
+  print(artefact_comparison, row.names = FALSE)
+
+  cat('\nTextual artefact class:\n')
+  print(class(textual_prep_classes))
+
+  if (is.list(textual_prep_classes)) {
+    cat('\nTextual artefact names or length:\n')
+    nm <- names(textual_prep_classes)
+    if (is.null(nm)) {
+      print(length(textual_prep_classes))
+    } else {
+      print(nm)
+    }
+  }
+
+  cat('\nStructured artefact class:\n')
+  print(class(group_profile_classes))
+
+  cat('\nPreview of structured artefact:\n')
+  print(group_profile_classes)
+outputs: console
+expected_output: 'Two complementary artefacts: textual_prep_classes and group_profile_classes.'
+concepts:
+- artefact
+- textual profile
+- structured profile
+question: Which NaileR function prepares free-text comments by class?
+expected_answer: nail_textual_prep
+next_cells: contextual_synthesis
+code_display: |2
+
+  if (requireNamespace('NaileR', quietly = TRUE)) {
+    num_var_classes <- which(names(class_text_dataset) == 'classe_hcpc')
+    num_text_classes <- which(names(class_text_dataset) == 'commentaire')
+
+    textual_prep_classes <- NaileR::nail_textual_prep(
+      dataset = class_text_dataset,
+      num.var = num_var_classes,
+      num.text = num_text_classes,
+      model = 'llama3',
+      generate = FALSE
+    )
+
+    class_profile_dataset <- class_text_dataset[
+      ,
+      setdiff(names(class_text_dataset), 'commentaire')
+    ]
+
+    num_var_profile_classes <- which(names(class_profile_dataset) == 'classe_hcpc')
+
+    group_profile_classes <- NaileR::nail_group_profile_prep(
+      dataset = class_profile_dataset,
+      num.var = num_var_profile_classes,
+      model = 'llama3',
+      generate = FALSE
+    )
+  } else {
+    textual_prep_classes <- lapply(
+      split(class_text_dataset$commentaire, class_text_dataset$classe_hcpc),
+      function(x) head(unique(x), 8)
+    )
+
+    group_profile_classes <- aggregate(
+      class_text_dataset[vapply(class_text_dataset, is.numeric, logical(1))],
+      by = list(class = class_text_dataset$classe_hcpc),
+      FUN = mean
+    )
+  }
+
+  class(textual_prep_classes)
+  class(group_profile_classes)

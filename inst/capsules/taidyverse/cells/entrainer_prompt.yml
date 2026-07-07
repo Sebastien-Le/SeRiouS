@@ -1,0 +1,103 @@
+id: entrainer_prompt
+title: Generating prompts with EnTraineR
+section: entrainer
+x: 1300.0
+'y': 210.0
+objective: Use EnTraineR to generate a prompt from a LinearModel object when available.
+text: 'This cell compares the manual prompt with an automated EnTraineR prompt. The
+  code is written defensively: if EnTraineR is not installed, it keeps the manual
+  prompt as a fallback.'
+code: |2
+
+  if (!exists('res_lm_fm')) {
+    stop('The object res_lm_fm is missing. Run the linear model cell first.', call. = FALSE)
+  }
+
+  entrainer_available <- requireNamespace('EnTraineR', quietly = TRUE)
+
+  prompt_used_as_fallback <- if (exists('prompt_linearmodel_generic')) {
+    prompt_linearmodel_generic
+  } else if (exists('prompt_linearmodel')) {
+    prompt_linearmodel
+  } else {
+    'No manual prompt found.'
+  }
+
+  if (entrainer_available) {
+    entrainer_exports <- getNamespaceExports('EnTraineR')
+
+    trainer_name <- intersect(
+      c('trainer_LinearModel', 'trainer_linear_model'),
+      entrainer_exports
+    )[1]
+
+    if (is.na(trainer_name)) {
+      prompt_auto_lm <- 'No LinearModel trainer was found in EnTraineR.'
+    } else {
+      trainer_lm <- getExportedValue('EnTraineR', trainer_name)
+
+      prompt_auto_lm <- tryCatch(
+        trainer_lm(res_lm_fm, generate = FALSE),
+        error = function(e) paste('EnTraineR error:', conditionMessage(e))
+      )
+    }
+  } else {
+    prompt_auto_lm <- paste(
+      'EnTraineR is not installed.',
+      'Fallback: the manual prompt remains the inspectable object.',
+      '',
+      prompt_used_as_fallback,
+      sep = '\n'
+    )
+  }
+
+  prompt_auto_lm_text <- paste(
+    capture.output(print(prompt_auto_lm)),
+    collapse = '\n'
+  )
+
+  comparison_manual_auto <- data.frame(
+    method = c('Manual prompt', 'EnTraineR or fallback'),
+    object = c('prompt_linearmodel_generic', 'prompt_auto_lm'),
+    characters = c(nchar(prompt_used_as_fallback), nchar(prompt_auto_lm_text)),
+    stringsAsFactors = FALSE
+  )
+
+  cat('\nComparison:\n')
+  print(comparison_manual_auto, row.names = FALSE)
+
+  cat('\nPreview of automated or fallback prompt:\n')
+  cat(substr(prompt_auto_lm_text, 1, 1500))
+outputs: console
+expected_output: An automated prompt when EnTraineR is available, otherwise a safe
+  fallback prompt.
+concepts:
+- EnTraineR
+- generate = FALSE
+- fallback
+question: Which option lets us inspect the prompt without calling an LLM?
+expected_answer: generate = FALSE
+next_cells: automate_models
+code_display: |2
+
+  entrainer_available <- requireNamespace('EnTraineR', quietly = TRUE)
+
+  if (entrainer_available) {
+    entrainer_exports <- getNamespaceExports('EnTraineR')
+
+    trainer_name <- intersect(
+      c('trainer_LinearModel', 'trainer_linear_model'),
+      entrainer_exports
+    )[1]
+
+    trainer_lm <- getExportedValue('EnTraineR', trainer_name)
+
+    prompt_auto_lm <- trainer_lm(
+      res_lm_fm,
+      generate = FALSE
+    )
+  } else {
+    prompt_auto_lm <- prompt_linearmodel_generic
+  }
+
+  prompt_auto_lm
