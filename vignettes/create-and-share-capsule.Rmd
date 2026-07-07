@@ -19,14 +19,16 @@ knitr::opts_chunk$set(
 
 SeRiouS is an R/Shiny framework for creating interactive learning capsules.
 
-A SeRiouS capsule is organised as a pedagogical path made of successive steps. Each step may contain:
+A SeRiouS capsule is organised as a pedagogical board made of **cells**
+connected by **links**. Each cell may contain:
 
-- an objective;
+- a learning objective;
+- explanatory text;
 - a piece of R code;
-- a question;
-- a console output;
-- a plot;
-- a PDF or other resource.
+- a question used to unlock progress;
+- console output;
+- plots;
+- PDF files or other resources.
 
 The general idea is simple:
 
@@ -35,11 +37,12 @@ SeRiouS provides the stage.
 The teacher writes the play.
 ```
 
-This vignette explains how to create, check, run and share a capsule as a simple folder.
+This vignette explains how to create, inspect, edit, check, run and share a
+capsule as a simple folder.
 
-# Create a capsule folder
+# The recommended workflow
 
-The easiest way to start is to create a capsule skeleton.
+The recommended way to work with SeRiouS is to create a capsule folder.
 
 ```{r}
 library(SeRiouS)
@@ -52,100 +55,217 @@ create_capsule_skeleton(
 
 This creates a folder named `my_capsule`.
 
+A capsule folder is easy to share: it can be zipped, sent to another user, or
+stored in a version-controlled repository.
+
 # Folder structure
 
-A capsule folder has the following structure:
+A SeRiouS capsule folder has the following structure:
 
 ```text
 my_capsule/
-├── capsule.R
 ├── serious.yml
 ├── README.md
+├── cells/
 ├── data/
 ├── pdf/
 ├── img/
 └── www/
 ```
 
-The most important file is:
+The main elements are:
 
 ```text
-capsule.R
+serious.yml   global metadata, sections, colors, packages and start cell
+cells/        one YAML file per pedagogical cell
+data/         optional datasets
+pdf/          optional PDF resources
+img/          optional images
+www/          optional web assets such as CSS
 ```
 
-It must define a function named `create_capsule()`.
+The most important folder is `cells/`. Each cell of the pedagogical board is
+stored as a separate YAML file.
 
-This function must return a `learning_capsule` object.
+# Inspect the cells
 
-The other folders are optional resource folders:
-
-```text
-data/   datasets used by the capsule
-pdf/    PDF supports or slides
-img/    images used by the capsule
-www/    web resources for the Shiny app
-```
-
-# Open and edit `capsule.R`
-
-The generated `capsule.R` file contains a minimal working example.
-
-A typical capsule is built in three steps:
+You can list the cells of a capsule:
 
 ```{r}
-sections <- SeRiouS::make_sections(...)
-
-steps <- list(
-  SeRiouS::make_step(...),
-  SeRiouS::make_step(...)
-)
-
-SeRiouS::build_linear_capsule(
-  id = "my_capsule",
-  title = "My capsule",
-  method = "My method",
-  steps = steps,
-  sections = sections
-)
+capsule_cells("my_capsule")
 ```
 
-The function `make_step()` defines one step of the learning path.
-
-For example:
+You can inspect one cell:
 
 ```{r}
-SeRiouS::make_step(
-  id = "intro",
-  title = "Discover the data",
-  section = "data",
-  objective = "Display the first rows of the iris dataset.",
-  code = "head(iris)",
-  question = "Which dataset is used in this capsule?",
-  expected_answer = "iris"
-)
+capsule_get_cell("my_capsule", "intro")
 ```
 
-A step can also generate a plot:
+A cell contains the information needed to display one pedagogical unit on the
+board: its title, section, position, text, code, unlocking question and links to
+other cells.
+
+# Understand `serious.yml`
+
+The `serious.yml` file stores the general information about the capsule.
+
+A simplified example looks like this:
+
+```yaml
+id: my_capsule
+title: "My first SeRiouS capsule"
+subtitle: "A shareable SeRiouS capsule folder"
+method: "Introduction R"
+description: "This capsule demonstrates the basic SeRiouS workflow."
+language: en
+type: serious_capsule
+version: 0.2.0
+start_cell: intro
+
+packages:
+  - datasets
+  - graphics
+  - stats
+
+sections:
+  - id: data
+    label: "Data"
+    color: "#E3F2FD"
+    border: "#1565C0"
+  - id: summary
+    label: "Summary"
+    color: "#E8F5E9"
+    border: "#2E7D32"
+  - id: visual
+    label: "Visualisation"
+    color: "#FFF3E0"
+    border: "#EF6C00"
+  - id: conclusion
+    label: "Conclusion"
+    color: "#F3E5F5"
+    border: "#6A1B9A"
+```
+
+The `sections` field controls the legend and the colours used on the board.
+The `start_cell` field indicates which cell is unlocked first.
+
+# Understand a cell file
+
+A cell is stored in `cells/` as a YAML file.
+
+For example, a cell may contain:
+
+```yaml
+id: intro
+title: Welcome
+section: data
+x: 0
+y: 0
+objective: Start the capsule.
+text: Welcome to this SeRiouS capsule.
+code: |
+  data(iris)
+  head(iris)
+outputs:
+  - console
+expected_output: The first rows of the iris data set.
+question: Which dataset is used?
+expected_answer: iris
+next_cells:
+  - summary
+```
+
+This cell:
+
+- appears in the `data` section;
+- is placed at coordinates `x = 0`, `y = 0` on the board;
+- displays an objective and explanatory text;
+- runs R code;
+- asks a question;
+- links to the next cell, `summary`.
+
+# Add a cell
+
+You can add a new cell with `capsule_add_cell()`.
 
 ```{r}
-SeRiouS::make_step(
-  id = "plot",
-  title = "Create a plot",
-  section = "visual",
-  objective = "Plot sepal length against petal length.",
-  outputs = c("console", "plot"),
-  code = paste(
-    "plot(",
-    "  iris$Sepal.Length,",
-    "  iris$Petal.Length,",
-    "  pch = 16",
-    ")",
-    sep = "\n"
-  ),
-  question = "Which base R function creates this graph?",
-  expected_answer = "plot"
+capsule_add_cell(
+  path = "my_capsule",
+  id = "new_cell",
+  title = "A new cell",
+  section = "summary",
+  x = 1000,
+  y = 0,
+  objective = "Introduce a new concept.",
+  text = "This cell explains a new idea before running code.",
+  code = "1 + 1",
+  outputs = "console",
+  expected_output = "The result is 2.",
+  question = "What is 1 + 1?",
+  expected_answer = "2"
 )
 ```
+
+This creates a new YAML file in the `cells/` folder.
+
+# Connect cells
+
+The learning path is defined by links between cells.
+
+To connect an existing cell to the new cell:
+
+```{r}
+capsule_connect_cells(
+  path = "my_capsule",
+  from = "conclusion",
+  to = "new_cell"
+)
+```
+
+This means that `new_cell` becomes reachable after `conclusion`.
+
+You can also remove a link:
+
+```{r}
+capsule_disconnect_cells(
+  path = "my_capsule",
+  from = "conclusion",
+  to = "new_cell"
+)
+```
+
+# Move a cell on the board
+
+Cells have coordinates on the board.
+
+To move a cell:
+
+```{r}
+capsule_move_cell(
+  path = "my_capsule",
+  id = "new_cell",
+  x = 1250,
+  y = 0
+)
+```
+
+This changes the visual position of the cell in the board layout.
+
+# Update an unlocking question
+
+A cell can be associated with a question and an expected answer.
+
+```{r}
+capsule_set_cell_unlock(
+  path = "my_capsule",
+  id = "new_cell",
+  question = "What is the result?",
+  expected_answer = "2"
+)
+```
+
+The answer is used by the Shiny application to unlock the next part of the
+learning path.
 
 # Check the capsule
 
@@ -166,28 +286,67 @@ check_capsule_dir("my_capsule")
 This function checks that:
 
 ```text
-capsule.R exists
-create_capsule() exists
-create_capsule() returns a learning_capsule object
+serious.yml exists
+cells/ exists and contains valid cell files
+the capsule can be loaded
 the capsule can be validated
+referenced PDF resources exist
 the main folder structure is coherent
 ```
 
 # Run the capsule
 
-To run the capsule from the parent folder:
+The main function for launching a capsule is `run_capsule()`.
+
+To run a capsule from the parent folder:
 
 ```{r}
-run_capsule_dir("my_capsule")
+run_capsule("my_capsule")
 ```
 
 To run it from inside the capsule folder:
 
 ```{r}
-run_capsule_dir(".")
+run_capsule(".")
 ```
 
 This launches the Shiny interface.
+
+The board shows the pedagogical cells. At the beginning, only the first cell is
+unlocked. Learners progress by answering questions, running code, reading
+outputs and moving from one cell to the next.
+
+# Run an internal capsule
+
+SeRiouS also includes internal demonstration capsules.
+
+```{r}
+available_capsules()
+```
+
+You can run an internal capsule directly:
+
+```{r}
+run_capsule("demo_iris")
+```
+
+or:
+
+```{r}
+run_capsule("demo_pca")
+```
+
+You can also retrieve a capsule as an R object:
+
+```{r}
+capsule <- get_capsule("demo_iris")
+```
+
+and run it:
+
+```{r}
+run_capsule(capsule)
+```
 
 # Share the capsule
 
@@ -202,27 +361,124 @@ The recipient only needs to install SeRiouS and run:
 ```{r}
 library(SeRiouS)
 
-run_capsule_dir("my_capsule")
+run_capsule("my_capsule")
 ```
 
-This makes it possible to share pedagogical material without creating a full R package.
+This makes it possible to share pedagogical material without creating a full R
+package.
 
-# Summary
+# Summary of the folder-based workflow
 
-The typical workflow for a contributor is:
+The typical workflow for a capsule author is:
 
 ```{r}
 library(SeRiouS)
 
 create_capsule_skeleton("my_capsule")
+
+capsule_cells("my_capsule")
+capsule_get_cell("my_capsule", "intro")
+
+capsule_add_cell(
+  path = "my_capsule",
+  id = "new_cell",
+  title = "A new cell",
+  section = "summary",
+  x = 1000,
+  y = 0,
+  text = "This is a new cell.",
+  code = "1 + 1",
+  question = "What is 1 + 1?",
+  expected_answer = "2"
+)
+
+capsule_connect_cells(
+  path = "my_capsule",
+  from = "conclusion",
+  to = "new_cell"
+)
+
 check_capsule_dir("my_capsule")
-run_capsule_dir("my_capsule")
+run_capsule("my_capsule")
 ```
 
-Then edit:
+The files to edit are:
 
 ```text
-my_capsule/capsule.R
+my_capsule/serious.yml
+my_capsule/cells/*.yml
 ```
 
-and share the folder when the capsule is ready.
+# Advanced: build a capsule directly in R
+
+For package developers, or for users who want to generate capsules
+programmatically, SeRiouS still provides a lower-level R API.
+
+A pedagogical cell can be defined as a step:
+
+```{r}
+step1 <- make_step(
+  id = "intro",
+  title = "Inspect the data",
+  section = "data",
+  objective = "Display the first rows of the iris data set.",
+  text = "We start by inspecting the iris data set.",
+  code = "head(iris)",
+  expected_output = "The first rows of the iris data set.",
+  outputs = "console",
+  question = "What is the name of the data set?",
+  expected_answer = "iris"
+)
+
+step2 <- make_step(
+  id = "summary",
+  title = "Summarize the data",
+  section = "summary",
+  objective = "Compute a summary of the iris data set.",
+  text = "We now compute a statistical summary.",
+  code = "summary(iris)",
+  expected_output = "A statistical summary of the variables.",
+  outputs = "console"
+)
+```
+
+Then the capsule can be built:
+
+```{r}
+capsule <- build_linear_capsule(
+  id = "my_capsule",
+  title = "My first SeRiouS capsule",
+  method = "demo",
+  steps = list(step1, step2),
+  start_step = "intro",
+  data = list(iris = iris)
+)
+```
+
+The capsule can be validated and run:
+
+```{r}
+validate_capsule(capsule)
+run_capsule(capsule)
+```
+
+This programmatic API is useful when capsules are generated from scripts or
+included inside an R package. For most users, the recommended workflow is the
+folder-based workflow with `serious.yml` and `cells/*.yml`.
+
+# Conceptual model
+
+The cell-based model can be summarised as follows:
+
+```text
+capsule = metadata + board
+
+board = cells + links + sections
+
+cell = pedagogical content + code + output + unlocking rule
+
+link = connection from one cell to another
+```
+
+This model separates the pedagogical content from the running engine. It makes
+capsules easier to inspect, edit, validate and share.
