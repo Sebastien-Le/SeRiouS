@@ -135,3 +135,36 @@ test_that("empty YAML list fields are converted to character vectors", {
   expect_equal(serious_as_character_vector(NULL), character())
   expect_equal(serious_as_character_vector(list("a", "b")), c("a", "b"))
 })
+
+test_that("pdf and pdf_on_run are not confused by partial matching", {
+  path <- tempfile("capsule-")
+  create_capsule_skeleton(path)
+
+  capsule_add_cell(
+    path = path,
+    id = "pdf_on_run_only",
+    title = "PDF on run only",
+    section = "data",
+    x = 0,
+    y = 0,
+    code = "1 + 1",
+    outputs = "console",
+    question = "Type ok to unlock.",
+    expected_answer = "ok"
+  )
+
+  capsule_update_cell(
+    path = path,
+    id = "pdf_on_run_only",
+    pdf_on_run = "pdf/example.pdf"
+  )
+
+  dir.create(file.path(path, "pdf"), recursive = TRUE, showWarnings = FALSE)
+  file.create(file.path(path, "pdf", "example.pdf"))
+
+  capsule <- load_capsule_dir(path)
+  step <- capsule$steps$pdf_on_run_only
+
+  expect_false("pdf" %in% names(step))
+  expect_identical(step[["pdf_on_run"]], "pdf/example.pdf")
+})

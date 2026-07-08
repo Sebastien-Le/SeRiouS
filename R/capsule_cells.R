@@ -39,6 +39,20 @@ serious_drop_null <- function(x) {
   x[!vapply(x, is.null, logical(1))]
 }
 
+serious_get_field <- function(x, name, default = NULL) {
+  if (!is.list(x)) {
+    return(default)
+  }
+
+  nms <- names(x)
+
+  if (is.null(nms) || !(name %in% nms)) {
+    return(default)
+  }
+
+  x[[name]]
+}
+
 serious_as_character_vector <- function(x) {
   if (is.null(x)) {
     return(character())
@@ -618,32 +632,54 @@ serious_order_cells <- function(cells, start_id) {
 }
 
 serious_cell_to_step <- function(cell) {
-  main_text <- cell$text %||% cell$content %||% NULL
+  main_text <- serious_get_field(cell, "text") %||%
+    serious_get_field(cell, "content") %||%
+    NULL
 
-  outputs <- serious_as_character_vector(cell$outputs)
+  outputs <- serious_as_character_vector(
+    serious_get_field(cell, "outputs")
+  )
+
   if (length(outputs) == 0) {
     outputs <- NULL
   }
 
-  concepts <- serious_as_character_vector(cell$concepts)
-  next_steps <- serious_as_character_vector(cell$next_cells)
-  prerequisites <- serious_as_character_vector(cell$prerequisites)
+  concepts <- serious_as_character_vector(
+    serious_get_field(cell, "concepts")
+  )
+
+  next_steps <- serious_as_character_vector(
+    serious_get_field(cell, "next_cells")
+  )
+
+  if (length(next_steps) == 0) {
+    next_steps <- serious_as_character_vector(
+      serious_get_field(cell, "next_steps")
+    )
+  }
+
+  prerequisites <- serious_as_character_vector(
+    serious_get_field(cell, "prerequisites")
+  )
+
+  cell_pdf <- serious_get_field(cell, "pdf")
+  cell_pdf_on_run <- serious_get_field(cell, "pdf_on_run")
 
   args <- list(
-    id = cell$id,
-    title = cell$title %||% cell$id,
-    section = cell$section %||% NULL,
-    objective = cell$objective %||% NULL,
+    id = serious_get_field(cell, "id"),
+    title = serious_get_field(cell, "title") %||% serious_get_field(cell, "id"),
+    section = serious_get_field(cell, "section") %||% NULL,
+    objective = serious_get_field(cell, "objective") %||% NULL,
     text = main_text,
-    code = cell$code %||% NULL,
-    code_display = cell$code_display %||% NULL,
+    code = serious_get_field(cell, "code") %||% NULL,
+    code_display = serious_get_field(cell, "code_display") %||% NULL,
     outputs = outputs,
-    expected_output = cell$expected_output %||% NULL,
+    expected_output = serious_get_field(cell, "expected_output") %||% NULL,
     concepts = concepts,
-    question = cell$question %||% NULL,
-    expected_answer = cell$expected_answer %||% NULL,
-    pdf = cell$pdf %||% NULL,
-    pdf_on_run = cell$pdf_on_run %||% NULL,
+    question = serious_get_field(cell, "question") %||% NULL,
+    expected_answer = serious_get_field(cell, "expected_answer") %||% NULL,
+    pdf = cell_pdf %||% NULL,
+    pdf_on_run = cell_pdf_on_run %||% NULL,
     next_steps = next_steps,
     prerequisites = prerequisites
   )
@@ -656,32 +692,61 @@ serious_cell_to_step <- function(cell) {
   step <- do.call(make_step, args)
 
   # Keep cell-specific fields even if make_step() does not know them.
-  step$section <- cell$section %||% step$section %||% NULL
-  step$partie <- cell$section %||% step$partie %||% NULL
-  step$text <- main_text %||% step$text %||% NULL
-  step$content <- cell$content %||% main_text %||% step$content %||% NULL
-  step$objective <- cell$objective %||% step$objective %||% NULL
-  step$code_display <- cell$code_display %||% step$code_display %||% NULL
-  step$expected_output <- cell$expected_output %||% step$expected_output %||% NULL
+  step$section <- serious_get_field(cell, "section") %||%
+    serious_get_field(step, "section") %||%
+    NULL
+
+  step$partie <- serious_get_field(cell, "section") %||%
+    serious_get_field(step, "partie") %||%
+    NULL
+
+  step$text <- main_text %||%
+    serious_get_field(step, "text") %||%
+    NULL
+
+  step$content <- serious_get_field(cell, "content") %||%
+    main_text %||%
+    serious_get_field(step, "content") %||%
+    NULL
+
+  step$objective <- serious_get_field(cell, "objective") %||%
+    serious_get_field(step, "objective") %||%
+    NULL
+
+  step$code_display <- serious_get_field(cell, "code_display") %||%
+    serious_get_field(step, "code_display") %||%
+    NULL
+
+  step$expected_output <- serious_get_field(cell, "expected_output") %||%
+    serious_get_field(step, "expected_output") %||%
+    NULL
+
   step$concepts <- concepts
-  step$outputs <- outputs %||% step$outputs %||% "console"
-  step$x <- cell$x %||% step$x %||% NULL
-  step$y <- cell$y %||% step$y %||% NULL
-  step$pdf <- cell$pdf %||% step$pdf %||% NULL
-  step$pdf_on_run <- cell$pdf_on_run %||% step$pdf_on_run %||% NULL
+  step$outputs <- outputs %||% serious_get_field(step, "outputs") %||% "console"
+  step$x <- serious_get_field(cell, "x") %||% serious_get_field(step, "x") %||% NULL
+  step$y <- serious_get_field(cell, "y") %||% serious_get_field(step, "y") %||% NULL
+
+  step$pdf <- cell_pdf %||%
+    serious_get_field(step, "pdf") %||%
+    NULL
+
+  step$pdf_on_run <- cell_pdf_on_run %||%
+    serious_get_field(step, "pdf_on_run") %||%
+    NULL
+
   step$next_steps <- next_steps
   step$prerequisites <- prerequisites
 
-  if (!is.null(cell$case_sensitive)) {
-    step$case_sensitive <- cell$case_sensitive
+  if (!is.null(serious_get_field(cell, "case_sensitive"))) {
+    step$case_sensitive <- serious_get_field(cell, "case_sensitive")
   }
 
-  if (!is.null(cell$success)) {
-    step$success <- cell$success
+  if (!is.null(serious_get_field(cell, "success"))) {
+    step$success <- serious_get_field(cell, "success")
   }
 
-  if (!is.null(cell$failure)) {
-    step$failure <- cell$failure
+  if (!is.null(serious_get_field(cell, "failure"))) {
+    step$failure <- serious_get_field(cell, "failure")
   }
 
   step

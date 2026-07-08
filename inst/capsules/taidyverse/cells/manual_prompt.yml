@@ -77,7 +77,7 @@ concepts:
 question: Which R function is used here to assemble text lines?
 expected_answer: paste
 next_cells: generic_prompt
-code_display: |2
+code_display: |2-
 
   prompt_linearmodel <- paste(
     '# Interpretation of a linear model',
@@ -115,3 +115,4 @@ code_display: |2
 
   substr(prompt_linearmodel, 1, 1500)
   substr(prompt_aovsum, 1, 1500)
+pdf_on_run: pdf/prompt_manuel.pdf

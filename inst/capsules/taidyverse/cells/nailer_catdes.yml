@@ -77,7 +77,7 @@ concepts:
 question: Which NaileR function extends catdes() here?
 expected_answer: nail_catdes
 next_cells: pca_hcpc_classes
-code_display: |2
+code_display: |2-
 
   nailer_available <- requireNamespace('NaileR', quietly = TRUE)
 
@@ -99,3 +99,4 @@ code_display: |2
 
   class(res_nail_catdes)
   names(res_nail_catdes)
+pdf_on_run: pdf/nailer_exemple.pdf

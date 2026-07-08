@@ -78,7 +78,7 @@ concepts:
 question: Which option lets us inspect the prompt without calling an LLM?
 expected_answer: generate = FALSE
 next_cells: automate_models
-code_display: |2
+code_display: |2-
 
   entrainer_available <- requireNamespace('EnTraineR', quietly = TRUE)
 
@@ -101,3 +101,4 @@ code_display: |2
   }
 
   prompt_auto_lm
+pdf_on_run: pdf/entrainer_exemple.pdf

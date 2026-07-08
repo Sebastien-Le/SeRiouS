@@ -71,7 +71,7 @@ question: Which package extends FactoMineR outputs toward prompts and interpreti
   artefacts?
 expected_answer: NaileR
 next_cells: nailer_catdes
-code_display: |2
+code_display: |2-
 
   nailer_available <- requireNamespace('NaileR', quietly = TRUE)
 
@@ -93,3 +93,4 @@ code_display: |2
 
   nailer_available
   nailer_functions
+pdf_on_run: pdf/NaileR.pdf

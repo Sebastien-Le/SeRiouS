@@ -69,7 +69,7 @@ concepts:
 question: Which object contains the captured text output of AovSum?
 expected_answer: text_aovsum
 next_cells: manual_prompt
-code_display: |2
+code_display: |2-
 
   names(res_lm_fm)
   names(res_aovsum)
@@ -93,3 +93,4 @@ code_display: |2
 
   substr(text_linearmodel, 1, 1200)
   substr(text_aovsum, 1, 1200)
+pdf_on_run: pdf/recuperer.pdf

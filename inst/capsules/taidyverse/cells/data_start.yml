@@ -95,7 +95,7 @@ concepts:
 question: Which R object contains the questionnaire used in this capsule?
 expected_answer: questionnaire
 next_cells: first_exploration
-code_display: |2
+code_display: |2-
 
   if (!exists('questionnaire')) {
     questionnaire <- SeRiouS::questionnaire_alimentaire_typologie_textes
@@ -124,3 +124,4 @@ code_display: |2
   structure_variables
   head(questionnaire, 3)
   head(unique(questionnaire$commentaire), 6)
+pdf: pdf/questionnaire_SeRiouS_description.pdf

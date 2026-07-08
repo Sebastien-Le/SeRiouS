@@ -130,7 +130,7 @@ concepts:
 question: Which NaileR function combines textual and structured artefacts?
 expected_answer: nail_textual_contextualized
 next_cells: []
-code_display: |2
+code_display: |2-
 
   if (requireNamespace('NaileR', quietly = TRUE) &&
       'nail_textual_contextualized' %in% getNamespaceExports('NaileR')) {
@@ -157,3 +157,4 @@ code_display: |2
 
   class(contextualized_classes)
   names(contextualized_classes)
+pdf: pdf/nailer_textual_final.pdf

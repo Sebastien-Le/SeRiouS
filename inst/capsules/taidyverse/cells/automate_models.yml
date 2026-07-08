@@ -78,7 +78,7 @@ question: Which R function applies the same function to all elements of a vector
   list?
 expected_answer: lapply
 next_cells: condes_description
-code_display: |2
+code_display: |2-
 
   y <- 'intention_achat'
 
@@ -107,3 +107,4 @@ code_display: |2
 
   names(univariate_models)
   univariate_models[[1]]$Ftest
+pdf_on_run: pdf/boucle_y_x.pdf

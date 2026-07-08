@@ -59,7 +59,7 @@ concepts:
 question: Which package automates prompt construction from statistical outputs?
 expected_answer: EnTraineR
 next_cells: entrainer_prompt
-code_display: |2
+code_display: |2-
 
   entrainer_available <- requireNamespace('EnTraineR', quietly = TRUE)
 
@@ -80,3 +80,4 @@ code_display: |2
 
   entrainer_available
   entrainer_functions
+pdf_on_run: pdf/entrainer_presentation.pdf
