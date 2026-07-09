@@ -88,3 +88,36 @@ test_that("taidyverse first step can be executed", {
   expect_equal(nrow(env$questionnaire), 240)
   expect_equal(ncol(env$questionnaire), 27)
 })
+
+test_that("registered taidyverse capsule uses the English cell-based version", {
+  registered_capsule <- get_capsule("taidyverse")
+
+  expect_identical(
+    registered_capsule$steps[[1]]$title,
+    "Data: the starting point"
+  )
+
+  expect_false(
+    grepl("Grand D", registered_capsule$steps[[1]]$title)
+  )
+
+  expect_false(
+    grepl("départ|Départ", registered_capsule$steps[[1]]$title)
+  )
+})
+
+
+test_that("capsule_taidyverse and get_capsule use the same version", {
+  from_registry <- get_capsule("taidyverse")
+  from_function <- capsule_taidyverse()
+
+  expect_identical(
+    from_registry$steps[[1]]$title,
+    from_function$steps[[1]]$title
+  )
+
+  expect_identical(
+    from_registry$steps[[1]]$title,
+    "Data: the starting point"
+  )
+})

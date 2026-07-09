@@ -3,28 +3,17 @@
 #' @return A `"learning_capsule"` object.
 #' @export
 capsule_taidyverse <- function() {
+  capsule_dir <- serious_internal_capsule_dir("taidyverse")
 
-  build_capsule(
-    id = "taidyverse",
-    title = "SeRiouS: Playing with Data Seriously",
-    subtitle = "Episode One: Making Sense of Stats through Prompting",
-    method = "tAIdyverse",
-    description = paste(
-      "A guided workflow from statistical outputs to controlled",
-      "LLM-based interpretation."
-    ),
-    steps = taidyverse_steps(),
-    edges = taidyverse_edges(),
-    layout = taidyverse_layout(),
-    sections = taidyverse_sections(),
-    data = list(
-      questionnaire = get_taidyverse_questionnaire()
-    ),
-    packages = c("FactoMineR", "EnTraineR", "NaileR"),
-    start_step = "donnees"
-  )
+  if (is.null(capsule_dir)) {
+    stop(
+      "Internal capsule 'taidyverse' was not found.",
+      call. = FALSE
+    )
+  }
+
+  load_capsule_dir(capsule_dir)
 }
-
 
 taidyverse_sections <- function() {
   make_sections(

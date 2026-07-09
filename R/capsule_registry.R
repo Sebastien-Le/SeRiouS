@@ -86,9 +86,9 @@ capsule_registry <- function() {
     id = "demo_iris",
     fallback = list(
       id = "demo_iris",
-      title = "Demo iris",
-      method = "Introduction R",
-      description = "A minimal SeRiouS learning capsule based on the iris dataset."
+      title = "Iris demo",
+      method = "Demo",
+      description = "A demonstration capsule based on the iris data set."
     )
   )
 
@@ -96,34 +96,30 @@ capsule_registry <- function() {
     id = "demo_pca",
     fallback = list(
       id = "demo_pca",
-      title = "Demo PCA",
-      method = "Principal Component Analysis",
-      description = "A demonstration capsule for PCA with SeRiouS."
+      title = "Learning PCA with FactoMineR",
+      method = "PCA",
+      description = "A demonstration capsule introducing Principal Component Analysis."
     )
   )
 
-  list(
-    demo_iris = c(
-      demo_iris,
-      list(
-        constructor = serious_internal_capsule_constructor("demo_iris")
-      )
-    ),
-
-    demo_pca = c(
-      demo_pca,
-      list(
-        constructor = serious_internal_capsule_constructor("demo_pca")
-      )
-    ),
-
-    taidyverse = list(
+  taidyverse <- serious_internal_capsule_metadata(
+    id = "taidyverse",
+    fallback = list(
       id = "taidyverse",
       title = "SeRiouS: Playing with Data Seriously",
       method = "tAIdyverse",
-      description = "A guided workflow from statistical outputs to controlled LLM-based interpretation.",
-      constructor = capsule_taidyverse
+      description = "A guided workflow from statistical outputs to controlled LLM-based interpretation."
     )
+  )
+
+  demo_iris$constructor <- serious_internal_capsule_constructor("demo_iris")
+  demo_pca$constructor <- serious_internal_capsule_constructor("demo_pca")
+  taidyverse$constructor <- serious_internal_capsule_constructor("taidyverse")
+
+  list(
+    demo_iris = demo_iris,
+    demo_pca = demo_pca,
+    taidyverse = taidyverse
   )
 }
 

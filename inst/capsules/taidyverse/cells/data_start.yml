@@ -10,82 +10,54 @@ text: |-
   The aim is to move progressively from explicit statistical outputs to structured prompts, and then to latent classes and textual interpretation.
 code: |2
 
-  if (!exists('questionnaire')) {
-    if (exists('questionnaire_alimentaire_typologie_textes')) {
-      questionnaire <- questionnaire_alimentaire_typologie_textes
-    } else {
-      questionnaire <- SeRiouS::questionnaire_alimentaire_typologie_textes
-    }
-  }
+  data_env <- new.env(parent = emptyenv())
 
-  qualitative_variables <- c(
-    'type_produit',
-    'budget_contraint',
-    'sexe',
-    'age_classe',
-    'lieu_achat',
-    'profil_alim'
+  utils::data(
+    "questionnaire_alimentaire_typologie_textes",
+    package = "SeRiouS",
+    envir = data_env
   )
 
-  qualitative_variables <- intersect(qualitative_variables, names(questionnaire))
-  questionnaire[qualitative_variables] <- lapply(questionnaire[qualitative_variables], factor)
+  if (!exists("questionnaire_alimentaire_typologie_textes", envir = data_env)) {
+    stop(
+      "Dataset questionnaire_alimentaire_typologie_textes was not found in SeRiouS.",
+      call. = FALSE
+    )
+  }
 
-  if ('commentaire' %in% names(questionnaire)) {
+  questionnaire <- get(
+    "questionnaire_alimentaire_typologie_textes",
+    envir = data_env
+  )
+
+  variables_qualitatives <- c(
+    "type_produit",
+    "budget_contraint",
+    "sexe",
+    "age_classe",
+    "lieu_achat",
+    "profil_alim"
+  )
+
+  variables_qualitatives <- intersect(
+    variables_qualitatives,
+    names(questionnaire)
+  )
+
+  questionnaire[variables_qualitatives] <- lapply(
+    questionnaire[variables_qualitatives],
+    factor
+  )
+
+  if ("commentaire" %in% names(questionnaire)) {
     questionnaire$commentaire <- as.character(questionnaire$commentaire)
   }
 
-  structure_variables <- data.frame(
-    variable = names(questionnaire),
-    class = vapply(questionnaire, function(x) class(x)[1], character(1)),
-    stringsAsFactors = FALSE
-  )
+  cat("Questionnaire loaded.\n")
+  cat("Rows:", nrow(questionnaire), "\n")
+  cat("Columns:", ncol(questionnaire), "\n")
 
-  key_variables <- data.frame(
-    step = c(
-      'Linear model',
-      'ANOVA',
-      'condes()',
-      'catdes()',
-      'PCA + HCPC',
-      'Textual workflow'
-    ),
-    variables = c(
-      'intention_achat ~ satisfaction + prix_percu',
-      'satisfaction ~ type_produit * budget_contraint',
-      'intention_achat described by the other variables',
-      'profil_alim described by the other variables',
-      'active typology variables',
-      'classe_hcpc + commentaire'
-    ),
-    purpose = c(
-      'model a purchase intention',
-      'test factor effects and interaction',
-      'describe a quantitative variable',
-      'describe a qualitative variable',
-      'construct latent classes',
-      'interpret classes with verbatims'
-    ),
-    stringsAsFactors = FALSE
-  )
-
-  cat('\nDataset object: questionnaire\n')
-  cat('Rows:', nrow(questionnaire), '\n')
-  cat('Columns:', ncol(questionnaire), '\n\n')
-
-  cat('Variable structure:\n')
-  print(structure_variables, row.names = FALSE)
-
-  cat('\nKey variables for the capsule:\n')
-  print(key_variables, row.names = FALSE)
-
-  cat('\nFirst rows:\n')
-  print(head(questionnaire, 3))
-
-  if ('commentaire' %in% names(questionnaire)) {
-    cat('\nExamples of free-text comments:\n')
-    cat(paste('-', head(unique(questionnaire$commentaire), 6), collapse = '\n'))
-    cat('\n')
-  }
+  str(questionnaire)
 outputs: console
 expected_output: The questionnaire is loaded and its structure is displayed.
 concepts:
@@ -95,33 +67,20 @@ concepts:
 question: Which R object contains the questionnaire used in this capsule?
 expected_answer: questionnaire
 next_cells: first_exploration
-code_display: |2-
+code_display: |2
 
-  if (!exists('questionnaire')) {
-    questionnaire <- SeRiouS::questionnaire_alimentaire_typologie_textes
-  }
+  data_env <- new.env(parent = emptyenv())
 
-  qualitative_variables <- c(
-    'type_produit',
-    'budget_contraint',
-    'sexe',
-    'age_classe',
-    'lieu_achat',
-    'profil_alim'
+  utils::data(
+    "questionnaire_alimentaire_typologie_textes",
+    package = "SeRiouS",
+    envir = data_env
   )
 
-  qualitative_variables <- intersect(qualitative_variables, names(questionnaire))
-  questionnaire[qualitative_variables] <- lapply(questionnaire[qualitative_variables], factor)
-
-  structure_variables <- data.frame(
-    variable = names(questionnaire),
-    class = vapply(questionnaire, function(x) class(x)[1], character(1)),
-    stringsAsFactors = FALSE
+  questionnaire <- get(
+    "questionnaire_alimentaire_typologie_textes",
+    envir = data_env
   )
 
-  nrow(questionnaire)
-  ncol(questionnaire)
-  structure_variables
-  head(questionnaire, 3)
-  head(unique(questionnaire$commentaire), 6)
+  str(questionnaire)
 pdf: pdf/questionnaire_SeRiouS_description.pdf
